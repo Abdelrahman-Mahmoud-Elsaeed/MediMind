@@ -1,0 +1,56 @@
+// src/config/env.js
+const dotenv = require('dotenv');
+
+// Load .env variables into process.env immediately
+dotenv.config();
+
+const env = {
+  // NODE ENVIRONMENT SETUP
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseInt(process.env.PORT, 10) || 8080,
+  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+
+  // PERSISTENT LOCAL DATABASE (MONGODB)
+  MONGO_ROOT_USER: process.env.MONGO_ROOT_USER,
+  MONGO_ROOT_PASSWORD: process.env.MONGO_ROOT_PASSWORD,
+  MONGO_URI: process.env.MONGO_URI,
+
+  // ASYNC QUEUES & CACHING LAYER (REDIS & BULLMQ)
+  REDIS_URL: process.env.REDIS_URL || 'redis://redis:6379',
+
+  // SPLIT-TOKEN AUTHENTICATION SECRETS
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  COOKIE_SECRET: process.env.COOKIE_SECRET,
+
+  // DATA PROTECTION: PHI AT-REST FIELD ENCRYPTION
+  ENCRYPTION_KEY_AES256: process.env.ENCRYPTION_KEY_AES256,
+
+  // OBJECT STORAGE: AWS S3 SECURE IMAGE UPLOADS
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+  AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
+  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
+
+  // ESCALATION PIPELINE: AWS SNS MULTI-CHANNEL MESSAGING
+  AWS_SNS_REGION: process.env.AWS_SNS_REGION || 'us-east-1',
+  AWS_SNS_SENDER_ID: process.env.AWS_SNS_SENDER_ID || 'MEDTRACK',
+
+  // PWA FRONTEND MECHANICS: WEB-PUSH NOTIFICATIONS
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT,
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+
+  // GATEKEEPER DEFENSES: SECURITY RATE LIMIT CONSTRAINTS
+  RATE_LIMIT_GLOBAL_MAX: parseInt(process.env.RATE_LIMIT_GLOBAL_MAX, 10) || 100,
+  RATE_LIMIT_GLOBAL_WINDOW_MS: parseInt(process.env.RATE_LIMIT_GLOBAL_WINDOW_MS, 10) || 60000,
+
+  RATE_LIMIT_AUTH_MAX: parseInt(process.env.RATE_LIMIT_AUTH_MAX, 10) || 5,
+  RATE_LIMIT_AUTH_WINDOW_MS: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, 10) || 900000,
+
+  RATE_LIMIT_MEDIA_MAX: parseInt(process.env.RATE_LIMIT_MEDIA_MAX, 10) || 20,
+  RATE_LIMIT_MEDIA_WINDOW_MS: parseInt(process.env.RATE_LIMIT_MEDIA_WINDOW_MS, 10) || 3600000,
+};
+
+
+module.exports = Object.freeze(env);
