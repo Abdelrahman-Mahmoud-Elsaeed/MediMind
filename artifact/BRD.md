@@ -7,7 +7,7 @@
 ---
 
 ## 1. Executive Summary
-The Intelligent Medication Management Platform is a secure, patient-centric web application designed to dramatically improve medication adherence. By automating schedule tracking, monitoring remaining dosages, and leveraging a smart, multi-channel notification escalation engine, the system ensures patients never miss a critical dose or run out of essential medicine. Built as a **Modular Monolith** using **React, Node.js, MongoDB, and Cron-driven background workers**, the platform provides a highly maintainable foundation for a small engineering team to deliver a production-ready MVP.
+The Intelligent Medication Management Platform is a secure, patient-centric web application designed to dramatically improve medication adherence. By automating schedule tracking, monitoring remaining dosages, and leveraging a smart, multi-channel notification escalation engine, the system ensures patients never miss a critical dose or run out of essential medicine. Built as a **Modular Monolith** using **Next.js, Node.js, MongoDB, and Cron-driven background workers**, the platform provides a highly maintainable foundation for a small engineering team to deliver a production-ready MVP.
 
 ---
 

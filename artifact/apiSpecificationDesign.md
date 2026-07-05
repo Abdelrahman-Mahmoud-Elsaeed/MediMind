@@ -6,6 +6,24 @@
 
 ---
 
+## Module Organization Index
+
+The implementation work is organized around domain modules. Each module has a dedicated documentation file that defines its purpose, ownership boundaries, and interfaces before any implementation begins.
+
+- [Auth Module](../backend/src/modules/auth/README.md)
+- [Profiles Module](../backend/src/modules/profiles/README.md)
+- [Relationships Module](../backend/src/modules/relationships/README.md)
+- [Conditions Module](../backend/src/modules/conditions/README.md)
+- [Medications Module](../backend/src/modules/medications/README.md)
+- [Doses Module](../backend/src/modules/doses/README.md)
+- [Content Module](../backend/src/modules/content/README.md)
+- [Notifications Module](../backend/src/modules/notifications/README.md)
+- [Uploads Module](../backend/src/modules/uploads/README.md)
+
+This module index is the architectural entry point for the platform and is intended to guide future implementation work without introducing code-level behavior yet.
+
+---
+
 ## 1. Global API Conventions
 
 - **Base URL:** `/api/v1`

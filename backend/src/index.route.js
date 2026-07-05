@@ -1,6 +1,7 @@
 // src/index.route.js
 const express = require('express');
 const { logger } = require('./sheared/utils/logger');
+const { routes: authRoutes } = require('./modules/auth');
 
 const router = express.Router();
 
@@ -12,8 +13,7 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Future module routes will plug in right here:
-// router.use('/auth', authRoutes);
+router.use('/auth', authRoutes);
 // router.use('/medications', medicationRoutes);
 
 module.exports = router;

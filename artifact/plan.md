@@ -35,7 +35,7 @@
 
 
 * **Frontend Objectives:**
-* Initialize React/Vite template, establish global auth state context, and build Login/Registration screens.
+* Initialize a Next.js template, establish global auth state context, and build Login/Registration screens.
 * Configure global Axios/Fetch interceptors to handle silent `/auth/refresh` cycles automatically on 401 errors.
 
 

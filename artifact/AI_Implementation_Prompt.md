@@ -11,7 +11,7 @@
 You are implementing the Intelligent Medication Management Platform — a secure, patient-centric medication adherence application for managing medications, caregiver relationships, reminders, inventory, uploads, and educational content.
 
 **Tech stack:**
-- React PWA frontend
+- Next.js frontend
 - Node.js + Express backend
 - MongoDB Atlas (NoSQL data store)
 - Redis + BullMQ for background jobs
@@ -70,7 +70,7 @@ When you are uncertain about a design decision, check the artifacts first. Never
 
 The implementation must follow the architecture described in the documents:
 
-- Frontend is a mobile-first React PWA.
+- Frontend is a mobile-first Next.js application.
 - Backend is a modular monolith built around independent domain modules such as Auth, Medication Management, Relationships, Notifications, Content, and Uploads.
 - Each module must be self-contained and own its own route, controller, service, model, schema, and validation logic.
 - Core persistence uses MongoDB with Mongoose-style models.
@@ -199,7 +199,7 @@ Validation gate:
 
 ### Core Application
 - [ ] Backend API implementing the documented endpoints
-- [ ] React PWA frontend for core user workflows
+- [ ] Next.js frontend for core user workflows
 - [ ] MongoDB data model and initialization logic
 - [ ] Redis/BullMQ background worker flows
 - [ ] Real-time Socket.IO integration

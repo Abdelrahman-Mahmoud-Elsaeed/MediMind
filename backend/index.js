@@ -1,6 +1,6 @@
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
-const logger = require('./src/sheared/utils/logger');
+const { logger } = require('./src/sheared/utils/logger');
 const { PORT } = require('./src/config/env');
 
 const port = PORT || 8080;
