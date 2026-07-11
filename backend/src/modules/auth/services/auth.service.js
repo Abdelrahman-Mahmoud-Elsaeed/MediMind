@@ -1,8 +1,10 @@
 const Account = require('../models/Account.model');
 const Patient = require('../models/Patient.model');
 const Caregiver = require('../models/Caregiver.model');
-const { generateAccessToken, generateRefreshToken, verifyToken } = require('../../../sheared/utils/jwt.util');
-const { logger } = require('../../../sheared/utils/logger');
+const bcrypt = require('bcrypt');
+const { generateAccessToken, generateRefreshToken, verifyToken } = require('../../../shared/utils/jwt.util');
+const { logger } = require('../../../shared/utils/logger');
+const AppError = require('../../../shared/utils/AppError');
 
 class AuthService {
   /**
@@ -16,7 +18,7 @@ class AuthService {
     // Check if account already exists
     const existingAccount = await Account.findOne({ email });
     if (existingAccount) {
-      throw new Error('Email already registered');
+      throw new AppError('Email already registered', 400, 'EMAIL_EXISTS');
     }
 
     // Create account (password will be hashed by pre-save hook)
@@ -87,18 +89,18 @@ class AuthService {
     // Find account
     const account = await Account.findOne({ email });
     if (!account) {
-      throw new Error('Invalid email or password');
+      throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
     // Check if account is active
     if (!account.isActive) {
-      throw new Error('Account is deactivated');
+      throw new AppError('Account is deactivated', 403, 'ACCOUNT_INACTIVE');
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
     // Generate tokens
@@ -130,7 +132,7 @@ class AuthService {
    */
   async refreshToken(refreshToken) {
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new AppError('Refresh token is required', 401, 'UNAUTHORIZED');
     }
 
     // Verify refresh token
@@ -139,7 +141,7 @@ class AuthService {
     // Find account
     const account = await Account.findById(decoded.accountId);
     if (!account || !account.isActive) {
-      throw new Error('Invalid or expired refresh token');
+      throw new AppError('Invalid or expired refresh token', 401, 'INVALID_TOKEN');
     }
 
     // Generate new access token
@@ -176,7 +178,7 @@ class AuthService {
   async getAccountById(accountId) {
     const account = await Account.findById(accountId).select('-passwordHash');
     if (!account) {
-      throw new Error('Account not found');
+      throw new AppError('Account not found', 404, 'NOT_FOUND');
     }
     return account;
   }
