@@ -11,23 +11,51 @@ import { registerSchema } from '../validation/authValidation';
 
 import Logo from "../../../assets/logo.png";
 
-import Logo from "../../../assets/logo.png";
-
 export default function RegistrationStep1Component() {
   const router = useRouter();
   const { setRegistrationData, registrationData } = useAuth();
+  const { locale, t } = useTranslation();
 
   const [email, setEmail] = useState(registrationData?.email || '');
   const [password, setPassword] = useState(registrationData?.password || '');
   const [role, setRole] = useState(registrationData?.role || 'patient');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({ email: '', password: '' });
+
+  const step1Schema = registerSchema.pick({ email: true, password: true });
+  const isValid = step1Schema.safeParse({ email, password }).success;
+
+  const handleBlur = (field) => {
+    const result = step1Schema.safeParse({ email, password });
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === field);
+      if (issue) {
+        let msg = "";
+        if (field === "email") {
+          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
+        } else if (field === "password") {
+          if (!password) {
+            msg = t("auth.validation.passwordRequired");
+          } else if (password.length < 8) {
+            msg = t("auth.validation.passwordMin");
+          } else {
+            msg = t("auth.validation.passwordRequirements");
+          }
+        }
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
 
   const handleContinue = (e) => {
     e.preventDefault();
     setErrors({ email: "", password: "" });
 
-    const step1Schema = registerSchema.pick({ email: true, password: true });
     const result = step1Schema.safeParse({ email, password });
     if (!result.success) {
       const newErrors = { email: "", password: "" };
@@ -37,7 +65,13 @@ export default function RegistrationStep1Component() {
         if (field === "email") {
           msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
         } else if (field === "password") {
-          msg = password ? t("auth.validation.passwordMin") : t("auth.validation.passwordRequired");
+          if (!password) {
+            msg = t("auth.validation.passwordRequired");
+          } else if (password.length < 8) {
+            msg = t("auth.validation.passwordMin");
+          } else {
+            msg = t("auth.validation.passwordRequirements");
+          }
         }
         newErrors[field] = msg;
       });
@@ -209,7 +243,11 @@ export default function RegistrationStep1Component() {
 
             {/* Submit Action */}
             <div className="pt-4">
-              <button className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all" type="submit">
+              <button
+                disabled={!isValid}
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+              >
                 {t("auth.register.continueButton")}
                 <span className="material-symbols-outlined ms-2 text-[20px] rtl:rotate-180">arrow_forward</span>
               </button>

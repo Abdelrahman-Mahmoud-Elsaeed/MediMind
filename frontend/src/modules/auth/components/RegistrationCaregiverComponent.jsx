@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Logo from "../../../assets/logo.png";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { LanguageToggler } from "@/shared/components";
+import { registerCaregiverSchema } from '../validation/authValidation';
 
 export default function RegistrationCaregiverComponent() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function RegistrationCaregiverComponent() {
 
   const [validationError, setValidationError] = useState(null);
 
+  const isValid = registerCaregiverSchema.safeParse(formData).success;
+
   useEffect(() => {
     // If no data from step 1, redirect back
     if (!registrationData || !registrationData.email) {
@@ -41,36 +44,65 @@ export default function RegistrationCaregiverComponent() {
   };
 
   const handleBlur = (field) => {
-    if (field === 'firstName') {
-      setErrors((prev) => ({
-        ...prev,
-        firstName: formData.firstName ? '' : t('auth.validation.firstNameRequired'),
-      }));
-    } else if (field === 'lastName') {
-      setErrors((prev) => ({
-        ...prev,
-        lastName: formData.lastName ? '' : t('auth.validation.lastNameRequired'),
-      }));
-    } else if (field === 'phone') {
-      setErrors((prev) => ({
-        ...prev,
-        phone: formData.phone ? '' : t('auth.validation.phoneRequired'),
-      }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const result = registerCaregiverSchema.safeParse(formData);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === field);
+      if (issue) {
+        let msg = "";
+        if (field === "firstName") {
+          msg = formData.firstName 
+            ? t("auth.validation.firstNameMin") 
+            : t("auth.validation.firstNameRequired");
+        } else if (field === "lastName") {
+          msg = formData.lastName 
+            ? t("auth.validation.lastNameMin") 
+            : t("auth.validation.lastNameRequired");
+        } else if (field === "phone") {
+          msg = formData.phone 
+            ? t("auth.validation.invalidPhone") 
+            : t("auth.validation.phoneRequired");
+        }
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setTouched({
+      firstName: true,
+      lastName: true,
+      phone: true
+    });
+    setErrors({ firstName: "", lastName: "", phone: "" });
 
-    const newErrors = {
-      firstName: formData.firstName ? '' : t('auth.validation.firstNameRequired'),
-      lastName: formData.lastName ? '' : t('auth.validation.lastNameRequired'),
-      phone: formData.phone ? '' : t('auth.validation.phoneRequired'),
-    };
-
-    setErrors(newErrors);
-
-    if (newErrors.firstName || newErrors.lastName || newErrors.phone) {
+    const result = registerCaregiverSchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors = { firstName: "", lastName: "", phone: "" };
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        let msg = "";
+        if (field === "firstName") {
+          msg = formData.firstName 
+            ? t("auth.validation.firstNameMin") 
+            : t("auth.validation.firstNameRequired");
+        } else if (field === "lastName") {
+          msg = formData.lastName 
+            ? t("auth.validation.lastNameMin") 
+            : t("auth.validation.lastNameRequired");
+        } else if (field === "phone") {
+          msg = formData.phone 
+            ? t("auth.validation.invalidPhone") 
+            : t("auth.validation.phoneRequired");
+        }
+        newErrors[field] = msg;
+      });
+      setErrors(newErrors);
       return;
     }
 
@@ -101,7 +133,9 @@ export default function RegistrationCaregiverComponent() {
       const parsed = JSON.parse(error);
       backendErrorText = parsed[locale] || parsed["en"] || error;
     } catch (e) {
-      // Keep as is
+      const transKey = `auth.error.${error}`;
+      const translated = t(transKey);
+      backendErrorText = translated !== transKey ? translated : error;
     }
   }
 
@@ -160,7 +194,7 @@ export default function RegistrationCaregiverComponent() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleRegister}>
             <div className="space-y-4">
 
               <div>
@@ -210,7 +244,11 @@ export default function RegistrationCaregiverComponent() {
             </div>
 
             <div className="pt-4">
-              <button disabled={loading} className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all disabled:opacity-50" type="submit">
+              <button
+                disabled={!isValid || loading}
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+              >
                 {loading ? t("auth.register.completingButton") : t("auth.register.completeButton")}
                 {!loading && <span className="material-symbols-outlined ms-2 text-[20px] rtl:rotate-180">arrow_forward</span>}
               </button>

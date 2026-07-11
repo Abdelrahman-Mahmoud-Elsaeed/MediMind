@@ -20,6 +20,8 @@ export default function LoginComponent() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
 
+  const isValid = loginSchema.safeParse({ email, password }).success;
+
   const handleBlur = (field) => {
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
@@ -76,7 +78,9 @@ export default function LoginComponent() {
       const parsed = JSON.parse(error);
       backendErrorText = parsed[locale] || parsed["en"] || error;
     } catch (e) {
-      // Keep as is
+      const transKey = `auth.error.${error}`;
+      const translated = t(transKey);
+      backendErrorText = translated !== transKey ? translated : error;
     }
   }
 

@@ -18,7 +18,7 @@ export const metadata = {
   description: "Medication management platform",
 };
 
-export default async function RootLayout({ children, locale }) {
+export default async function RootLayout({ children }) {
 
   const cookieStore = await cookies();
   const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";

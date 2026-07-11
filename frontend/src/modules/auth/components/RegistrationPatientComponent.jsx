@@ -7,9 +7,7 @@ import Image from 'next/image';
 import Logo from "../../../assets/logo.png";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { LanguageToggler } from "@/shared/components";
-
-import Image from 'next/image';
-import Logo from "../../../assets/logo.png";
+import { registerPatientSchema } from '../validation/authValidation';
 
 export default function RegistrationPatientComponent() {
   const router = useRouter();
@@ -31,9 +29,12 @@ export default function RegistrationPatientComponent() {
     firstName: '',
     lastName: '',
     phone: '',
+    emPhone: '',
   });
 
   const [validationError, setValidationError] = useState(null);
+
+  const isValid = registerPatientSchema.safeParse(formData).success;
 
   useEffect(() => {
     // If no data from step 1, redirect back
@@ -48,36 +49,71 @@ export default function RegistrationPatientComponent() {
   };
 
   const handleBlur = (field) => {
-    if (field === 'firstName') {
-      setErrors((prev) => ({
-        ...prev,
-        firstName: formData.firstName ? '' : t('auth.validation.firstNameRequired'),
-      }));
-    } else if (field === 'lastName') {
-      setErrors((prev) => ({
-        ...prev,
-        lastName: formData.lastName ? '' : t('auth.validation.lastNameRequired'),
-      }));
-    } else if (field === 'phone') {
-      setErrors((prev) => ({
-        ...prev,
-        phone: formData.phone ? '' : t('auth.validation.phoneRequired'),
-      }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const result = registerPatientSchema.safeParse(formData);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === field);
+      if (issue) {
+        let msg = "";
+        if (field === "firstName") {
+          msg = formData.firstName 
+            ? t("auth.validation.firstNameMin") 
+            : t("auth.validation.firstNameRequired");
+        } else if (field === "lastName") {
+          msg = formData.lastName 
+            ? t("auth.validation.lastNameMin") 
+            : t("auth.validation.lastNameRequired");
+        } else if (field === "phone") {
+          msg = formData.phone 
+            ? t("auth.validation.invalidPhone") 
+            : t("auth.validation.phoneRequired");
+        } else if (field === "emPhone") {
+          msg = t("auth.validation.invalidEmergencyPhone");
+        }
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setTouched({
+      firstName: true,
+      lastName: true,
+      phone: true,
+      emName: true,
+      emPhone: true
+    });
+    setErrors({ firstName: "", lastName: "", phone: "", emPhone: "" });
 
-    const newErrors = {
-      firstName: formData.firstName ? '' : t('auth.validation.firstNameRequired'),
-      lastName: formData.lastName ? '' : t('auth.validation.lastNameRequired'),
-      phone: formData.phone ? '' : t('auth.validation.phoneRequired'),
-    };
-
-    setErrors(newErrors);
-
-    if (newErrors.firstName || newErrors.lastName || newErrors.phone) {
+    const result = registerPatientSchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors = { firstName: "", lastName: "", phone: "", emPhone: "" };
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        let msg = "";
+        if (field === "firstName") {
+          msg = formData.firstName 
+            ? t("auth.validation.firstNameMin") 
+            : t("auth.validation.firstNameRequired");
+        } else if (field === "lastName") {
+          msg = formData.lastName 
+            ? t("auth.validation.lastNameMin") 
+            : t("auth.validation.lastNameRequired");
+        } else if (field === "phone") {
+          msg = formData.phone 
+            ? t("auth.validation.invalidPhone") 
+            : t("auth.validation.phoneRequired");
+        } else if (field === "emPhone") {
+          msg = t("auth.validation.invalidEmergencyPhone");
+        }
+        newErrors[field] = msg;
+      });
+      setErrors(newErrors);
       return;
     }
 
@@ -112,7 +148,9 @@ export default function RegistrationPatientComponent() {
       const parsed = JSON.parse(error);
       backendErrorText = parsed[locale] || parsed["en"] || error;
     } catch (e) {
-      // Keep as is
+      const transKey = `auth.error.${error}`;
+      const translated = t(transKey);
+      backendErrorText = translated !== transKey ? translated : error;
     }
   }
 
@@ -168,7 +206,7 @@ export default function RegistrationPatientComponent() {
             </div>
           )}
 
-          <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+          <form className="flex flex-col gap-8" onSubmit={handleRegister}>
             <fieldset className="flex flex-col gap-5">
               <legend className="font-body-lg text-body-lg text-primary-fixed-dim border-b border-outline-variant/30 pb-2 w-full mb-2">
                 {t("auth.register.profileDetails")}
@@ -264,7 +302,7 @@ export default function RegistrationPatientComponent() {
                     {t("auth.register.emNameLabel")}
                   </label>
                   <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:border-[#95ccff] focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start" id="emName" placeholder={t("auth.register.emNamePlaceholder")} type="text" value={formData.emName} onChange={handleChange} />
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start" id="emName" placeholder={t("auth.register.emNamePlaceholder")} type="text" value={formData.emName} onChange={handleChange} onBlur={() => handleBlur("emName")} />
                   </div>
                   {touched.emName && errors.emName && (
                     <p className="text-error font-body-sm text-xs mt-1">{errors.emName}</p>
@@ -275,7 +313,7 @@ export default function RegistrationPatientComponent() {
                     {t("auth.register.emPhoneLabel")}
                   </label>
                   <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:border-[#95ccff] focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start" id="emPhone" placeholder={t("auth.register.emPhonePlaceholder")} type="tel" value={formData.emPhone} onChange={handleChange} />
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start" id="emPhone" placeholder={t("auth.register.emPhonePlaceholder")} type="tel" value={formData.emPhone} onChange={handleChange} onBlur={() => handleBlur("emPhone")} />
                   </div>
                   {touched.emPhone && errors.emPhone && (
                     <p className="text-error font-body-sm text-xs mt-1">{errors.emPhone}</p>
@@ -285,7 +323,11 @@ export default function RegistrationPatientComponent() {
             </fieldset>
 
             <div className="pt-2 flex flex-col gap-4">
-              <button disabled={loading} className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all group disabled:opacity-50" type="submit">
+              <button
+                disabled={!isValid || loading}
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+              >
                 {loading ? t("auth.register.completingButton") : t("auth.register.completeButton")}
                 {!loading && <span className="material-symbols-outlined text-[20px] ms-2 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">check_circle</span>}
               </button>

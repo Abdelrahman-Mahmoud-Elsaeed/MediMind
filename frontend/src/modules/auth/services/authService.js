@@ -12,7 +12,11 @@ export const authService = {
 
       return data.data;
     } catch (err) {
-      throw new Error(err.response?.data?.error?.message || err.message || 'Login failed');
+      const errorObj = err.response?.data?.error;
+      if (errorObj?.messages) {
+        throw new Error(JSON.stringify(errorObj.messages));
+      }
+      throw new Error(errorObj?.code || err.message || 'Login failed');
     }
   },
 
@@ -27,8 +31,11 @@ export const authService = {
 
       return data.data;
     } catch (err) {
-
-      throw new Error(err.response?.data?.error?.message || err.message || 'Registration failed');
+      const errorObj = err.response?.data?.error;
+      if (errorObj?.messages) {
+        throw new Error(JSON.stringify(errorObj.messages));
+      }
+      throw new Error(JSON.stringify({ en: errorObj?.message || 'Registration failed', ar: errorObj?.message || 'فشل التسجيل' }));
     }
   },
 
