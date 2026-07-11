@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
+import Image from 'next/image';
+import Logo from "../../../assets/logo.png";
+
 export default function RegistrationPatientComponent() {
   const router = useRouter();
   const { registrationData, register, loading, error, clearRegistrationData } = useAuth();
@@ -14,9 +17,11 @@ export default function RegistrationPatientComponent() {
     phone: '',
     dob: '',
     bloodType: '',
-    emName: '',
-    emPhone: ''
+    emergencyContactName: '',
+    emergencyContactPhone: '',
   });
+
+  const [validationError, setValidationError] = useState(null);
 
   useEffect(() => {
     // If no data from step 1, redirect back
@@ -25,27 +30,35 @@ export default function RegistrationPatientComponent() {
     }
   }, [registrationData, router]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    
-    const completeData = {
-      ...registrationData,
-      ...formData,
-      role: 'PATIENT' // Backend expects uppercase enum usually, or match whatever it requires
-    };
+    setValidationError(null);
+
+    // Validate
+    if (!formData.firstName || !formData.lastName || !formData.phone) {
+      setValidationError("All profile fields are required.");
+      return;
+    }
 
     try {
-      const resultAction = await register(completeData);
+      const payload = {
+        ...registrationData,
+        ...formData,
+        role: 'PATIENT'
+      };
+
+      const resultAction = await register(payload);
       if (resultAction.type === 'auth/register/fulfilled') {
         clearRegistrationData();
         router.push('/dashboard');
       }
     } catch (err) {
-      // Handled by redux
+      // Handled by Redux
     }
   };
 
@@ -54,12 +67,13 @@ export default function RegistrationPatientComponent() {
   return (
     <div className="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
       <header className="w-full flex justify-center py-6 md:py-8 z-10 relative">
-        <img 
+        <Image 
           alt="MediMind Logo" 
           className="h-12 w-auto" 
           width={48}
           height={48}
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ" 
+          src={Logo} 
+          priority
         />
       </header>
 

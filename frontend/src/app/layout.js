@@ -20,7 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.variable} ${inter.variable} antialiased`}>
+      <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

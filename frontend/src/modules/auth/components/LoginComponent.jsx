@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
 import { loginSchema } from "../validation/authValidation";
+import Logo from "../../../assets/logo.png";
+import Image from "next/image";
 
 export default function LoginComponent() {
   const router = useRouter();
@@ -52,12 +54,13 @@ export default function LoginComponent() {
         <div className="bg-surface-container/50 backdrop-blur-2xl border border-outline-variant/30 rounded-xl p-8 shadow-2xl flex flex-col items-center">
           {/* Logo area */}
           <div className="mb-8 w-32 h-32 flex items-center justify-center">
-            <img
+            <Image
               alt="MediMind Logo"
               className="w-full h-full object-contain"
               width={128}
               height={128}
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ"
+              src={Logo}
+              priority
             />
           </div>
 
