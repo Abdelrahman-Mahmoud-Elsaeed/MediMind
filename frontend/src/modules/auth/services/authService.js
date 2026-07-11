@@ -5,33 +5,33 @@ export const authService = {
     try {
       const res = await apiClient.post('/auth/login', { email, password });
       const data = res.data;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', data.data.accessToken);
       }
-      
+
       return data.data;
     } catch (err) {
       throw new Error(err.response?.data?.error?.message || err.message || 'Login failed');
     }
   },
-  
+
   async register(userData) {
     try {
       const res = await apiClient.post('/auth/register', userData);
       const data = res.data;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', data.data.accessToken);
       }
-      
+
       return data.data;
     } catch (err) {
 
       throw new Error(err.response?.data?.error?.message || err.message || 'Registration failed');
     }
   },
-  
+
   async logout() {
     try {
       const res = await apiClient.post('/auth/logout');
@@ -47,7 +47,7 @@ export const authService = {
       return false;
     }
   },
-  
+
   getAccessToken() {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('accessToken');

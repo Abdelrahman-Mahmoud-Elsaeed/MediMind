@@ -18,7 +18,7 @@ class AuthService {
     // Check if account already exists
     const existingAccount = await Account.findOne({ email });
     if (existingAccount) {
-      throw new AppError('Email already registered', 400, 'EMAIL_EXISTS');
+      throw new AppError('Email already registered', 400, 'EMAIL_EXISTS', { en: 'Email already registered', ar: 'البريد الإلكتروني مسجل بالفعل' });
     }
 
     // Create account (password will be hashed by pre-save hook)
@@ -89,18 +89,18 @@ class AuthService {
     // Find account
     const account = await Account.findOne({ email });
     if (!account) {
-      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS');
+      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS', { en: 'Incorrect email or password', ar: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     }
 
     // Check if account is active
     if (!account.isActive) {
-      throw new AppError('Account is deactivated', 403, 'ACCOUNT_INACTIVE');
+      throw new AppError('Account is deactivated', 403, 'ACCOUNT_INACTIVE', { en: 'Account is deactivated', ar: 'الحساب غير نشط' });
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
     if (!isPasswordValid) {
-      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS');
+      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS', { en: 'Incorrect email or password', ar: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     }
 
     // Generate tokens
@@ -132,7 +132,7 @@ class AuthService {
    */
   async refreshToken(refreshToken) {
     if (!refreshToken) {
-      throw new AppError('Refresh token is required', 401, 'UNAUTHORIZED');
+      throw new AppError('Refresh token is required', 401, 'UNAUTHORIZED', { en: 'Refresh token is required', ar: 'مطلوب رمز التحديث' });
     }
 
     // Verify refresh token
@@ -141,7 +141,7 @@ class AuthService {
     // Find account
     const account = await Account.findById(decoded.accountId);
     if (!account || !account.isActive) {
-      throw new AppError('Invalid or expired refresh token', 401, 'INVALID_TOKEN');
+      throw new AppError('Invalid or expired refresh token', 401, 'INVALID_TOKEN', { en: 'Invalid or expired refresh token', ar: 'رمز التحديث غير صالح أو منتهي الصلاحية' });
     }
 
     // Generate new access token
@@ -178,7 +178,7 @@ class AuthService {
   async getAccountById(accountId) {
     const account = await Account.findById(accountId).select('-passwordHash');
     if (!account) {
-      throw new AppError('Account not found', 404, 'NOT_FOUND');
+      throw new AppError('Account not found', 404, 'NOT_FOUND', { en: 'Account not found', ar: 'الحساب غير موجود' });
     }
     return account;
   }

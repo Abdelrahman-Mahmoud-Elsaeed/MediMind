@@ -34,3 +34,17 @@ export const logoutThunk = createAsyncThunk(
     }
   }
 );
+
+export const checkAuthThunk = createAsyncThunk(
+  'auth/checkAuth',
+  async (_, { rejectWithValue }) => {
+    try {
+      const refreshResult = await authService.refreshToken();
+      const accessToken = refreshResult.accessToken;
+      const user = await authService.getMe(accessToken);
+      return { accessToken, user };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
