@@ -18,7 +18,9 @@ app.use(cookieParser(COOKIE_SECRET));
 app.use(globalRateLimiter);
 
 app.use(cors({
-  origin: NODE_ENV === 'production' ? false : true,
+  origin: NODE_ENV === 'production' 
+    ? FRONTEND_URL
+    : true, 
   credentials: true,
 }));
 
