@@ -1,6 +1,6 @@
 // src/index.route.js
 const express = require('express');
-const { logger } = require('./sheared/utils/logger');
+const { logger } = require('./shared/utils/logger');
 const { routes: authRoutes } = require('./modules/auth');
 
 const router = express.Router();

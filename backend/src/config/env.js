@@ -9,7 +9,7 @@ const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT, 10) || 8080,
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-
+  FRONTEND_URL:process.env.FRONTEND_URL,
   // PERSISTENT LOCAL DATABASE (MONGODB)
   MONGO_ROOT_USER: process.env.MONGO_ROOT_USER,
   MONGO_ROOT_PASSWORD: process.env.MONGO_ROOT_PASSWORD,

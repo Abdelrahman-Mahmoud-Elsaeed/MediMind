@@ -2,212 +2,145 @@
 
 ## Module Overview and Purpose
 
-The Settings module manages global application preferences. According to the BRD, bilingual localization is a core MVP requirement. Thus, this module handles the critical responsibility of toggling between English (LTR layout) and Arabic (RTL layout) alongside notification preferences.
+The Settings module handles configuration settings for the user interface and notification alerts. It allows Patients and Caregivers to customize notification channels (SMS, email, push), set preferred alert lead times, and switch between light and dark visual themes.
 
 ## Responsibilities and Scope
 
-The Settings module is exclusively responsible for:
-- Toggling application language (English/Arabic).
-- Dynamically shifting DOM text layout (LTR/RTL).
-- Managing notification channel preferences (Push vs SMS).
-- Theme management (Light/Dark mode).
-- Local persistence of preferences via `localStorage`.
+The Settings module is responsible for:
+- Saving app-wide preferences (light/dark mode toggle).
+- Configuring notification dispatch switches (on/off for email, push, SMS alerts).
+- Setting warning offset parameters (e.g. notify 15 mins before a dose).
+- Changing locale or language settings.
 
 The module does NOT handle:
-- Personal profile data edits (Profile module).
-- Account deletion or password changes (Auth module).
+- Account setup or password updates (delegated to the Auth module).
+- Modifying physician info or emergency contact details (delegated to the Profile module).
 
 ## Features Owned by the Module
 
-### 1. Localization
-- Seamless toggle between English and Arabic using i18n libraries.
-- Automatic, jank-free RTL layout switching by modifying document attributes.
+### 1. Preferences Panel
+- Interface to toggle system themes (light, dark, system default).
+- Language selectors.
 
-### 2. Notification Preferences
-- Opt-in/out toggles for specific communication channels (SMS, Push) for the escalation engine.
+### 2. Alert Customizer
+- Checkboxes to toggle email, push, and SMS channels.
+- Slider or picker to adjust warning lead offsets.
 
 ## Functional Requirements
 
-### FR-4.1: Localization (BRD 4.4)
-- The entire user interface must seamlessly toggle between English (LTR) and Arabic (RTL) text layouts. The application must support right-to-left UI mirroring.
+### FR-S-1: Theme Options
+- Users must be able to select and toggle between light, dark, and system themes.
 
-### FR-S-2: Alert Configuration
-- Users must be able to configure how they receive escalation alerts.
+### FR-S-2: Alert Switches
+- Users must be able to switch active notifications channels.
 
 ## Business Rules and Validation Rules
 
-### Persistence
-- Settings must be persisted locally (`localStorage`) so they are applied immediately before the React app fully hydrates (preventing unstyled flashes).
-- Settings must eventually sync to the backend to ensure cross-device consistency.
+### Settings Inputs (Zod Schema validation)
+- **Theme:** Required, enum selection of `light`, `dark`, `system`.
+- **Lead Offset:** Required, integer between 0 and 60 (minutes before dose).
+- **Channels:** Required, object specifying booleans for `email`, `sms`, `push`.
+
+---
 
 ## User Workflows
 
-### Change Language Workflow
-1. User navigates to Settings.
-2. User toggles language selection to Arabic.
-3. System instantly updates the `dir` attribute on the `<html>` tag to `rtl`.
-4. i18n provider re-renders all UI strings in Arabic.
-5. System saves the preference locally.
-6. System quietly syncs the preference to the backend.
+### Update Notification Channels Workflow
+```mermaid
+sequenceFlow
+  participant User
+  participant SettingsForm
+  participant SettingsActions (saveSettingsThunk)
+  participant SettingsService
+  participant ReduxStore
+
+  User->>SettingsForm: Select Theme & Toggle SMS/Email switches
+  SettingsForm->>SettingsForm: Validate configuration & enable Save settings button
+  User->>SettingsForm: Click Save Settings
+  SettingsForm->>SettingsActions (saveSettingsThunk): Dispatch updateSettings(preferences)
+  SettingsActions (saveSettingsThunk)->>SettingsService: Call saveSettings(preferences)
+  SettingsService->>SettingsService: Send PUT request via apiClient
+  SettingsService-->>SettingsActions (saveSettingsThunk): Return updated settings object
+  SettingsActions (saveSettingsThunk)-->>ReduxStore: Update state (user preferences)
+```
+
+---
 
 ## Components
 
-### LanguageToggle
-Switch component for toggling languages.
-**Props:** None (Reads from global context)
+### SettingsFormComponent
+Primary preference editing page.
+- **State:**
+  - `theme`, `leadTime`, `emailEnabled`, `smsEnabled`, `pushEnabled` (controlled inputs).
+  - `touched` (object).
+- **Behavior:**
+  - Validates fields via `settingsSchema.safeParse`.
+  - Disables save actions if fields contain errors.
 
-### NotificationSettings
-Form with toggle switches for alert types.
-**Props:**
-- `preferences`: Current notification configuration object.
+---
 
 ## Hooks
 
 ### useSettings
-Custom hook for application settings and theming.
+Coordinates app-wide configurations and selectors:
+- **Exposes:**
+  - `preferences`: Object containing themes and channels data.
+  - `loading`: State of saving triggers.
+  - Action triggers: `updateSettings()`, `toggleTheme()`.
 
-**Returns:**
-```javascript
-{
-  theme: string,
-  language: string,
-  notifications: NotificationPrefs,
-  updateTheme: (theme: string) => void,
-  updateLanguage: (lang: string) => Promise<void>,
-  updateNotifications: (prefs: NotificationPrefs) => Promise<void>
-}
-```
-
-**Usage:**
-```javascript
-const { language, updateLanguage } = useSettings();
-
-<Button onClick={() => updateLanguage('ar')}>Switch to Arabic</Button>
-```
+---
 
 ## Services
 
-### SettingsService
-Service layer for settings API calls.
+### settingsService
+Integrates API requests:
+- **Methods:**
+  - `getSettings()`: Sends `GET /settings`.
+  - `saveSettings(data)`: Sends `PUT /settings`.
 
-**Methods:**
-- `getPreferences()`: GET `/api/v1/settings`
-- `updatePreferences(data)`: PUT `/api/v1/settings`
+---
 
 ## State Management
 
-### Settings Store
-Global state for settings, highly coupled with local storage.
+### Redux State Slice (`settingsSlice`)
+- **Initial State:**
+  ```javascript
+  {
+    preferences: {
+      theme: 'system',
+      leadTime: 15,
+      channels: {
+        email: true,
+        sms: false,
+        push: true
+      }
+    },
+    loading: false,
+    error: null,
+  }
+  ```
+- **Sync Reducers:**
+  - `clearErrors`: Resets API errors.
+  - `setLocalTheme`: Updates local stylesheet without API dispatch.
 
-**State:**
-```javascript
-{
-  theme: 'light' | 'dark',
-  language: 'en' | 'ar',
-  notifications: Record<string, boolean>
-}
-```
-
-**Actions:**
-- `setTheme(theme)`: Updates theme and DOM body class.
-- `setLanguage(lang)`: Updates language and DOM dir attribute.
-- `setNotifications(prefs)`: Updates notification toggles.
+---
 
 ## API Integration
 
-### Endpoints Used
-- `GET /api/v1/settings`
-- `PUT /api/v1/settings`
+Network requests use the shared Axios `apiClient` defined in `@/shared/lib`.
 
-### Request/Response Handling
-- Applies theme/language immediately on the client side for zero latency.
-- Syncs to the server in the background, ignoring minor network failures.
+---
 
 ## Routing
 
-### Routes
-- `/settings` - Central Settings dashboard.
+Next.js App Router paths:
+- `/dashboard/settings`: Primary settings configurations panel.
 
-### Navigation
-- Exposed as a top-level tab or sidebar menu item.
+---
 
 ## Validation
 
-### Client-Side Validation
-- Simple boolean and enum validation before saving to localStorage.
-
-### Validation Library
-- Uses Zod or Yup schema validation integrated with React Hook Form.
-
-## Error Handling
-
-### Error States
-- Network errors: Managed by global axios interceptors, showing generic toast.
-- Validation errors: Mapped to specific form fields.
-- Server errors (500): Triggers generic error boundary or alert.
-
-### Error Display
-- Inline validation messages below form inputs.
-- Toast notifications for API success/failure feedback.
-
-## Loading States
-
-### Loading Indicators
-- Skeleton loaders displayed while initial fetching is executing.
-- Button disable and spinner icons active during form submissions.
-- Overlay spinner for critical destructive operations.
-
-## Accessibility
-
-### A11y Considerations
-- Form inputs have associated `<label>` elements or `aria-label` attributes.
-- Keyboard navigation (Tab) supported across lists and forms.
-- Screen reader announcements for form submission success/failure using `aria-live` regions.
-- Modal dialogs trap focus until resolved.
-
-## Styling
-
-### Component Styling
-- Leverages shared UI components from `src/shared/components` (e.g., `Button`, `Input`, `Card`).
-- Consistent design system application (colors, typography).
-- Fully responsive layout; lists transition to stacked cards on mobile devices.
-
-## Testing
-
-### Unit Tests
-- Component rendering tests.
-- Hook state transitions on success/failure.
-- Service tests mocking axios to verify correct endpoint calls and payloads.
-
-### Integration Tests
-- End-to-end workflows representing core user journeys.
-
-### Test Coverage
-- Minimum 85% statement coverage required for the settings module.
-- 100% coverage on complex validation logic.
-
-## Performance Considerations
-
-### Optimization
-- React components memoized using `React.memo` to prevent unnecessary re-renders.
-- Lazy loading for heavy sub-components to reduce initial bundle size.
-
-## Security Considerations
-
-### Client-Side Security
-- No sensitive PHI data passed in URL parameters (use POST/PUT bodies).
-- Strict output sanitization to prevent XSS.
-- Token validation handled gracefully (unauthorized requests redirect to login).
-
-## Future Enhancements
-
-### Potential Future Work
-- Custom alert tones for Push notifications.
-- Granular timezone overrides for frequent travelers.
-
-## Related Documentation
-
-- [Frontend Architecture Guide](../../../public/frontend.md)
-- [Backend Settings Module](../../../backend/src/modules/settings/README.md)
-- [API Specification](../../../artifact/apiSpecificationDesign.md)
-- [Business Requirements Document (BRD)](../../../artifact/BRD.md)
+- Driven by Zod schemas in `validation/settingsValidation.js`.
+- Outlines fields in red (`border-error`) if values do not comply.
+- Displays inline messages under inputs.
+- Button is disabled if `!isValid`.

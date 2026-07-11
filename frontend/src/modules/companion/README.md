@@ -2,370 +2,154 @@
 
 ## Module Overview and Purpose
 
-The Companion module manages caregiver-patient relationship flows from the frontend. This module provides UI components for caregivers to manage their relationships with patients, including inviting patients, accepting/rejecting invitations, and viewing relationship status. It serves as the interface for the delegation model that enables caregivers to access and manage patient medication data.
+The Companion module manages access relationships and permissions between Patients and Caregivers (Companions). It enables caregivers to monitor medication schedules, view dose log histories, track medication inventory warnings, and receive automated SMS or push notifications for missed doses on behalf of the patient.
 
 ## Responsibilities and Scope
 
-The Companion module is exclusively responsible for:
-- Caregiver invitation flow (invite patients by email)
-- Relationship status management (accept/reject invitations)
-- Relationship listing (view current relationships)
-- Relationship removal (revoke/delete relationships)
-- Permission display (show granted permissions)
-- Relationship state management (loading, error states)
+The Companion module is responsible for:
+- Establishing and managing patient-caregiver links (invitations and pairing).
+- Verifying access authorizations and permission scopes (e.g., view-only dashboard vs. full medication manager access).
+- Providing companion dashboard views showing paired patient daily schedules.
+- Delivering automated alerts to companions for patient adherence and refilling needs.
 
 The module does NOT handle:
-- Backend relationship logic (handled by backend Relationships module)
-- Permission enforcement (handled by backend middleware)
-- Patient data (handled by Profile module)
-- Medication data (handled by Medication module)
-- Notification delivery (handled by Notifications module)
+- App-wide user authentication or registration (delegated to the Auth module).
+- Direct logging of doses for the patient (delegated to the Dose module).
+- Modifying doctor details or primary care configurations (delegated to the Profile module).
 
 ## Features Owned by the Module
 
-### 1. Invitation Flow
-- Caregivers can invite patients by email
-- Permission selection for the relationship
-- Invitation status tracking
-- Success/error feedback
+### 1. Caregiver Dashboard
+- Interface displaying a caregiver's list of linked patients.
+- Details panels showing patient daily timelines, medication statuses, and recent logs.
 
-### 2. Relationship Management
-- View list of current relationships
-- Accept pending invitations
-- Reject pending invitations
-- Revoke active relationships
-- View relationship permissions
-
-### 3. Status Display
-- Display relationship status (PENDING, ACCEPTED, REJECTED, REVOKED)
-- Display granted permissions
-- Display patient information
+### 2. Linking and Verification
+- Form for caregivers to invite patients by email or validation code.
+- Verification mechanism for patients to accept or revoke caregiver linkages.
 
 ## Functional Requirements
 
-### FR-C-1: Invite Patient
-- Caregivers must be able to invite patients by email
-- Caregivers must select permissions for the relationship
-- System must validate email format
-- System must handle invitation success/error states
+### FR-C-1: Caregiver Pairing
+- Caregivers must be able to send pairing requests to patients via email.
+- Patients must be able to view, accept, or reject pending pairing requests.
 
-### FR-C-2: View Relationships
-- Caregivers must be able to view all their relationships
-- System must display relationship status
-- System must display patient information
-- System must display granted permissions
-
-### FR-C-3: Accept Invitation
-- Caregivers must be able to accept pending invitations
-- System must update relationship status to ACCEPTED
-
-### FR-C-4: Reject Invitation
-- Caregivers must be able to reject pending invitations
-- System must update relationship status to REJECTED
-
-### FR-C-5: Revoke Relationship
-- Caregivers must be able to revoke active relationships
-- System must update relationship status to REVOKED
+### FR-C-2: Permission Control
+- Patients must be able to specify viewing permissions (e.g., read-only vs. read/write).
 
 ## Business Rules and Validation Rules
 
-### Email Validation
-- **Format:** Valid email format
-- **Validation:** Client-side validation before submission
-- **Error messages:** Clear feedback for invalid email
+### Pairing Inputs (Zod Schema validation)
+- **Email:** Must be a valid email format.
+- **Link Code:** Optional, alphanumeric code of exactly 6 characters if entered.
+- **Relationship Type:** Required, selected from preset list (e.g., Parent, Spouse, Child, Professional Caregiver).
 
-### Permission Selection
-- **Options:** canAddMedication, canViewMedicalRecords
-- **Default:** canAddMedication = true, canViewMedicalRecords = false
-- **Required:** At least one permission must be granted
-
-### Status Transitions
-- **PENDING → ACCEPTED:** Caregiver accepts invitation
-- **PENDING → REJECTED:** Caregiver rejects invitation
-- **ACCEPTED → REVOKED:** Caregiver revokes relationship
-- **REVOKED/REJECTED:** Terminal states
-
-### Access Control
-- Only caregivers can access this module
-- Caregivers can only manage their own relationships
-- Patients cannot access caregiver relationship management
+---
 
 ## User Workflows
 
 ### Invite Patient Workflow
-1. Caregiver navigates to companion/relationships page
-2. Caregiver clicks "Invite Patient" button
-3. Caregiver enters patient email
-4. Caregiver selects permissions for the relationship
-5. System validates email format
-6. Caregiver submits invitation
-7. System sends invitation request to backend
-8. On success: system displays success message, adds to pending list
-9. On error: system displays error message, caregiver can retry
+```mermaid
+sequenceFlow
+  participant Caregiver
+  participant InviteComponent
+  participant CompanionActions (inviteThunk)
+  participant CompanionService
+  participant ReduxStore
 
-### View Relationships Workflow
-1. Caregiver navigates to companion/relationships page
-2. System fetches all relationships from backend
-3. System displays list of relationships with status
-4. System displays patient information and permissions
+  Caregiver->>InviteComponent: Enter Patient Email & select Relationship Type
+  InviteComponent->>InviteComponent: Perform validation & enable Send Invitation button
+  Caregiver->>InviteComponent: Click Send Invitation
+  InviteComponent->>CompanionActions (inviteThunk): Dispatch invitePatient({ email, relationship })
+  CompanionActions (inviteThunk)->>CompanionService: Call invitePatient(email, relationship)
+  CompanionService->>CompanionService: Send POST request via apiClient
+  CompanionService-->>CompanionActions (inviteThunk): Return invitation status
+  CompanionActions (inviteThunk)-->>ReduxStore: Update state (activeInvitations)
+```
 
-### Accept Invitation Workflow
-1. Caregiver views pending invitations
-2. Caregiver clicks "Accept" on a pending invitation
-3. System sends accept request to backend
-4. On success: system updates status to ACCEPTED
-5. On error: system displays error message
-
-### Reject Invitation Workflow
-1. Caregiver views pending invitations
-2. Caregiver clicks "Reject" on a pending invitation
-3. System sends reject request to backend
-4. On success: system updates status to REJECTED
-5. On error: system displays error message
-
-### Revoke Relationship Workflow
-1. Caregiver views active relationships
-2. Caregiver clicks "Revoke" on an active relationship
-3. System confirms revocation action
-4. System sends revoke request to backend
-5. On success: system updates status to REVOKED
-6. On error: system displays error message
+---
 
 ## Components
 
-### InvitationForm
-Form for inviting patients with email and permission selection.
+### CaregiverPatientListComponent
+Displays the list of linked patients.
+- **State:**
+  - `selectedPatientId` (string).
+- **Behavior:** Renders overview cards for each patient.
 
-**Props:**
-- `onSuccess`: Callback function on successful invitation
-- `onError`: Callback function on invitation error
+### CompanionInviteForm
+Form to send link requests to patients.
+- **State:**
+  - `email`, `relationship` (controlled inputs).
+  - `touched` (object tracking blurred/interacted inputs).
+- **Behavior:**
+  - Derives validity and errors from `companionInviteSchema.safeParse`.
+  - Disables submit button until valid.
 
-**State:**
-- Form data (patientEmail, permissions)
-- Validation errors
-- Loading state
-
-### RelationshipList
-List component displaying all caregiver relationships.
-
-**Props:**
-- `relationships`: Array of relationship objects
-- `onAccept`: Callback for accepting invitation
-- `onReject`: Callback for rejecting invitation
-- `onRevoke`: Callback for revoking relationship
-
-**State:**
-- Loading state
-- Error state
-
-### RelationshipCard
-Card component displaying individual relationship details.
-
-**Props:**
-- `relationship`: Relationship object
-- `onAccept`: Callback for accepting invitation
-- `onReject`: Callback for rejecting invitation
-- `onRevoke`: Callback for revoking relationship
-
-**Display:**
-- Patient information (name, email)
-- Relationship status
-- Granted permissions
-- Action buttons based on status
-
-### PermissionSelector
-Component for selecting relationship permissions.
-
-**Props:**
-- `permissions`: Current permission state
-- `onChange`: Callback for permission changes
-
-**Options:**
-- canAddMedication (checkbox)
-- canViewMedicalRecords (checkbox)
+---
 
 ## Hooks
 
-### useRelationships
-Custom hook for relationship data and operations.
+### useCompanions
+Custom hook wrapping companion slice selectors and dispatchers:
+- **Exposes:**
+  - `companions`: List of paired caregivers or patients.
+  - `activeInvitations`: Pending pairings list.
+  - Action triggers: `sendInvitation()`, `acceptInvitation()`, `removeLink()`.
 
-**Returns:**
-```javascript
-{
-  relationships: Relationship[],
-  isLoading: boolean,
-  error: Error | null,
-  invitePatient: (email, permissions) => Promise<void>,
-  acceptInvitation: (relationshipId) => Promise<void>,
-  rejectInvitation: (relationshipId) => Promise<void>,
-  revokeRelationship: (relationshipId) => Promise<void>,
-  refresh: () => Promise<void>
-}
-```
-
-**Usage:**
-```javascript
-const { relationships, isLoading, invitePatient } = useRelationships();
-```
+---
 
 ## Services
 
-### RelationshipService
-Service layer for relationship API calls.
+### companionService
+Performs API operations:
+- **Methods:**
+  - `getLinks()`: Sends `GET /companion/links`.
+  - `invitePatient(data)`: Sends `POST /companion/invite`.
+  - `acceptInvitation(id)`: Sends `POST /companion/accept`.
+  - `removeLink(id)`: Sends `DELETE /companion/link/${id}`.
 
-**Methods:**
-- `invitePatient(email, permissions)`: POST /api/v1/relationships
-- `getRelationships()`: GET /api/v1/relationships
-- `acceptInvitation(relationshipId)`: PATCH /api/v1/relationships/:id/status
-- `rejectInvitation(relationshipId)`: PATCH /api/v1/relationships/:id/status
-- `revokeRelationship(relationshipId)`: DELETE /api/v1/relationships/:id
+---
 
 ## State Management
 
-### Relationship Store
-Global state for relationship data using Redux/Zustand.
+### Redux State Slice (`companionSlice`)
+- **Initial State:**
+  ```javascript
+  {
+    companions: [],
+    activeInvitations: [],
+    loading: false,
+    error: null,
+  }
+  ```
+- **Sync Reducers:**
+  - `clearErrors`: Resets API errors.
 
-**State:**
-```javascript
-{
-  relationships: Relationship[],
-  isLoading: boolean,
-  error: Error | null
-}
-```
-
-**Actions:**
-- `setRelationships(relationships)`: Set relationships list
-- `addRelationship(relationship)`: Add new relationship
-- `updateRelationship(relationshipId, updates)`: Update relationship
-- `removeRelationship(relationshipId)`: Remove relationship
-- `setError(error)`: Set error state
-- `clearError()`: Clear error state
+---
 
 ## API Integration
 
-### Endpoints Used
-- `POST /api/v1/relationships` - Invite patient
-- `GET /api/v1/relationships` - Get relationships
-- `PATCH /api/v1/relationships/:id/status` - Update status
-- `DELETE /api/v1/relationships/:id` - Revoke relationship
+Network requests utilize the central `apiClient` defined in `@/shared/lib` with automatic auth header injection.
 
-### Request/Response Handling
-- Authentication via access token
-- Error handling for validation errors
-- Optimistic updates for better UX
-- Rollback on error
+---
 
 ## Routing
 
-### Routes
-- `/companion` - Relationships list page
-- `/companion/invite` - Invitation page
+Next.js App Router paths:
+- `/dashboard/companion`: Main caregiver portal page.
+- `/dashboard/companion/invite`: Renders `CompanionInviteForm`.
 
-### Navigation
-- Redirect to relationships list after invitation
-- Refresh list after status changes
+---
 
 ## Validation
 
-### Client-Side Validation
-- Email format validation
-- Permission selection validation
-- Required field validation
+- Validated using Zod schemas defined in `validation/companionValidation.js`.
+- Errors calculate dynamically on render. Invalid fields trigger a red border highlight (`border-error`) and display error text.
+- Submit button is bound to validity state (`disabled={!isValid}`).
 
-### Validation Library
-- Uses validation utilities from `shared/validation`
-- Form-level validation with clear error messages
-- Real-time validation feedback
+---
 
 ## Error Handling
 
-### Error States
-- Network errors (connection issues)
-- Validation errors (invalid email)
-- Permission errors (insufficient permissions)
-- Server errors (500, etc.)
-
-### Error Display
-- User-friendly error messages
-- Inline validation errors
-- Toast notifications for API errors
-- Error boundaries for component errors
-
-## Loading States
-
-### Loading Indicators
-- Form submission loading state
-- Button disable during submission
-- Skeleton loaders for relationship list
-- Progress indicators for async operations
-
-## Accessibility
-
-### A11y Considerations
-- Form labels and ARIA attributes
-- Keyboard navigation support
-- Screen reader compatibility
-- Focus management on form errors
-- Color contrast compliance
-
-## Styling
-
-### Component Styling
-- Uses shared components from `shared/components`
-- Consistent design system
-- Responsive design for mobile/desktop
-- Theme-aware styling
-
-## Testing
-
-### Unit Tests
-- Component rendering tests
-- Hook behavior tests
-- Service function tests
-- Validation logic tests
-
-### Integration Tests
-- Invitation flow end-to-end
-- Relationship listing end-to-end
-- Accept/reject flow end-to-end
-- Revoke flow end-to-end
-
-### Test Coverage
-- Minimum 85% coverage for companion module
-- Critical paths (invite, accept, reject, revoke) must have 100% coverage
-
-## Performance Considerations
-
-### Optimization
-- Lazy loading of companion components
-- Debounced form validation
-- Optimized re-renders with memoization
-- Efficient state updates
-- Pagination for large relationship lists
-
-## Security Considerations
-
-### Client-Side Security
-- Access token authentication
-- No sensitive data in URL parameters
-- HTTPS only for production
-- XSS prevention (input sanitization)
-- CSRF protection (handled by backend)
-
-## Future Enhancements
-
-### Potential Future Work
-- Bulk invitation (multiple patients)
-- Relationship history
-- Permission editing (update permissions after creation)
-- Relationship search/filtering
-- Relationship analytics
-- Caregiver profile visibility
-- Patient request flow (patients request caregivers)
-
-## Related Documentation
-
-- [Frontend Architecture Guide](../../../public/frontend.md) - Overall frontend structure
-- [Backend Relationships Module](../../../backend/src/modules/relationships/README.md) - Backend relationships implementation
-- [API Specification](../../../artifact/apiSpecificationDesign.md) - Relationships API endpoints
+- API errors store in the Redux slice and present in centralized top-form banners.
+- Field-level validation messages display inline.

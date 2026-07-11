@@ -1,5 +1,5 @@
 const authService = require('../services/auth.service');
-const { logger } = require('../../../sheared/utils/logger');
+const { logger } = require('../../../shared/utils/logger');
 
 class AuthController {
   /**

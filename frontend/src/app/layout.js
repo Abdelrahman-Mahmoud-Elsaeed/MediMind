@@ -1,5 +1,5 @@
 import { Manrope, Inter } from "next/font/google";
-import { ThemeProvider } from "./providers";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -21,9 +21,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${manrope.variable} ${inter.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <Providers>
           {children}
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

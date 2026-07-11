@@ -19,9 +19,10 @@ const registerSchema = z.object({
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must be at most 50 characters')
     .transform(val => val.trim()),
-  phone: z.string()
-    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
-    .transform(val => val.trim())
+  phone: z
+  .string()
+  .trim()
+  .regex(/^01[0125]\d{8}$/, "Invalid Egyptian phone number")
 });
 
 const loginSchema = z.object({

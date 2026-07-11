@@ -2,211 +2,131 @@
 
 ## Module Overview and Purpose
 
-The Upload module provides secure image upload capabilities and integrates with AI-powered OCR to read medication packs. Following the BRD, this module enforces strict OCR safety validations based on confidence thresholds to prevent dangerous medication data entry errors.
+The Upload module provides file-handling capabilities for the application. It manages uploading prescription document files, scanning medical reports, and updating profile avatars by sending multipart/form-data to storage buckets and returning remote asset URLs.
 
 ## Responsibilities and Scope
 
-The Upload module is exclusively responsible for:
-- Interfacing securely with the device camera or file picker.
-- Validating images on the client side (size limits, MIME types).
-- Handling binary file uploads securely.
-- Processing OCR scanning feedback and enforcing confidence threshold validation.
+The Upload module is responsible for:
+- Providing file drag-and-drop or picker layouts.
+- Verifying file size limitations and extension/mime-type restrictions.
+- Sending file data via multipart/form-data requests to the storage API.
+- Emitting progress bar tracking loaders.
 
 The module does NOT handle:
-- Final creation of medication records (handled by Medication module Wizard after OCR auto-population).
+- Associating the returned remote URL to user database records directly (delegated to the Profile or Medication modules).
+- Physical server-side storage configuration (handled by backend).
 
 ## Features Owned by the Module
 
-### 1. Image Capture
-- PWA capabilities allowing users to take photos directly via native device cameras.
-- Client-side compression and resizing to save bandwidth.
+### 1. Drag and Drop Input
+- Universal component supporting single or multiple file uploads, size warnings, and type validations.
 
-### 2. OCR Integration
-- Submit optimized images for AI scanning.
-- Handle confidence interval thresholds, rejecting poor scans.
+### 2. Upload Progress Tracker
+- Custom progress bar component highlighting active chunk progress.
 
 ## Functional Requirements
 
-### FR-U-1: Camera Access
-- The system must support native device camera uploads to function as a seamless PWA.
+### FR-U-1: File Selection
+- Users must be able to upload files using drag-and-drop actions.
 
-### AI-Powered Medication OCR (BRD 2.1)
-- Utilize image processing of medicine labels via device cameras to automatically extract and populate medication details.
+### FR-U-2: Security Checks
+- System must intercept and reject invalid file types or files exceeding size thresholds.
 
 ## Business Rules and Validation Rules
 
-### OCR Safety Validation (BRD 3.3)
-- **The Threshold Rule:** If the OCR/AI confidence score returned by the backend falls below **90%**, the platform **must reject** the scan entirely. It must display a localized error and prompt the user to retake the photo or enter data manually. The system must *never guess* medical data.
+### Upload Constraints (Zod/JS validation)
+- **Max File Size:** 5MB per upload.
+- **Allowed MIME Types:** `image/jpeg`, `image/png`, `application/pdf`.
+
+---
 
 ## User Workflows
 
-### Scan Medication Workflow
-1. User clicks 'Scan Medicine Pack' during the intake wizard.
-2. Device prompts for camera access.
-3. User takes a photo of the medication label.
-4. Module compresses the photo and uploads it.
-5. Backend runs OCR and returns extracted data and a confidence score.
-6. If confidence > 90%, module auto-populates the Wizard form.
-7. If confidence < 90%, module blocks population and shows a strict warning to retake the photo.
+### Upload Profile Photo Workflow
+```mermaid
+sequenceFlow
+  participant User
+  participant DropZone
+  participant UploadActions (uploadFileThunk)
+  participant UploadService
+  participant ReduxStore
+
+  User->>DropZone: Drag and drop picture file
+  DropZone->>DropZone: Perform client-side size & type check
+  DropZone->>UploadActions (uploadFileThunk): Dispatch uploadFile({ file })
+  UploadActions (uploadFileThunk)->>UploadService: Call uploadFile(file)
+  UploadService->>UploadService: Send POST request via apiClient (multipart/form-data)
+  UploadService-->>UploadActions (uploadFileThunk): Return remote asset URL
+  UploadActions (uploadFileThunk)-->>ReduxStore: Update state (uploaded file URL)
+  DropZone->>User: Display upload success and thumbnail preview
+```
+
+---
 
 ## Components
 
-### ImageUploader
-Drag-and-drop or click-to-upload area.
-**Props:**
-- `onUploadSuccess`: Callback passing uploaded file URL or OCR data.
+### FileUploaderComponent
+Primary user interface containing the file drop-zone area.
+- **State:**
+  - `selectedFile` (File object).
+  - `progress` (number).
+  - `error` (string).
+- **Behavior:**
+  - Disallows uploads if criteria are breached.
 
-### CameraCapture
-PWA wrapper component for native camera access.
-**Props:**
-- `onCapture`: Callback passing the captured image Blob.
+---
 
 ## Hooks
 
 ### useUpload
-Custom hook for handling file uploads, progress tracking, and OCR logic.
+Simplifies dispatcher calls:
+- **Exposes:**
+  - `uploadedUrl`: Remote storage string.
+  - `progress`: Number between 0 and 100.
+  - `loading`: Active uploads indicator.
+  - Action triggers: `uploadFile()`, `resetUploadState()`.
 
-**Returns:**
-```javascript
-{
-  isUploading: boolean,
-  isScanning: boolean,
-  uploadProgress: number,
-  uploadImage: (file: File) => Promise<string>,
-  scanMedication: (file: File) => Promise<OCRData>
-}
-```
-
-**Usage:**
-```javascript
-const { scanMedication, isScanning } = useUpload();
-
-const handleCapture = async (blob) => {
-  const data = await scanMedication(blob);
-  if (data.confidence >= 0.90) populateForm(data);
-};
-```
+---
 
 ## Services
 
-### UploadService
-Service layer managing `multipart/form-data` API calls.
+### uploadService
+Handles form-data posting:
+- **Methods:**
+  - `uploadFile(file)`: Sends `POST /upload` with multipart form headers.
 
-**Methods:**
-- `uploadImage(formData)`: POST `/api/v1/uploads/image` - Standard file upload.
-- `scanMedication(formData)`: POST `/api/v1/uploads/scan` - Specialized OCR endpoint.
+---
 
 ## State Management
 
-### Upload Store
-Transient local state managing upload progress bars.
+### Redux State Slice (`uploadSlice`)
+- **Initial State:**
+  ```javascript
+  {
+    url: null,
+    progress: 0,
+    loading: false,
+    error: null,
+  }
+  ```
+- **Sync Reducers:**
+  - `resetUploadState`: Resets state variables.
 
-**State:**
-```javascript
-{
-  progress: number // 0 to 100
-}
-```
-
-**Actions:**
-- `setProgress(val)`: Updates the progress bar UI.
+---
 
 ## API Integration
 
-### Endpoints Used
-- `POST /api/v1/uploads/image`
-- `POST /api/v1/uploads/scan`
+Accesses storage API via Axios `apiClient` defined in `@/shared/lib` using custom form-data config.
 
-### Request/Response Handling
-- Must use `FormData` API and set correct `multipart/form-data` headers.
-- Utilizes axios `onUploadProgress` to track real-time upload progress for the UI.
+---
 
 ## Routing
 
-### Routes
-- N/A (Embedded as components within the Medication Wizard workflow).
+Integrated as reusable component overlays (no standalone pages).
 
-### Navigation
-- N/A
+---
 
 ## Validation
 
-### Client-Side Validation
-- Strict file size limits (e.g., < 5MB).
-- Strict file type checks (allowing only `image/jpeg`, `image/png`).
-
-### Validation Library
-- Uses Zod or Yup schema validation integrated with React Hook Form.
-
-## Error Handling
-
-### Error States
-- Network errors: Managed by global axios interceptors, showing generic toast.
-- Validation errors: Mapped to specific form fields.
-- Server errors (500): Triggers generic error boundary or alert.
-
-### Error Display
-- Inline validation messages below form inputs.
-- Toast notifications for API success/failure feedback.
-
-## Loading States
-
-### Loading Indicators
-- Skeleton loaders displayed while initial fetching is executing.
-- Button disable and spinner icons active during form submissions.
-- Overlay spinner for critical destructive operations.
-
-## Accessibility
-
-### A11y Considerations
-- Form inputs have associated `<label>` elements or `aria-label` attributes.
-- Keyboard navigation (Tab) supported across lists and forms.
-- Screen reader announcements for form submission success/failure using `aria-live` regions.
-- Modal dialogs trap focus until resolved.
-
-## Styling
-
-### Component Styling
-- Leverages shared UI components from `src/shared/components` (e.g., `Button`, `Input`, `Card`).
-- Consistent design system application (colors, typography).
-- Fully responsive layout; lists transition to stacked cards on mobile devices.
-
-## Testing
-
-### Unit Tests
-- Component rendering tests.
-- Hook state transitions on success/failure.
-- Service tests mocking axios to verify correct endpoint calls and payloads.
-
-### Integration Tests
-- End-to-end workflows representing core user journeys.
-
-### Test Coverage
-- Minimum 85% statement coverage required for the upload module.
-- 100% coverage on complex validation logic.
-
-## Performance Considerations
-
-### Optimization
-- React components memoized using `React.memo` to prevent unnecessary re-renders.
-- Lazy loading for heavy sub-components to reduce initial bundle size.
-
-## Security Considerations
-
-### Client-Side Security
-- No sensitive PHI data passed in URL parameters (use POST/PUT bodies).
-- Strict output sanitization to prevent XSS.
-- Token validation handled gracefully (unauthorized requests redirect to login).
-
-## Future Enhancements
-
-### Potential Future Work
-- Multi-image uploads (e.g., front and back of a box).
-- Standardized barcode/QR scanning alongside OCR.
-
-## Related Documentation
-
-- [Frontend Architecture Guide](../../../public/frontend.md)
-- [Backend Upload Module](../../../backend/src/modules/upload/README.md)
-- [API Specification](../../../artifact/apiSpecificationDesign.md)
-- [Business Requirements Document (BRD)](../../../artifact/BRD.md)
+- Validated using custom file checks and Zod schemas in `validation/uploadValidation.js`.
+- Errors prevent network dispatches and output warning texts.
