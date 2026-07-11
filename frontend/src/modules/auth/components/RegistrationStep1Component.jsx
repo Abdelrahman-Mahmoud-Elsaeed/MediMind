@@ -5,36 +5,67 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../hooks/useAuth';
 import Image from 'next/image';
-import { registerStep1Schema } from '../validation/authValidation';
+import { useTranslation } from '@/shared/lib/i18nContext';
+import { LanguageToggler } from '@/shared/components';
+import { registerSchema } from '../validation/authValidation';
+
+import Logo from "../../../assets/logo.png";
 
 export default function RegistrationStep1Component() {
   const router = useRouter();
   const { setRegistrationData, registrationData } = useAuth();
+  const { locale, t } = useTranslation();
 
   const [email, setEmail] = useState(registrationData?.email || '');
   const [password, setPassword] = useState(registrationData?.password || '');
   const [role, setRole] = useState(registrationData?.role || 'patient');
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
-  // Derive errors and validity from current values
-  const validationResult = registerStep1Schema.safeParse({ email, password, role });
-  const errors = {};
-  if (!validationResult.success) {
-    validationResult.error.issues.forEach((issue) => {
-      const path = issue.path[0];
-      if (!errors[path]) {
-        errors[path] = issue.message;
+  const handleBlur = (field) => {
+    const step1Schema = registerSchema.pick({ email: true, password: true });
+    const result = step1Schema.safeParse({ email, password });
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === field);
+      if (issue) {
+        let msg = "";
+        if (field === "email") {
+          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
+        } else if (field === "password") {
+          msg = password ? t("auth.validation.passwordMin") : t("auth.validation.passwordRequired");
+        }
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
       }
-    });
-  }
-  const isValid = validationResult.success;
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
   const handleContinue = (e) => {
     e.preventDefault();
-    if (!isValid) return;
+    setErrors({ email: "", password: "" });
 
-    setRegistrationData({ ...registrationData, email, password, role });
+    const step1Schema = registerSchema.pick({ email: true, password: true });
+    const result = step1Schema.safeParse({ email, password });
+    if (!result.success) {
+      const newErrors = { email: "", password: "" };
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        let msg = "";
+        if (field === "email") {
+          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
+        } else if (field === "password") {
+          msg = password ? t("auth.validation.passwordMin") : t("auth.validation.passwordRequired");
+        }
+        newErrors[field] = msg;
+      });
+      setErrors(newErrors);
+      return;
+    }
+
+    setRegistrationData({ ...registrationData, email, password, role: role.toUpperCase() });
 
     if (role === 'patient') {
       router.push('/register/patient');
@@ -43,12 +74,6 @@ export default function RegistrationStep1Component() {
     }
   };
 
-  const handleBlur = (field) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const emailHasError = touched.email && errors.email;
-  const passwordHasError = touched.password && errors.password;
 
   return (
     <div className="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
@@ -66,7 +91,7 @@ export default function RegistrationStep1Component() {
       <main className="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop w-full relative z-10">
         <div className="w-full max-w-[480px] bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-2xl p-6 md:p-10 backdrop-blur-md relative overflow-hidden">
 
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-24 -end-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="mb-8 text-center">
             <div className="mb-6">
@@ -96,50 +121,48 @@ export default function RegistrationStep1Component() {
 
               {/* Email Input */}
               <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="email">Email Address</label>
-                <div className={`relative rounded-lg bg-surface border transition-all ${emailHasError
-                    ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]'
-                    : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
-                  }`}>
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="email">
+                  {t("auth.register.emailLabel")}
+                </label>
+                <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
+                  <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                     <span className="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px]">mail</span>
                   </div>
                   <input
-                    className="block w-full pl-10 pr-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg"
+                    className="block w-full ps-10 pe-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start"
                     id="email"
                     type="email"
                     placeholder={t("auth.register.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    onBlur={() => handleBlur('email')}
+                    onBlur={() => handleBlur("email")}
                   />
                 </div>
-                {emailHasError && (
-                  <p className="text-error font-body-sm text-xs mt-1">{errors.email}</p>
+                {errors.email && (
+                  <p className="text-error font-body-sm text-[12px] mt-1.5 px-1 text-start">{errors.email}</p>
                 )}
               </div>
 
               {/* Password Input */}
               <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="password">Password</label>
-                <div className={`relative rounded-lg bg-surface border transition-all ${passwordHasError
-                    ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]'
-                    : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
-                  }`}>
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="password">
+                  {t("auth.register.passwordLabel")}
+                </label>
+                <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
+                  <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                     <span className="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px]">lock</span>
                   </div>
                   <input
-                    className="block w-full pl-10 pr-10 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg"
+                    className="block w-full ps-10 pe-10 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg text-start"
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder={t("auth.register.passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onBlur={() => handleBlur('password')}
+                    onBlur={() => handleBlur("password")}
                   />
                   <div
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                    className="absolute inset-y-0 end-0 pe-3 flex items-center cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     <span className="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px] hover:text-on-surface transition-colors">
@@ -147,8 +170,8 @@ export default function RegistrationStep1Component() {
                     </span>
                   </div>
                 </div>
-                {passwordHasError && (
-                  <p className="text-error font-body-sm text-xs mt-1">{errors.password}</p>
+                {errors.password && (
+                  <p className="text-error font-body-sm text-[12px] mt-1.5 px-1 text-start">{errors.password}</p>
                 )}
               </div>
             </div>
@@ -206,18 +229,14 @@ export default function RegistrationStep1Component() {
 
             {/* Submit Action */}
             <div className="pt-4">
-              <button
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                type="submit"
-                disabled={!isValid}
-              >
-                Continue
-                <span className="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+              <button className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all" type="submit">
+                {t("auth.register.continueButton")}
+                <span className="material-symbols-outlined ms-2 text-[20px] rtl:rotate-180">arrow_forward</span>
               </button>
               <p className="mt-4 text-center font-body-md text-label-sm text-on-surface-variant">
-                Already have an account?
-                <Link className="font-label-md text-primary hover:text-primary-fixed transition-colors ml-1" href="/auth/login">
-                  Sign in here
+                {t("auth.register.hasAccount")}
+                <Link className="font-label-md text-primary hover:text-primary-fixed transition-colors ms-1" href="/login">
+                  {t("auth.register.signInLink")}
                 </Link>
               </p>
             </div>

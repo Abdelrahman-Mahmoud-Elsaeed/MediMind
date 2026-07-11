@@ -215,11 +215,12 @@ export default function RegistrationPatientComponent() {
                   <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
                     <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none shadow-inner appearance-none relative z-10 rounded-lg text-start" id="dob" type="date" value={formData.dob} onChange={handleChange} />
                   </div>
-                  {touched.lastName && errors.lastName && (
-                    <p className="text-error font-body-sm text-xs mt-1">{errors.lastName}</p>
+                  {errors.lastName && (
+                    <p className="text-error font-body-sm text-[12px] mt-1.5 px-1 text-start">{errors.lastName}</p>
                   )}
                 </div>
               </div>
+
               <div className="flex flex-col gap-1.5 md:w-[calc(50%-10px)]">
                 <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="bloodType">
                   {t("auth.register.bloodTypeLabel")}

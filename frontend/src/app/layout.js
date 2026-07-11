@@ -18,21 +18,16 @@ export const metadata = {
   description: "Medication management platform",
 };
 
-export default async function RootLayout({ children }) {
+export default async function RootLayout({ children, locale }) {
+
   const cookieStore = await cookies();
   const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
-<<<<<<< Updated upstream
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.variable} ${inter.variable} antialiased`}>
-        <Providers>
-=======
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
-        <Providers locale={locale}>
->>>>>>> Stashed changes
+        <Providers locale={locale} >
           {children}
         </Providers>
       </body>

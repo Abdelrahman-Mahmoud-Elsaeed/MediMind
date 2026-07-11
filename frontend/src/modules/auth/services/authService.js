@@ -52,7 +52,22 @@ export const authService = {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('accessToken');
     }
-    return null;
+
+    return data.data;
+  },
+
+  async getMe() {
+    const res = await apiClient.get(`/auth/me`);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(
+        data?.error?.messages
+          ? JSON.stringify(data.error.messages)
+          : JSON.stringify({ en: data?.error?.message || 'Failed to fetch user', ar: data?.error?.message || 'فشل جلب بيانات المستخدم' })
+      );
+    }
+
+    return data.data;
   }
 };
 
