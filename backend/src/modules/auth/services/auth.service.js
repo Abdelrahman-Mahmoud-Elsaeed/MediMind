@@ -89,7 +89,7 @@ class AuthService {
     // Find account
     const account = await Account.findOne({ email });
     if (!account) {
-      throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
+      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS');
     }
 
     // Check if account is active
@@ -100,7 +100,7 @@ class AuthService {
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
     if (!isPasswordValid) {
-      throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
+      throw new AppError('Incorrect email or password', 401, 'INVALID_CREDENTIALS');
     }
 
     // Generate tokens
