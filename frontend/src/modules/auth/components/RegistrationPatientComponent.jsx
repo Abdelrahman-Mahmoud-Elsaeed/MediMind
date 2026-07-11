@@ -1,8 +1,7 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
+import { registerPatientSchema } from '../validation/authValidation';
 
 export default function RegistrationPatientComponent() {
   const router = useRouter();
@@ -17,6 +16,20 @@ export default function RegistrationPatientComponent() {
     emName: '',
     emPhone: ''
   });
+  const [touched, setTouched] = useState({});
+
+  // Derive errors and validity from current values
+  const validationResult = registerPatientSchema.safeParse(formData);
+  const errors = {};
+  if (!validationResult.success) {
+    validationResult.error.issues.forEach((issue) => {
+      const path = issue.path[0];
+      if (!errors[path]) {
+        errors[path] = issue.message;
+      }
+    });
+  }
+  const isValid = validationResult.success;
 
   useEffect(() => {
     // If no data from step 1, redirect back
@@ -29,8 +42,13 @@ export default function RegistrationPatientComponent() {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isValid) return;
     
     const completeData = {
       ...registrationData,
@@ -98,25 +116,46 @@ export default function RegistrationPatientComponent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="firstName">First Name <span className="text-error">*</span></label>
-                  <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="firstName" placeholder="Enter first name" required type="text" value={formData.firstName} onChange={handleChange} />
+                  <div className={`relative rounded-lg bg-surface border transition-all ${
+                    touched.firstName && errors.firstName 
+                      ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]' 
+                      : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
+                  }`}>
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="firstName" placeholder="Enter first name" type="text" value={formData.firstName} onChange={handleChange} onBlur={() => handleBlur('firstName')} />
                   </div>
+                  {touched.firstName && errors.firstName && (
+                    <p className="text-error font-body-sm text-xs mt-1">{errors.firstName}</p>
+                  )}
                 </div>
                 
                 <div className="flex flex-col gap-1.5">
                   <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="lastName">Last Name <span className="text-error">*</span></label>
-                  <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="lastName" placeholder="Enter last name" required type="text" value={formData.lastName} onChange={handleChange} />
+                  <div className={`relative rounded-lg bg-surface border transition-all ${
+                    touched.lastName && errors.lastName 
+                      ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]' 
+                      : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
+                  }`}>
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="lastName" placeholder="Enter last name" type="text" value={formData.lastName} onChange={handleChange} onBlur={() => handleBlur('lastName')} />
                   </div>
+                  {touched.lastName && errors.lastName && (
+                    <p className="text-error font-body-sm text-xs mt-1">{errors.lastName}</p>
+                  )}
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className="block font-label-md text-label-md text-on-surface mb-1.5" htmlFor="phone">Phone Number <span className="text-error">*</span></label>
-                  <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="phone" placeholder="(555) 000-0000" required type="tel" value={formData.phone} onChange={handleChange} />
+                  <div className={`relative rounded-lg bg-surface border transition-all ${
+                    touched.phone && errors.phone 
+                      ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]' 
+                      : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
+                  }`}>
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="phone" placeholder="(555) 000-0000" type="tel" value={formData.phone} onChange={handleChange} onBlur={() => handleBlur('phone')} />
                   </div>
+                  {touched.phone && errors.phone && (
+                    <p className="text-error font-body-sm text-xs mt-1">{errors.phone}</p>
+                  )}
                   <p className="font-label-sm text-label-sm text-outline flex items-center gap-1 mt-1"><span className="material-symbols-outlined text-[14px]">notifications_active</span> Used for secure SMS alerts</p>
                 </div>
                 
@@ -157,21 +196,36 @@ export default function RegistrationPatientComponent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="block font-label-sm text-label-sm text-on-surface mb-1.5" htmlFor="emName">Contact Name</label>
-                  <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="emName" placeholder="Full name" type="text" value={formData.emName} onChange={handleChange} />
+                  <div className={`relative rounded-lg bg-surface border transition-all ${
+                    touched.emName && errors.emName 
+                      ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]' 
+                      : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
+                  }`}>
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="emName" placeholder="Full name" type="text" value={formData.emName} onChange={handleChange} onBlur={() => handleBlur('emName')} />
                   </div>
+                  {touched.emName && errors.emName && (
+                    <p className="text-error font-body-sm text-xs mt-1">{errors.emName}</p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="block font-label-sm text-label-sm text-on-surface mb-1.5" htmlFor="emPhone">Contact Phone</label>
-                  <div className="relative rounded-lg bg-surface border border-outline-variant/50 transition-all focus-within:border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]">
-                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="emPhone" placeholder="(555) 000-0000" type="tel" value={formData.emPhone} onChange={handleChange} />
+                  <div className={`relative rounded-lg bg-surface border transition-all ${
+                    touched.emPhone && errors.emPhone 
+                      ? 'border-error focus-within:shadow-[0_0_0_2px_rgba(255,180,171,0.3)]' 
+                      : 'border-outline-variant/50 focus-within:shadow-[0_0_0_2px_rgba(149,204,255,0.3)] focus-within:border-[#95ccff]'
+                  }`}>
+                    <input className="block w-full px-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 rounded-lg" id="emPhone" placeholder="(555) 000-0000" type="tel" value={formData.emPhone} onChange={handleChange} onBlur={() => handleBlur('emPhone')} />
                   </div>
+                  {touched.emPhone && errors.emPhone && (
+                    <p className="text-error font-body-sm text-xs mt-1">{errors.emPhone}</p>
+                  )}
                 </div>
               </div>
             </fieldset>
             
             <div className="pt-2 flex flex-col gap-4">
-              <button disabled={loading} className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all group disabled:opacity-50" type="submit">
+              <button disabled={!isValid || loading} className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all group disabled:opacity-50 disabled:cursor-not-allowed" type="submit">
+
                 {loading ? 'Registering...' : 'Complete Registration'}
                 {!loading && <span className="material-symbols-outlined text-[20px] ml-2 group-hover:translate-x-1 transition-transform">check_circle</span>}
               </button>

@@ -1,61 +1,50 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+import { apiClient } from '@/shared/lib';
 
 export const authService = {
   async login(email, password) {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data?.error?.message || 'Login failed');
+    try {
+      const res = await apiClient.post('/auth/login', { email, password });
+      const data = res.data;
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', data.data.accessToken);
+      }
+      
+      return data.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.error?.message || err.message || 'Login failed');
     }
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', data.data.accessToken);
-    }
-    
-    return data.data;
   },
   
   async register(userData) {
-    const res = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-    
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data?.error?.message || 'Registration failed');
+    try {
+      const res = await apiClient.post('/auth/register', userData);
+      const data = res.data;
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', data.data.accessToken);
+      }
+      
+      return data.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.error?.message || err.message || 'Registration failed');
     }
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', data.data.accessToken);
-    }
-    
-    return data.data;
   },
   
   async logout() {
-    const res = await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`,
-      },
-    });
-    
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
+    try {
+      const res = await apiClient.post('/auth/logout');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+      }
+      return res.status === 200 || res.data?.success;
+    } catch (err) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+      }
+      // Even if network logout fails, we consider the local session terminated
+      return false;
     }
-    
-    return res.ok;
   },
   
   getAccessToken() {
@@ -65,3 +54,4 @@ export const authService = {
     return null;
   }
 };
+
