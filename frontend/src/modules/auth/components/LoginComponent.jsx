@@ -13,19 +13,24 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [validationError, setValidationError] = useState(null);
+  const [touched, setTouched] = useState({});
+
+  const validationResult = loginSchema.safeParse({ email, password });
+  const errors = {};
+  if (!validationResult.success) {
+    validationResult.error.issues.forEach((issue) => {
+      const path = issue.path[0];
+      if (!errors[path]) {
+        errors[path] = issue.message;
+      }
+    });
+  }
+  const isValid = validationResult.success;
 
   const handleLogin = async (e) => {
     e.preventDefault();
     resetError();
-    setValidationError(null);
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      const firstMessage =
-        result.error.issues[0]?.message || "Invalid validation.";
-      setValidationError(firstMessage);
-      return;
-    }
+    if (!isValid) return;
 
     try {
       const resultAction = await login({ email, password });
@@ -33,11 +38,17 @@ export default function LoginComponent() {
         router.push("/dashboard");
       }
     } catch (err) {
-      // Error is handled by Redux slice
     }
   };
 
-  const displayError = validationError || error;
+  const displayError = error;
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const emailHasError = touched.email && errors.email;
+  const passwordHasError = touched.password && errors.password;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
@@ -87,7 +98,10 @@ export default function LoginComponent() {
               >
                 Email Address
               </label>
-              <div className="relative rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary">
+              <div className={`relative rounded-lg transition-all duration-200 bg-surface-container-high border ${emailHasError
+                  ? "border-error focus-within:shadow-[0_0_0_1px_var(--error),0_0_12px_0_var(--error)] focus-within:border-error"
+                  : "border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary"
+                }`}>
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
                   <span
                     className="material-symbols-outlined"
@@ -103,8 +117,12 @@ export default function LoginComponent() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => handleBlur("email")}
                 />
               </div>
+              {emailHasError && (
+                <p className="text-error font-body-sm text-xs mt-1">{errors.email}</p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -123,7 +141,10 @@ export default function LoginComponent() {
                   Forgot Password?
                 </a>
               </div>
-              <div className="relative rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary">
+              <div className={`relative rounded-lg transition-all duration-200 bg-surface-container-high border ${passwordHasError
+                  ? "border-error focus-within:shadow-[0_0_0_1px_var(--error),0_0_12px_0_var(--error)] focus-within:border-error"
+                  : "border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary"
+                }`}>
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
                   <span
                     className="material-symbols-outlined"
@@ -139,6 +160,7 @@ export default function LoginComponent() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => handleBlur("password")}
                 />
                 <button
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none"
@@ -153,13 +175,16 @@ export default function LoginComponent() {
                   </span>
                 </button>
               </div>
+              {passwordHasError && (
+                <p className="text-error font-body-sm text-xs mt-1">{errors.password}</p>
+              )}
             </div>
 
             {/* Sign In Button */}
             <button
               className="w-full py-3 px-4 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-lg shadow-primary/20 hover:bg-primary-fixed hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
-              disabled={loading}
+              disabled={!isValid || loading}
             >
               {loading ? "Signing In..." : "Sign In"}
               {!loading && (

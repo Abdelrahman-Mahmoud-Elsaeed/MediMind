@@ -1,1 +1,1 @@
-export const sharedLib = {};
+export { default as apiClient } from './apiClient';
