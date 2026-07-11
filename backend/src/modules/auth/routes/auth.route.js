@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { registerSchema, loginSchema } = require('../validators/auth.validator');
-const { authenticate } = require('../../../sheared/middleware/auth.middleware');
-const validate  = require('../../../sheared/middleware/validation.middleware');
+const { authenticate } = require('../../../shared/middleware/auth.middleware');
+const validate  = require('../../../shared/middleware/validation.middleware');
+const { authRateLimiter } = require('../../../shared/middleware/rateLimit.middleware');
 
 
 /**
@@ -11,14 +12,14 @@ const validate  = require('../../../sheared/middleware/validation.middleware');
  * @desc    Register a new user
  * @access  Public
  */
-router.post('/register', validate(registerSchema), authController.register);
+router.post('/register', authRateLimiter, validate(registerSchema), authController.register);
 
 /**
  * @route   POST /api/v1/auth/login
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/login', authRateLimiter, validate(loginSchema), authController.login);
 
 /**
  * @route   POST /api/v1/auth/refresh
