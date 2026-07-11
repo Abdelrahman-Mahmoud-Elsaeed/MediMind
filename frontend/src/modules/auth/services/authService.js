@@ -27,6 +27,7 @@ export const authService = {
       
       return data.data;
     } catch (err) {
+
       throw new Error(err.response?.data?.error?.message || err.message || 'Registration failed');
     }
   },

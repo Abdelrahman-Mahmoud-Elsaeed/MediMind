@@ -18,7 +18,6 @@ const validate = (schema) => (req, res, next) => {
         }
       });
     }
-
     next(error);
   }
 };
