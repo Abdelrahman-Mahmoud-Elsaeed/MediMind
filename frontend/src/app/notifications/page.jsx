@@ -3,11 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import PatientProfile from "./PatientProfile";
-import CaregiverProfile from "./CaregiverProfile";
-import AdminProfile from "./AdminProfile";
+import PatientNotifications from "./PatientNotifications";
+import CaregiverNotifications from "./CaregiverNotifications";
 
-export default function ProfilePage() {
+export default function NotificationsPage() {
   const router = useRouter();
   const { user, isAuthenticated, loading } = useAuth();
 
@@ -25,14 +24,10 @@ export default function ProfilePage() {
     return null;
   }
 
-  if (user?.role === "ADMIN") {
-    return <AdminProfile />;
-  }
-
   if (user?.role === "CAREGIVER") {
-    return <CaregiverProfile />;
+    return <CaregiverNotifications />;
   }
 
   // Default to Patient
-  return <PatientProfile />;
+  return <PatientNotifications />;
 }

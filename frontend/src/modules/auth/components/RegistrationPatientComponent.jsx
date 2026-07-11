@@ -8,6 +8,9 @@ import Logo from "../../../assets/logo.png";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { LanguageToggler } from "@/shared/components";
 
+import Image from 'next/image';
+import Logo from "../../../assets/logo.png";
+
 export default function RegistrationPatientComponent() {
   const router = useRouter();
   const { registrationData, register, loading, error, clearRegistrationData } = useAuth();
@@ -29,6 +32,8 @@ export default function RegistrationPatientComponent() {
     lastName: '',
     phone: '',
   });
+
+  const [validationError, setValidationError] = useState(null);
 
   useEffect(() => {
     // If no data from step 1, redirect back
@@ -61,7 +66,7 @@ export default function RegistrationPatientComponent() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -97,7 +102,7 @@ export default function RegistrationPatientComponent() {
         router.push('/dashboard');
       }
     } catch (err) {
-      // Handled by redux
+      // Handled by Redux
     }
   };
 

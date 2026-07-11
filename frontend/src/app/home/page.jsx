@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import PatientProfile from "./PatientProfile";
-import CaregiverProfile from "./CaregiverProfile";
-import AdminProfile from "./AdminProfile";
+import PatientHome from "./PatientHome";
+import CaregiverHome from "./CaregiverHome";
+import AdminHome from "./AdminHome";
 
-export default function ProfilePage() {
+export default function HomePage() {
   const router = useRouter();
   const { user, isAuthenticated, loading } = useAuth();
 
@@ -26,13 +26,13 @@ export default function ProfilePage() {
   }
 
   if (user?.role === "ADMIN") {
-    return <AdminProfile />;
+    return <AdminHome />;
   }
 
   if (user?.role === "CAREGIVER") {
-    return <CaregiverProfile />;
+    return <CaregiverHome />;
   }
 
   // Default to Patient
-  return <PatientProfile />;
+  return <PatientHome />;
 }

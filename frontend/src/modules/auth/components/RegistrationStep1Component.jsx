@@ -11,37 +11,17 @@ import { registerSchema } from '../validation/authValidation';
 
 import Logo from "../../../assets/logo.png";
 
+import Logo from "../../../assets/logo.png";
+
 export default function RegistrationStep1Component() {
   const router = useRouter();
   const { setRegistrationData, registrationData } = useAuth();
-  const { locale, t } = useTranslation();
 
   const [email, setEmail] = useState(registrationData?.email || '');
   const [password, setPassword] = useState(registrationData?.password || '');
   const [role, setRole] = useState(registrationData?.role || 'patient');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({ email: "", password: "" });
 
-  const handleBlur = (field) => {
-    const step1Schema = registerSchema.pick({ email: true, password: true });
-    const result = step1Schema.safeParse({ email, password });
-    if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path[0] === field);
-      if (issue) {
-        let msg = "";
-        if (field === "email") {
-          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
-        } else if (field === "password") {
-          msg = password ? t("auth.validation.passwordMin") : t("auth.validation.passwordRequired");
-        }
-        setErrors((prev) => ({ ...prev, [field]: msg }));
-      } else {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
-    } else {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
 
   const handleContinue = (e) => {
     e.preventDefault();
@@ -79,12 +59,12 @@ export default function RegistrationStep1Component() {
     <div className="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
       <LanguageToggler />
       <header className="w-full flex justify-center py-6 md:py-8 z-10 relative">
-        <img
+        <Image
           alt="MediMind Logo"
           className="h-12 w-auto"
           width={48}
           height={48}
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ"
+          src={Logo}
         />
       </header>
 

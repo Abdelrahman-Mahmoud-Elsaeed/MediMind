@@ -26,6 +26,8 @@ export default function RegistrationCaregiverComponent() {
     phone: '',
   });
 
+  const [validationError, setValidationError] = useState(null);
+
   useEffect(() => {
     // If no data from step 1, redirect back
     if (!registrationData || !registrationData.email) {
@@ -57,7 +59,7 @@ export default function RegistrationCaregiverComponent() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -73,13 +75,19 @@ export default function RegistrationCaregiverComponent() {
     }
 
     try {
-      const resultAction = await register(completeData);
+      const payload = {
+        ...registrationData,
+        ...formData,
+        role: 'CAREGIVER'
+      };
+
+      const resultAction = await register(payload);
       if (resultAction.type === 'auth/register/fulfilled') {
         clearRegistrationData();
         router.push('/dashboard');
       }
     } catch (err) {
-      // Handled by redux
+      // Handled by Redux
     }
   };
 
