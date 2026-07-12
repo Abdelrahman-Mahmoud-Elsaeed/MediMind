@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Medication Cabinet | MediMind</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-container": "#422900",
+                "inverse-surface": "#e2e2e6",
+                "surface-tint": "#95ccff",
+                "background": "#111316",
+                "tertiary-fixed-dim": "#fabb5e",
+                "on-secondary-fixed": "#042100",
+                "on-primary-fixed-variant": "#004a75",
+                "error": "#ffb4ab",
+                "on-primary": "#003352",
+                "secondary-fixed-dim": "#9fd588",
+                "on-surface": "#e2e2e6",
+                "on-tertiary-fixed-variant": "#624000",
+                "on-secondary-container": "#8ec378",
+                "on-primary-container": "#00314f",
+                "tertiary": "#fabb5e",
+                "surface-variant": "#333538",
+                "outline-variant": "#41474f",
+                "on-tertiary-fixed": "#291800",
+                "on-secondary-fixed-variant": "#225113",
+                "surface-container-high": "#282a2d",
+                "surface-container-lowest": "#0c0e11",
+                "surface-container": "#1e2023",
+                "primary-fixed-dim": "#95ccff",
+                "primary": "#95ccff",
+                "on-primary-fixed": "#001d32",
+                "tertiary-container": "#c38b33",
+                "surface": "#111316",
+                "inverse-primary": "#166396",
+                "secondary-container": "#225113",
+                "on-secondary": "#0a3900",
+                "on-tertiary": "#452b00",
+                "inverse-on-surface": "#2f3034",
+                "secondary": "#9fd588",
+                "on-surface-variant": "#c1c7d0",
+                "on-background": "#e2e2e6",
+                "surface-container-low": "#1a1c1f",
+                "error-container": "#93000a",
+                "surface-container-highest": "#333538",
+                "surface-bright": "#37393d",
+                "on-error": "#690005",
+                "secondary-fixed": "#baf2a1",
+                "outline": "#8b919a",
+                "primary-fixed": "#cde5ff",
+                "on-error-container": "#ffdad6",
+                "tertiary-fixed": "#ffddb3",
+                "surface-dim": "#111316",
+                "primary-container": "#5c9bd1"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "margin-mobile": "16px",
+                "gutter": "24px",
+                "unit": "8px",
+                "container-max": "1280px",
+                "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                "headline-lg-mobile": ["Manrope"],
+                "label-md": ["Inter"],
+                "headline-lg": ["Manrope"],
+                "body-md": ["Inter"],
+                "display-lg": ["Manrope"],
+                "headline-md": ["Manrope"],
+                "label-sm": ["Inter"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #111316;
+            color: #e2e2e6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(30, 32, 35, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .active-glow {
+            box-shadow: 0 0 20px rgba(149, 204, 255, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/5 shadow-sm flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary font-headline-md text-headline-md" style="font-variation-settings: 'FILL' 1;">pill</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary">MediMind</h1>
+</div>
+<div class="flex items-center gap-4">
+<a href="/pages/notifications/index.html" class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 text-xl">notifications</a>
+<div class="w-8 h-8 rounded-full border border-primary/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean, professional headshot of a person with a friendly expression, soft lighting against a dark minimalist studio background, matching the MediMind dark corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8G8UTyEoZcskbl9MS9iClk9UQAfotsBcXtKYAjPRhIjjzRtRelq544B0WL7nAusuNO4FAacxG1RVE0MFVGAkdtZG04W8wR5szSGxLnbNnLejC5ih6Q263KWwlmTKrN4QciQ9f8tAzXeMCBnKap4PSzN5UqukSCMFc088i6JW35o6hkXyplhwMgb0Lp7AL2g8r-CEyP9BZDWYcLtFsoWMiZYs0jV-RxQjob2n_kMuT4qpsxivXNJVTSJg2CY3-1BbWhwtcYcbegRfB"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 pt-24 pb-32 px-margin-mobile max-w-container-max mx-auto w-full">
+<!-- Header & Title -->
+<div class="mb-8">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Medication Cabinet</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your active prescriptions and refill status.</p>
+</div>
+<!-- Search & Filter Cluster -->
+<div class="flex flex-col gap-6 mb-8">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full h-14 bg-surface-container border border-outline-variant rounded-xl pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder:text-on-surface-variant/50" placeholder="Find meds..." type="text"/>
+</div>
+<!-- Tabs -->
+<div class="flex bg-surface-container-low p-1 rounded-xl w-fit">
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary-container shadow-sm transition-all">Active</button>
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all">Archived</button>
+</div>
+</div>
+<!-- Active Medications List -->
+<div class="space-y-4">
+<!-- Medication 1: Metformin -->
+<div class="glass-card rounded-xl p-5 hover:border-primary/30 transition-all group relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Metformin</h3>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">500mg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Twice daily</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">restaurant</span> With food
+                                </span>
+</div>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm border border-tertiary/20">Low Stock</span>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+<p class="font-body-md text-body-md text-on-surface-variant">Remaining: <span class="text-on-surface font-semibold">45 pills</span></p>
+<button class="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 transition-all active:scale-95">Refill Now <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+</div>
+</div>
+<!-- Medication 2: Atorvastatin -->
+<div class="glass-card rounded-xl p-5 hover:border-primary/30 transition-all group relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Atorvastatin</h3>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">20mg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Once daily</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bedtime</span> Night
+                                </span>
+</div>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm border border-secondary/20">Good Supply</span>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+<p class="font-body-md text-body-md text-on-surface-variant">Remaining: <span class="text-on-surface font-semibold">60 pills</span></p>
+<button class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-all active:scale-95">Edit Details</button>
+</div>
+</div>
+<!-- Medication 3: Lisinopril -->
+<div class="glass-card rounded-xl p-5 border-error/20 hover:border-error transition-all group relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Lisinopril</h3>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">10mg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Once daily</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sunny</span> Morning
+                                </span>
+</div>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm border border-error/50">Critical Alert</span>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+<p class="font-body-md text-body-md text-error">Only <span class="font-bold underline">2 pills</span> left!</p>
+<button class="bg-error text-on-error px-4 py-2 rounded-lg font-label-md text-label-md active:scale-95 transition-transform shadow-lg shadow-error/20">Refill Critical</button>
+</div>
+</div>
+</div>
+<!-- Archived Section -->
+<section class="mt-12 mb-12">
+<details class="group">
+<summary class="flex items-center justify-between cursor-pointer list-none py-4 border-t border-white/10 hover:bg-surface-variant/10 px-2 rounded-lg transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+<h4 class="font-headline-md text-headline-md text-on-surface-variant">Archived Medications</h4>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded">1 Item</span>
+</summary>
+<div class="mt-4 space-y-4 px-2">
+<div class="glass-card rounded-xl p-4 opacity-70 flex items-center justify-between grayscale">
+<div class="flex gap-4 items-center">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<h5 class="font-body-lg text-body-lg text-on-surface">Amoxicillin</h5>
+<p class="font-body-md text-body-md text-on-surface-variant">Completed Sep 12, 2023</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">restore</button>
+</div>
+</div>
+</details>
+</section>
+</main>
+<!-- FAB -->
+<a href="/pages/add-medication/index.html" class="fixed right-6 bottom-28 w-14 h-14 bg-primary text-on-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</a>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/90 dark:bg-surface/90 backdrop-blur-xl border-t border-white/5 shadow-[0_-4px_24px_rgba(149,204,255,0.1)] flex justify-around items-center h-20 px-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-60 hover:bg-surface-variant/50 transition-colors active:scale-90" href="/pages/home/index.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary bg-primary-container/20 rounded-xl px-3 py-1 hover:bg-surface-variant/50 transition-colors active:scale-90" href="/pages/medications/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication</span>
+<span class="font-label-sm text-label-sm mt-1">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-60 hover:bg-surface-variant/50 transition-colors active:scale-90" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-label-sm text-label-sm mt-1">Adherence</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-60 hover:bg-surface-variant/50 transition-colors active:scale-90" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-sm text-label-sm mt-1">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant opacity-60 hover:bg-surface-variant/50 transition-colors active:scale-90" href="/pages/profile/index.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute bg-white/10 rounded-full w-2 h-2 pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ping';
+                ripple.style.left = `${e.offsetX}px`;
+                ripple.style.top = `${e.offsetY}px`;
+                el.classList.add('relative', 'overflow-hidden');
+                el.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Care Circle | MediMind</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#111316",
+                        "inverse-primary": "#166396",
+                        "secondary-container": "#225113",
+                        "on-secondary": "#0a3900",
+                        "on-tertiary": "#452b00",
+                        "inverse-on-surface": "#2f3034",
+                        "secondary": "#9fd588",
+                        "on-surface-variant": "#c1c7d0",
+                        "on-background": "#e2e2e6",
+                        "surface-container-low": "#1a1c1f",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#333538",
+                        "surface-bright": "#37393d",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#baf2a1",
+                        "outline": "#8b919a",
+                        "primary-fixed": "#cde5ff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb3",
+                        "surface-dim": "#111316",
+                        "primary-container": "#5c9bd1",
+                        "on-tertiary-container": "#422900",
+                        "inverse-surface": "#e2e2e6",
+                        "surface-tint": "#95ccff",
+                        "background": "#111316",
+                        "tertiary-fixed-dim": "#fabb5e",
+                        "on-secondary-fixed": "#042100",
+                        "on-primary-fixed-variant": "#004a75",
+                        "error": "#ffb4ab",
+                        "on-primary": "#003352",
+                        "secondary-fixed-dim": "#9fd588",
+                        "on-surface": "#e2e2e6",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "on-secondary-container": "#8ec378",
+                        "on-primary-container": "#00314f",
+                        "tertiary": "#fabb5e",
+                        "surface-variant": "#333538",
+                        "outline-variant": "#41474f",
+                        "on-tertiary-fixed": "#291800",
+                        "on-secondary-fixed-variant": "#225113",
+                        "surface-container-high": "#282a2d",
+                        "surface-container-lowest": "#0c0e11",
+                        "surface-container": "#1e2023",
+                        "primary-fixed-dim": "#95ccff",
+                        "primary": "#95ccff",
+                        "on-primary-fixed": "#001d32",
+                        "tertiary-container": "#c38b33"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "unit": "8px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Manrope"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #111316;
+            color: #e2e2e6;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(30, 32, 35, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-glow {
+            box-shadow: 0 0 20px rgba(149, 204, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="bg-surface sticky top-0 z-40 flex justify-between items-center px-margin-mobile h-16 w-full">
+<div class="flex items-center gap-3">
+<img alt="MediMind Logo" class="h-8 w-8 object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuhZGR17YWFAhzMVztzN1JYpsirrIGbwz6SxYF6AzJoIxQXnfa6ll6MdE_dvoIekw5g8BxN9HZjVyvKFZzV5lq0iQS3jdnE_945cfOFYfK87beJSvD80US7NwBI8L_-hcrIbkQRDBZdunQH5n9C39IGKV5Oy6LPKXF5L1U8RlCRA0cHBnE6C4cY3tRj0RCg5KDBllRRX7dH_VEj18XHplyyziGDBzpIomK6l-Ni6WXgZBosO26sKAjkU1g"/>
+<h1 class="font-headline-md text-headline-md font-semibold text-primary">MediMind</h1>
+</div>
+<div class="flex items-center gap-2">
+<a href="/pages/notifications/index.html" class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined text-primary text-[20px]">notifications</span>
+</a>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile mt-8 space-y-8">
+<!-- Hero Section -->
+<section class="space-y-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">My Care Circle</h2>
+<p class="text-on-surface-variant font-body-md">Manage and invite the people who help coordinate your healthcare journey.</p>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Caregivers & Invitations -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Active Caregivers -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-headline-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">group</span>
+                            Active Caregivers
+                        </h3>
+<span class="bg-secondary-container/30 text-secondary px-3 py-1 rounded-full text-[12px] font-bold">1 Connected</span>
+</div>
+<!-- Jane Doe Card -->
+<div class="glass-card rounded-xl p-6 transition-all hover:border-primary/30">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">person</span>
+</div>
+<div>
+<h4 class="font-headline-md text-body-lg text-on-surface">Jane Doe</h4>
+<p class="text-on-surface-variant text-label-md">jane.doe@example.com</p>
+<div class="flex items-center gap-1.5 mt-1 text-secondary text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                        Connected
+                                    </div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-variant/50 text-on-surface-variant px-3 py-1 rounded-lg text-label-sm border border-outline-variant/10">Can Manage Medications</span>
+<span class="bg-surface-variant/50 text-on-surface-variant px-3 py-1 rounded-lg text-label-sm border border-outline-variant/10">Can View Medical Records</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/20 flex flex-wrap gap-3">
+<button class="px-4 py-2 bg-primary-container/20 text-primary border border-primary/30 rounded-lg font-label-md hover:bg-primary-container/30 transition-colors">
+                                Manage Permissions
+                            </button>
+<button class="px-4 py-2 border border-error/30 text-error rounded-lg font-label-md hover:bg-error/10 transition-colors">
+                                Disconnect
+                            </button>
+</div>
+</div>
+</section>
+<!-- Pending Invitations -->
+<section>
+<h3 class="font-headline-md text-headline-md mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">hourglass_top</span>
+                        Pending Invitations
+                    </h3>
+<div class="glass-card rounded-xl p-6 border-dashed border-outline-variant/50">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-3xl">mail</span>
+</div>
+<div>
+<h4 class="font-headline-md text-body-lg text-on-surface">Dr. Sarah Smith</h4>
+<p class="text-on-surface-variant text-label-md">sarah.smith@example.com</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-tertiary text-label-sm font-semibold uppercase tracking-wider">Pending</span>
+<span class="text-on-surface-variant text-label-sm">• Sent Yesterday</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded-lg text-label-sm border border-tertiary/20">Can View Medical Records</span>
+<button class="text-error font-label-md hover:underline decoration-error/30 underline-offset-4">Cancel Invite</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Form -->
+<div class="lg:col-span-4">
+<section class="sticky top-24">
+<div class="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-8 shadow-2xl">
+<div class="mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Add to Care Circle</h3>
+<p class="text-on-surface-variant text-label-md mt-1">Invite a trusted individual to help manage your health.</p>
+</div>
+<form class="space-y-6" onsubmit="event.preventDefault()">
+<div class="space-y-2">
+<label class="text-on-surface text-label-md font-semibold px-1">Email Address</label>
+<input class="w-full bg-surface-container-highest border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-on-surface placeholder:text-on-surface-variant/40" placeholder="caregiver@example.com" type="email"/>
+</div>
+<div class="space-y-4 pt-2">
+<p class="text-on-surface text-label-md font-semibold px-1">Permissions</p>
+<!-- Switch 1 -->
+<div class="flex items-center justify-between p-3 bg-surface/40 rounded-xl border border-outline-variant/10">
+<span class="text-on-surface-variant text-label-md">Can Manage Medications</span>
+<button aria-checked="true" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-primary-container" role="switch" type="button">
+<span aria-hidden="true" class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+<!-- Switch 2 -->
+<div class="flex items-center justify-between p-3 bg-surface/40 rounded-xl border border-outline-variant/10">
+<span class="text-on-surface-variant text-label-md">Can View Medical Records</span>
+<button aria-checked="false" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-outline-variant/30" role="switch" type="button">
+<span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</button>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">send</span>
+                                Send Invitation Link
+                            </button>
+<p class="text-center text-on-surface-variant/60 text-label-sm px-4">
+                                Invitations are valid for 7 days. Your data remains encrypted and shared only with your explicit consent.
+                            </p>
+</form>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-surface-container/80 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0_-4px_24px_rgba(149,204,255,0.05)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-200 scale-95 active:scale-90" href="/pages/home/index.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-200 scale-95 active:scale-90" href="/pages/medications/index.html">
+<span class="material-symbols-outlined">pill</span>
+<span class="font-label-sm text-label-sm">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-200 scale-95 active:scale-90" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-sm text-label-sm">Stats</span>
+</a>
+<!-- Active Tab: Care -->
+<a class="flex flex-col items-center justify-center bg-primary-container/20 text-primary rounded-xl px-3 py-1 active-nav-glow transition-transform duration-200" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">diversity_1</span>
+<span class="font-label-sm text-label-sm">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-200 scale-95 active:scale-90" href="/pages/profile/index.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple toggle interaction for the demo
+        document.querySelectorAll('[role="switch"]').forEach(button => {
+            button.addEventListener('click', () => {
+                const isChecked = button.getAttribute('aria-checked') === 'true';
+                const circle = button.querySelector('span');
+                
+                if (isChecked) {
+                    button.setAttribute('aria-checked', 'false');
+                    button.classList.remove('bg-primary-container');
+                    button.classList.add('bg-outline-variant/30');
+                    circle.classList.remove('translate-x-5');
+                    circle.classList.add('translate-x-0');
+                } else {
+                    button.setAttribute('aria-checked', 'true');
+                    button.classList.remove('bg-outline-variant/30');
+                    button.classList.add('bg-primary-container');
+                    circle.classList.remove('translate-x-0');
+                    circle.classList.add('translate-x-5');
+                }
+            });
+        });
+
+        // Background subtle parallax effect
+        window.addEventListener('scroll', () => {
+            const scroll = window.pageYOffset;
+            document.body.style.backgroundPositionY = -(scroll * 0.2) + 'px';
+        });
+    </script>
+</body></html>
