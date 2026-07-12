@@ -65,9 +65,12 @@ export default function LoginComponent() {
 
     try {
       const resultAction = await login({ email, password });
-      if (resultAction.type === "auth/login/fulfilled") {
-        router.push("/dashboard");
-      }
+        const userRole = resultAction.payload?.user?.role || resultAction.payload?.role;
+        if (userRole === "PATIENT") {
+          router.push("/home");
+        } else {
+          router.push("/dashboard");
+        }
     } catch (err) {
     }
   };

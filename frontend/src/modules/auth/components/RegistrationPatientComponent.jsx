@@ -135,7 +135,7 @@ export default function RegistrationPatientComponent() {
       const resultAction = await register(payload);
       if (resultAction.type === 'auth/register/fulfilled') {
         clearRegistrationData();
-        router.push('/dashboard');
+        router.push('/home');
       }
     } catch (err) {
       // Handled by Redux

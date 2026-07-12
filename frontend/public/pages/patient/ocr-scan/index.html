@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MediMind - AI Medication OCR Scan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .scan-line {
+            animation: scanMove 3s infinite linear;
+        }
+        
+        @keyframes scanMove {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(149, 204, 255, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(149, 204, 255, 0.6); }
+        }
+
+        .shutter-ring {
+            transition: transform 0.1s ease;
+        }
+        .shutter-ring:active {
+            transform: scale(0.9);
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(30, 32, 35, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#004a75",
+                      "on-tertiary-container": "#422900",
+                      "tertiary": "#fabb5e",
+                      "secondary": "#9fd588",
+                      "on-primary-fixed": "#001d32",
+                      "on-error": "#690005",
+                      "tertiary-fixed": "#ffddb3",
+                      "on-secondary-container": "#8ec378",
+                      "error-container": "#93000a",
+                      "tertiary-container": "#c38b33",
+                      "secondary-fixed-dim": "#9fd588",
+                      "inverse-primary": "#166396",
+                      "on-surface": "#e2e2e6",
+                      "outline": "#8b919a",
+                      "surface-tint": "#95ccff",
+                      "surface-container": "#1e2023",
+                      "on-primary": "#003352",
+                      "surface-container-high": "#282a2d",
+                      "surface-dim": "#111316",
+                      "on-secondary": "#0a3900",
+                      "primary-container": "#5c9bd1",
+                      "error": "#ffb4ab",
+                      "tertiary-fixed-dim": "#fabb5e",
+                      "on-secondary-fixed": "#042100",
+                      "on-tertiary": "#452b00",
+                      "on-background": "#e2e2e6",
+                      "inverse-surface": "#e2e2e6",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "primary": "#95ccff",
+                      "inverse-on-surface": "#2f3034",
+                      "surface-variant": "#333538",
+                      "secondary-fixed": "#baf2a1",
+                      "outline-variant": "#41474f",
+                      "on-secondary-fixed-variant": "#225113",
+                      "on-primary-container": "#00314f",
+                      "surface-container-highest": "#333538",
+                      "on-surface-variant": "#c1c7d0",
+                      "primary-fixed-dim": "#95ccff",
+                      "on-error-container": "#ffdad6",
+                      "background": "#111316",
+                      "surface-container-lowest": "#0c0e11",
+                      "primary-fixed": "#cde5ff",
+                      "surface-bright": "#37393d",
+                      "on-tertiary-fixed": "#291800",
+                      "surface-container-low": "#1a1c1f",
+                      "secondary-container": "#225113",
+                      "surface": "#111316"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "container-max": "1280px",
+                      "unit": "8px",
+                      "margin-desktop": "40px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "headline-lg-mobile": ["Manrope"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Manrope"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col overflow-hidden">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky z-40 bg-background/80 backdrop-blur-lg flex justify-between items-center px-margin-mobile py-4">
+<a href="/pages/add-medication/index.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-colors duration-200">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</a>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Scan Medicine Label</h1>
+<a href="/pages/notifications/index.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-colors duration-200">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</a>
+</header>
+<!-- Main Content: Viewfinder Area -->
+<main class="flex-1 flex flex-col items-center justify-start px-margin-mobile pt-4 pb-32">
+<!-- Viewfinder Container -->
+<div class="relative w-full aspect-[3/4] bg-surface-container-lowest rounded-[32px] overflow-hidden shadow-2xl border border-outline-variant/10">
+<!-- Simulated Camera Feed -->
+<div class="absolute inset-0 w-full h-full">
+<img class="w-full h-full object-cover opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHVW2U61-4-pGsuZ_O_t53TQIgERg6x5Fk6Tqa9Q23Zwjn4nbarXqZ4W7TZZjo5C60niAmVehw_BQrTtrYPx8LBmawpLu2Tknh_ZdbEfBVysrZ7mDaP8Foans0g92-L8Lu-h9O_TCHNEJOMfbWhTupRRF2Fg0btiH7bJnRVlbfSYoDYlk3aviXpOKTt923KtAS20scnmDzSlfkMUfeqf61FIESQRH8HLboav8F05aO6nDxsRJTHT5Ll2Na7FghkMTHS8UUyD8O31jd"/>
+</div>
+<!-- Scanning Overlay UI -->
+<div class="absolute inset-0 flex flex-col items-center justify-center p-8">
+<!-- Scanner Reticle -->
+<div class="relative w-full aspect-square max-w-[280px] border-2 border-primary/40 rounded-2xl overflow-hidden pulse-glow">
+<!-- Corner Brackets -->
+<div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl"></div>
+<div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl"></div>
+<div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl"></div>
+<div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl"></div>
+<!-- Pulsing Scan Line -->
+<div class="scan-line absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_10px_rgba(149,204,255,0.8)]"></div>
+</div>
+</div>
+<!-- Camera Interface Accents -->
+<div class="absolute top-4 right-4 bg-black/40 backdrop-blur px-3 py-1 rounded-full border border-white/10">
+<span class="text-xs font-label-sm text-primary flex items-center gap-1">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    LIVE AI OCR
+                </span>
+</div>
+</div>
+<!-- Helper Text -->
+<p class="mt-6 text-center text-on-surface-variant font-label-md max-w-[280px]">
+            Place the label text clearly within the illuminated box. Ensure good lighting.
+        </p>
+<!-- Capture Controls -->
+<div class="mt-auto mb-4 w-full flex items-center justify-evenly">
+<button class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-on-surface hover:bg-surface-variant/40 transition-all">
+<span class="material-symbols-outlined">flash_on</span>
+</button>
+<button class="group relative flex items-center justify-center w-20 h-20">
+<div class="absolute inset-0 rounded-full border-4 border-white/20 scale-110"></div>
+<div class="shutter-ring w-16 h-16 bg-white rounded-full shadow-lg active:bg-neutral-300"></div>
+</button>
+<button class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-on-surface hover:bg-surface-variant/40 transition-all">
+<span class="material-symbols-outlined">photo_library</span>
+</button>
+</div>
+</main>
+<!-- Simulated Results Overlay (Success State) -->
+<div class="fixed bottom-[84px] left-0 right-0 z-30 px-margin-mobile transition-transform duration-500 translate-y-0 flex" id="success-sheet">
+<div class="w-full bg-surface-container-high rounded-t-3xl p-6 shadow-2xl border-t border-outline-variant/10">
+<div class="w-12 h-1.5 bg-outline-variant/30 rounded-full mx-auto mb-6"></div>
+<div class="flex items-start gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-on-surface">Amoxicillin</h3>
+<span class="text-secondary font-label-sm px-2 py-0.5 bg-secondary/10 rounded-full">96% Match</span>
+</div>
+<p class="text-on-surface-variant font-body-md">500mg, Capsule</p>
+</div>
+</div>
+<a href="/pages/add-medication/index.html?ocr=success" class="w-full py-4 bg-primary text-on-primary font-label-md rounded-2xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all text-center flex items-center justify-center">
+                Autofill Form
+            </a>
+</div>
+</div>
+<!-- Simulated Results Overlay (Error State - Hidden by default for demo) -->
+<div class="fixed bottom-[84px] left-0 right-0 z-30 px-margin-mobile transition-transform duration-500 translate-y-full hidden" id="error-sheet">
+<div class="w-full bg-surface-container-high rounded-t-3xl p-6 shadow-2xl border-t border-outline-variant/10">
+<div class="w-12 h-1.5 bg-outline-variant/30 rounded-full mx-auto mb-6"></div>
+<div class="flex items-start gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-on-surface">Unclear Scan</h3>
+<span class="text-tertiary font-label-sm px-2 py-0.5 bg-tertiary/10 rounded-full">72% Confidence</span>
+</div>
+<p class="text-on-surface-variant font-body-md text-sm leading-snug">The system cannot guarantee accuracy. Please retake or fill manually.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-4 border border-outline-variant text-on-surface font-label-md rounded-2xl hover:bg-surface-variant/20 transition-all" onclick="toggleSheets('error')">
+                    Retake
+                </button>
+<a href="/pages/add-medication/index.html" class="flex-1 py-4 bg-tertiary text-on-tertiary font-label-md rounded-2xl shadow-lg shadow-tertiary/20 hover:brightness-110 transition-all text-center flex items-center justify-center">
+                    Enter Manually
+                </a>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 flex justify-around items-center px-2 py-3 shadow-sm">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-150 scale-95" href="/pages/home/index.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- ACTIVE TAB: Meds -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 transition-transform duration-150 scale-100" href="/pages/medications/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication</span>
+<span class="font-label-sm text-label-sm font-bold font-label-sm">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-150 scale-95" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">task_alt</span>
+<span class="font-label-sm text-label-sm">Adherence</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-150 scale-95" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-sm text-label-sm">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-150 scale-95" href="/pages/profile/index.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- Overlay Interactions Script -->
+<script>
+        function toggleSheets(currentState) {
+            const successSheet = document.getElementById('success-sheet');
+            const errorSheet = document.getElementById('error-sheet');
+            
+            if (currentState === 'success') {
+                successSheet.classList.add('translate-y-full', 'hidden');
+                successSheet.classList.remove('flex');
+                errorSheet.classList.remove('hidden', 'translate-y-full');
+                errorSheet.classList.add('flex');
+            } else {
+                errorSheet.classList.add('translate-y-full', 'hidden');
+                errorSheet.classList.remove('flex');
+                successSheet.classList.remove('hidden', 'translate-y-full');
+                successSheet.classList.add('flex');
+            }
+        }
+
+        // Interaction demonstration for the shutter button
+        document.querySelector('.shutter-ring').addEventListener('click', () => {
+            const currentIsSuccess = !document.getElementById('success-sheet').classList.contains('hidden');
+            toggleSheets(currentIsSuccess ? 'success' : 'error');
+        });
+    </script>
+</body></html>

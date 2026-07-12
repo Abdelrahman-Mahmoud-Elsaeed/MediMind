@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MediMind | Patient Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#95ccff",
+                      "outline": "#8b919a",
+                      "surface-container-high": "#282a2d",
+                      "surface-container": "#1e2023",
+                      "on-primary": "#003352",
+                      "primary-container": "#5c9bd1",
+                      "surface-dim": "#111316",
+                      "on-secondary": "#0a3900",
+                      "tertiary-fixed-dim": "#fabb5e",
+                      "error": "#ffb4ab",
+                      "on-tertiary-container": "#422900",
+                      "on-primary-fixed-variant": "#004a75",
+                      "on-primary-fixed": "#001d32",
+                      "secondary": "#9fd588",
+                      "tertiary": "#fabb5e",
+                      "on-surface": "#e2e2e6",
+                      "tertiary-container": "#c38b33",
+                      "secondary-fixed-dim": "#9fd588",
+                      "inverse-primary": "#166396",
+                      "tertiary-fixed": "#ffddb3",
+                      "on-secondary-container": "#8ec378",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "surface-container-lowest": "#0c0e11",
+                      "primary-fixed-dim": "#95ccff",
+                      "on-error-container": "#ffdad6",
+                      "background": "#111316",
+                      "on-surface-variant": "#c1c7d0",
+                      "on-tertiary-fixed": "#291800",
+                      "surface-bright": "#37393d",
+                      "primary-fixed": "#cde5ff",
+                      "surface": "#111316",
+                      "secondary-container": "#225113",
+                      "surface-container-low": "#1a1c1f",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "on-background": "#e2e2e6",
+                      "inverse-surface": "#e2e2e6",
+                      "on-tertiary": "#452b00",
+                      "on-secondary-fixed": "#042100",
+                      "primary": "#95ccff",
+                      "surface-variant": "#333538",
+                      "secondary-fixed": "#baf2a1",
+                      "outline-variant": "#41474f",
+                      "inverse-on-surface": "#2f3034",
+                      "surface-container-highest": "#333538",
+                      "on-secondary-fixed-variant": "#225113",
+                      "on-primary-container": "#00314f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "2xl": "1rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "unit": "8px",
+                      "margin-desktop": "40px",
+                      "margin-mobile": "16px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "headline-lg-mobile": ["Manrope"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Manrope"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { background-color: #111316; color: #e2e2e6; }
+        .glass-card {
+            background: rgba(30, 32, 35, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .circular-progress {
+            background: conic-gradient(#95ccff 216deg, #333538 0deg);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333538; border-radius: 10px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-headline-md" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">MediMind</span>
+</div>
+<div class="flex items-center gap-4">
+<a href="/pages/notifications/index.html" class="relative p-2 rounded-full hover:bg-surface-variant/10 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-on-surface">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-dim"></span>
+</a>
+<div class="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional close-up studio portrait of a woman with a warm and friendly expression. She is in her early 30s with short brunette hair, wearing a stylish dark medical scrub top. The background is a soft, out-of-focus clinical setting with cool blue and grey tones, matching a professional healthcare app aesthetic. High-quality lighting highlights the clarity and reliability of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDS2EbEON2AOPCsiVVQTyVnQAyEkNSKT4R3VEDK5VWmRakTsq0Rk6WiEwGBtnHxZAe5dqrJPxDHALpH5e25wyD7BqpdzVPeWk8lXwT2mMHauixC5nQ11S4m2gwlQ2FdzRSdyBPzOcRjKTPgEx3a4satE_6P9oK3CjToag8AwJsXljOi8qhruIdJp3EtVDrc0PTEEvvtzMVJAYiieEL_1ms6eU0b442rLFxA3B4CzNsvo1OaRDTq8qHAofP71bp0Eet7j3K9kTKGcwS"/>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-28 px-margin-mobile max-w-container-max mx-auto space-y-6">
+<!-- Welcome Section -->
+<section class="animate-in fade-in duration-700">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Good Morning, Sarah</h1>
+<p class="text-on-surface-variant font-label-md">Tuesday, Oct 24</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Left Column: Daily Schedule -->
+<div class="md:col-span-8 space-y-6">
+<div class="glass-card rounded-2xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Daily Schedule</h2>
+<span class="text-primary font-label-md">View All</span>
+</div>
+<div class="space-y-8 relative">
+<!-- Morning Slot -->
+<div class="flex gap-4 group">
+<div class="flex flex-col items-center">
+<div class="text-label-sm text-on-surface-variant w-16 text-right">08:00 AM</div>
+</div>
+<div class="flex-grow glass-card rounded-xl p-4 flex justify-between items-center border-l-4 border-l-secondary bg-secondary/5">
+<div>
+<h3 class="font-bold text-on-surface">Atorvastatin 20mg</h3>
+<p class="text-label-sm text-on-surface-variant">Taken with breakfast</p>
+</div>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="text-label-sm">Taken</span>
+</div>
+</div>
+</div>
+<!-- Afternoon Slot -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="text-label-sm text-on-surface-variant w-16 text-right">01:00 PM</div>
+</div>
+<div class="flex-grow glass-card rounded-xl p-4 space-y-4 border-l-4 border-l-primary">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-on-surface">Metformin 500mg</h3>
+<p class="text-label-sm text-on-surface-variant">Take with meal</p>
+</div>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">Due Now</span>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-on-primary py-2.5 rounded-lg font-label-md hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">Take Now</button>
+<button class="flex-1 border border-outline text-on-surface py-2.5 rounded-lg font-label-md hover:bg-surface-variant/10 active:scale-95 transition-all">Skip</button>
+</div>
+</div>
+</div>
+<!-- Evening Placeholder -->
+<div class="flex gap-4 opacity-50">
+<div class="flex flex-col items-center">
+<div class="text-label-sm text-on-surface-variant w-16 text-right">08:00 PM</div>
+</div>
+<div class="flex-grow border border-dashed border-outline-variant rounded-xl p-4 flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">Upcoming: Lisinopril 10mg</span>
+<span class="material-symbols-outlined">schedule</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Tips Carousel Section -->
+<div class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-on-surface px-2">Tips for You</h2>
+<div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
+<!-- Card 1 -->
+<div class="min-w-[280px] md:min-w-[340px] glass-card rounded-2xl overflow-hidden snap-start hover:scale-[1.02] transition-transform duration-300 group cursor-pointer">
+<div class="h-40 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A bright and vibrant photograph of a healthy breakfast bowl with fresh berries, nuts, and a glass of water on a minimalist wooden table. Soft morning sunlight streams in from a window, creating a warm, hopeful atmosphere. The style is clean, modern, and wellness-focused, featuring the cool blues and natural greens of the MediMind brand palette to convey a sense of balanced health management." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKlvaLaBJiXfnEaTwn3kR195BnlupKxq19A1ANa0gh2ZlrYEVKFpYjBqCBAT1G6xQ-a2QPthckcW3C9dRXLM9SdQ0YjHK2zi6_-UM65wcuZ5b_kAP1aWLe6a3gNJwogSbPp18nHhruWYsub5YulAsPEqjP_QLwMbST9kLJ64JgD5ziLFFP6RadLLWFEcGo2rN041FbdmV7-s6OmfI5SxWofMws1gXRc1IH-nCB_3Op6aC7l5y4QwZywaGYxIXZC8EAY9OHU4lf7MFq"/>
+</div>
+<div class="p-4 space-y-2">
+<span class="text-[10px] font-bold text-tertiary uppercase tracking-widest">Diabetes Care</span>
+<h3 class="font-headline-md text-body-lg text-on-surface leading-tight">Type 2 Diabetes: Managing Morning Glucose</h3>
+<p class="text-label-sm text-on-surface-variant line-clamp-2">Consistent morning routines can stabilize your levels throughout the entire day...</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="min-w-[280px] md:min-w-[340px] glass-card rounded-2xl overflow-hidden snap-start hover:scale-[1.02] transition-transform duration-300 group cursor-pointer">
+<div class="h-40 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A clean, cinematic shot of a person pouring crisp, clear water into a glass. The water ripples and bubbles with high clarity. The lighting is bright and refreshing, with soft blue accents reflecting in the glass. The background is a minimalist, modern kitchen in dark tones. The image emphasizes purity, hydration, and the scientific importance of water in medication absorption, aligned with a premium clinical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYRKboGmMQiUJD2vpA6oXYDW6hIipEC37yZpjPuXdDaOiGwlX1d_Ms6Snk5vxP9Qd6PEpDtD2u019szyu_N4Qu8m5C9et_Z7eW5LeV-DRazkh54OjioD7PP4d9qvUABCzbeoeHEjvByk0I5DXaVOi7Zg6D-nRUyOWlbC7vpRIVuK75Y9S-v5GbvoC0PRCZE4xJsJd6kx4gd9T1RIdaDyYEil6PSHNCdLUtJpxyvEHaoh089f7nVmqrvIQ-nbIpTgEKPC2noVXjYke-"/>
+</div>
+<div class="p-4 space-y-2">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest">Wellness</span>
+<h3 class="font-headline-md text-body-lg text-on-surface leading-tight">Hydration &amp; Medication Absorption</h3>
+<p class="text-label-sm text-on-surface-variant line-clamp-2">How water intake significantly impacts how your body processes key prescriptions...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Stats & Alerts -->
+<div class="md:col-span-4 space-y-6">
+<!-- Adherence Gauge -->
+<div class="glass-card rounded-2xl p-6 flex flex-col items-center text-center">
+<h2 class="font-label-md text-on-surface-variant mb-6 uppercase tracking-wider w-full text-left">Daily Adherence</h2>
+<div class="relative w-40 h-40 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full circular-progress"></div>
+<div class="absolute inset-2 bg-surface-container rounded-full flex flex-col items-center justify-center">
+<span class="font-display-lg text-display-lg text-primary leading-none">60%</span>
+<span class="text-label-sm text-on-surface-variant mt-1">3/5 doses</span>
+</div>
+</div>
+<p class="mt-6 text-on-surface font-label-md">On track for a perfect week!</p>
+</div>
+<!-- Warning Card -->
+<div class="bg-error-container/20 border border-error/30 rounded-2xl p-5 space-y-4">
+<div class="flex items-center gap-3 text-error">
+<span class="material-symbols-outlined">warning</span>
+<h2 class="font-bold">Low Stock Alert</h2>
+</div>
+<p class="text-on-error-container text-body-md">
+                        Your <span class="font-bold text-on-surface">Lisinopril</span> supply is low (3 days left).
+                    </p>
+<button class="w-full bg-error text-on-error py-2.5 rounded-xl font-bold hover:brightness-110 transition-all active:scale-95">Request Refill</button>
+</div>
+<!-- Quick Vitals -->
+<div class="glass-card rounded-2xl p-6">
+<h2 class="font-label-md text-on-surface-variant mb-4 uppercase tracking-wider">Health Vitals</h2>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-sm">blood_pressure</span>
+</div>
+<span class="text-on-surface">BP</span>
+</div>
+<span class="font-bold text-on-surface">120/80</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-sm">ecg</span>
+</div>
+<span class="text-on-surface">HR</span>
+</div>
+<span class="font-bold text-on-surface">72 bpm</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container/90 dark:bg-surface-container/90 backdrop-blur-xl border-t border-white/5 flex justify-around items-center px-4 py-2 pb-safe shadow-lg">
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-200" href="/pages/home/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-variant/20 transition-all active:scale-90" href="/pages/medications/index.html">
+<span class="material-symbols-outlined">medication</span>
+<span class="font-label-sm text-label-sm">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-variant/20 transition-all active:scale-90" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">task_alt</span>
+<span class="font-label-sm text-label-sm">Adherence</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-variant/20 transition-all active:scale-90" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-sm text-label-sm">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-variant/20 transition-all active:scale-90" href="/pages/profile/index.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple Interaction logic for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const originalContent = this.innerHTML;
+                if(this.textContent === 'Take Now') {
+                    this.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Done';
+                    this.classList.remove('bg-primary');
+                    this.classList.add('bg-secondary', 'text-on-secondary');
+                    setTimeout(() => {
+                        this.closest('.flex-grow').classList.add('opacity-50', 'grayscale-[0.5]');
+                    }, 500);
+                }
+            });
+        });
+
+        // Greeting update based on time
+        const hour = new Date().getHours();
+        const greetingEl = document.querySelector('h1');
+        if (hour >= 12 && hour < 17) greetingEl.textContent = 'Good Afternoon, Sarah';
+        else if (hour >= 17) greetingEl.textContent = 'Good Evening, Sarah';
+    </script>
+</body></html>

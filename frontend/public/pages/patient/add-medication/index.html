@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Medication - MediMind</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Manrope:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#95ccff",
+                    "surface-container": "#1e2023",
+                    "on-tertiary-fixed": "#291800",
+                    "tertiary-fixed-dim": "#fabb5e",
+                    "surface-container-highest": "#333538",
+                    "on-secondary-fixed": "#042100",
+                    "inverse-primary": "#166396",
+                    "on-secondary-container": "#8ec378",
+                    "on-primary": "#003352",
+                    "on-error": "#690005",
+                    "inverse-on-surface": "#2f3034",
+                    "secondary-fixed": "#baf2a1",
+                    "surface-container-lowest": "#0c0e11",
+                    "surface-dim": "#111316",
+                    "on-surface": "#e2e2e6",
+                    "primary-fixed": "#cde5ff",
+                    "primary": "#95ccff",
+                    "surface-variant": "#333538",
+                    "on-primary-container": "#00314f",
+                    "on-error-container": "#ffdad6",
+                    "background": "#111316",
+                    "on-tertiary-container": "#422900",
+                    "outline": "#8b919a",
+                    "inverse-surface": "#e2e2e6",
+                    "surface-tint": "#95ccff",
+                    "on-primary-fixed-variant": "#004a75",
+                    "error": "#ffb4ab",
+                    "surface": "#111316",
+                    "surface-container-low": "#1a1c1f",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "on-surface-variant": "#c1c7d0",
+                    "surface-container-high": "#282a2d",
+                    "on-tertiary": "#452b00",
+                    "outline-variant": "#41474f",
+                    "on-primary-fixed": "#001d32",
+                    "on-background": "#e2e2e6",
+                    "tertiary-fixed": "#ffddb3",
+                    "secondary": "#9fd588",
+                    "on-secondary-fixed-variant": "#225113",
+                    "on-secondary": "#0a3900",
+                    "secondary-container": "#225113",
+                    "secondary-fixed-dim": "#9fd588",
+                    "primary-container": "#5c9bd1",
+                    "surface-bright": "#37393d",
+                    "tertiary-container": "#c38b33",
+                    "tertiary": "#fabb5e",
+                    "error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "headline-lg-mobile": ["Manrope"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Manrope"],
+                    "display-lg": ["Manrope"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .glass-card {
+            background: rgba(30, 32, 35, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(149, 204, 255, 0.2);
+            border-color: #95ccff;
+        }
+
+        .active-chip {
+            background-color: #5c9bd1 !important;
+            color: #00314f !important;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile w-full z-50 bg-background/80 backdrop-blur-md fixed top-0 h-16">
+<div class="flex items-center gap-4">
+<a href="/pages/medications/index.html" class="transition-all duration-200 active:scale-95 p-2 rounded-full hover:bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</a>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Add Medication</h1>
+</div>
+<div class="flex items-center">
+<a href="/pages/notifications/index.html" class="transition-all duration-200 active:scale-95 p-2 rounded-full hover:bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</a>
+</div>
+</header>
+<main class="mt-20 px-margin-mobile max-w-container-max mx-auto space-y-6">
+<!-- OCR Promotion Card -->
+<a href="/pages/ocr-scan/index.html" class="relative group cursor-pointer overflow-hidden rounded-2xl p-6 bg-surface-container-low border border-primary/20 hover:border-primary/40 transition-all duration-300 block">
+<div class="relative flex items-center gap-6 z-10">
+<div class="w-14 h-14 rounded-xl bg-primary-container/20 flex items-center justify-center border border-primary/30">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</div>
+<div>
+<h2 class="font-headline-md text-body-lg font-bold text-primary">Scan Medicine Pack</h2>
+<p class="text-on-surface-variant text-label-md">Let AI auto-fill the details from your label</p>
+</div>
+<div class="ml-auto flex items-center">
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</div>
+</div>
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</a>
+<!-- Form Sections -->
+<form class="space-y-6" id="medication-form">
+<!-- Basic Info Section -->
+<section class="bg-surface-container-low rounded-2xl p-5 space-y-4 border border-outline-variant/10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">description</span>
+<h3 class="font-headline-md text-label-md uppercase tracking-wider text-on-surface-variant">Basic Info</h3>
+</div>
+<div class="space-y-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Medication Name</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface placeholder-on-surface-variant/40 input-glow transition-all" placeholder="e.g. Metformin" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Form Type</label>
+<select class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface input-glow appearance-none">
+<option>Tablet</option>
+<option>Capsule</option>
+<option>Syrup</option>
+<option>Injection</option>
+<option>Drop</option>
+<option>Cream</option>
+<option>Other</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Expiration Date</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface input-glow" type="date"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Inventory Tracking Section -->
+<section class="bg-surface-container-low rounded-2xl p-5 space-y-4 border border-outline-variant/10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<h3 class="font-headline-md text-label-md uppercase tracking-wider text-on-surface-variant">Inventory Tracking</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Initial Quantity</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface placeholder-on-surface-variant/40 input-glow" placeholder="e.g. 60" type="number"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Dosage per Intake</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface placeholder-on-surface-variant/40 input-glow" placeholder="e.g. 1 pill" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Refill Threshold</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface placeholder-on-surface-variant/40 input-glow" placeholder="e.g. 10" type="number"/>
+</div>
+</div>
+</section>
+<!-- Schedule & Timing Section -->
+<section class="bg-surface-container-low rounded-2xl p-5 space-y-4 border border-outline-variant/10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<h3 class="font-headline-md text-label-md uppercase tracking-wider text-on-surface-variant">Schedule &amp; Timing</h3>
+</div>
+<div class="space-y-6">
+<div class="flex flex-col gap-3">
+<label class="text-label-md text-on-surface-variant px-1">Frequency</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-variant transition-colors active-chip" onclick="toggleChip(this, 'frequency')" type="button">Daily</button>
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-variant transition-colors" onclick="toggleChip(this, 'frequency')" type="button">Weekly</button>
+<button class="flex-1 min-w-[80px] py-2 px-4 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-variant transition-colors" onclick="toggleChip(this, 'frequency')" type="button">As Needed</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Times per Day</label>
+<select class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface input-glow">
+<option>1 time</option>
+<option>2 times</option>
+<option>3 times</option>
+<option>4 times</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">First Dose Time</label>
+<input class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface input-glow" type="time" value="08:00"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Intake Instructions Section -->
+<section class="bg-surface-container-low rounded-2xl p-5 space-y-4 border border-outline-variant/10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<h3 class="font-headline-md text-label-md uppercase tracking-wider text-on-surface-variant">Intake Instructions</h3>
+</div>
+<div class="space-y-6">
+<div class="flex flex-col gap-3">
+<label class="text-label-md text-on-surface-variant px-1">Food Relation</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+<button class="py-2 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors text-center leading-tight" onclick="toggleChip(this, 'food')" type="button">Before Meals</button>
+<button class="py-2 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors text-center leading-tight active-chip" onclick="toggleChip(this, 'food')" type="button">After Meals</button>
+<button class="py-2 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors text-center leading-tight" onclick="toggleChip(this, 'food')" type="button">With Food</button>
+<button class="py-2 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors text-center leading-tight" onclick="toggleChip(this, 'food')" type="button">On Empty Stomach</button>
+<button class="py-2 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-surface-variant transition-colors text-center leading-tight" onclick="toggleChip(this, 'food')" type="button">None</button>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md text-on-surface-variant px-1">Special Instructions</label>
+<textarea class="w-full bg-surface-container-highest border-none rounded-xl py-3 px-4 text-on-surface placeholder-on-surface-variant/40 input-glow resize-none" placeholder="e.g. Take with a full glass of water" rows="3"></textarea>
+</div>
+</div>
+</section>
+</form>
+<!-- Bottom Actions -->
+<div class="flex flex-col sm:flex-row gap-3 pt-4 pb-12">
+<button class="flex-1 py-4 rounded-xl bg-primary text-on-primary font-headline-md text-body-lg shadow-lg active:scale-95 transition-all">
+                Save Medication
+            </button>
+<a href="/pages/medications/index.html" class="flex-1 py-4 rounded-xl border border-outline-variant text-on-surface-variant font-headline-md text-body-lg hover:bg-surface-container transition-all active:scale-95 text-center flex items-center justify-center">
+                Cancel
+            </a>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe border-t border-outline-variant/10 bg-surface-container/90 backdrop-blur-xl shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 transition-transform duration-300 active:scale-90 hover:text-primary" href="/pages/home/index.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 transition-transform duration-300 active:scale-90" href="/pages/medications/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication</span>
+<span class="font-label-sm text-label-sm">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 transition-transform duration-300 active:scale-90 hover:text-primary" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-label-sm text-label-sm">Timeline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 transition-transform duration-300 active:scale-90 hover:text-primary" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-sm text-label-sm">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 transition-transform duration-300 active:scale-90 hover:text-primary" href="/pages/profile/index.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        function toggleChip(button, group) {
+            const chips = button.parentElement.querySelectorAll('button');
+            chips.forEach(chip => {
+                chip.classList.remove('active-chip');
+            });
+            button.classList.add('active-chip');
+        }
+
+        // Add visual micro-interaction for focused inputs
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.querySelector('label')?.classList.add('text-primary');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.querySelector('label')?.classList.remove('text-primary');
+            });
+        });
+    </script>
+</body></html>

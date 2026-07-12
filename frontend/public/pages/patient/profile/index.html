@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MediMind | Patient Profile Central Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#41474f",
+                      "on-secondary-container": "#8ec378",
+                      "surface-container-highest": "#333538",
+                      "on-surface": "#e2e2e6",
+                      "on-primary-fixed-variant": "#004a75",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "surface-container-high": "#282a2d",
+                      "error": "#ffb4ab",
+                      "on-tertiary": "#452b00",
+                      "surface-bright": "#37393d",
+                      "surface-tint": "#95ccff",
+                      "surface-container-lowest": "#0c0e11",
+                      "surface-container-low": "#1a1c1f",
+                      "on-secondary-fixed-variant": "#225113",
+                      "on-primary-fixed": "#001d32",
+                      "background": "#111316",
+                      "on-primary-container": "#00314f",
+                      "primary-container": "#5c9bd1",
+                      "error-container": "#93000a",
+                      "secondary-fixed": "#baf2a1",
+                      "surface-variant": "#333538",
+                      "on-secondary": "#0a3900",
+                      "inverse-primary": "#166396",
+                      "secondary-fixed-dim": "#9fd588",
+                      "surface": "#111316",
+                      "on-error-container": "#ffdad6",
+                      "on-background": "#e2e2e6",
+                      "primary": "#95ccff",
+                      "on-tertiary-fixed": "#291800",
+                      "on-tertiary-container": "#422900",
+                      "on-surface-variant": "#c1c7d0",
+                      "surface-dim": "#111316",
+                      "surface-container": "#1e2023",
+                      "inverse-surface": "#e2e2e6",
+                      "tertiary-fixed": "#ffddb3",
+                      "on-secondary-fixed": "#042100",
+                      "on-primary": "#003352",
+                      "secondary": "#9fd588",
+                      "inverse-on-surface": "#2f3034",
+                      "on-error": "#690005",
+                      "tertiary-container": "#c38b33",
+                      "outline": "#8b919a",
+                      "secondary-container": "#225113",
+                      "tertiary-fixed-dim": "#fabb5e",
+                      "tertiary": "#fabb5e",
+                      "primary-fixed-dim": "#95ccff",
+                      "primary-fixed": "#cde5ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Manrope"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg": ["Manrope"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #111316;
+            color: #e2e2e6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(26, 28, 31, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- Top AppBar (Mobile/Web Desktop Shared Logic) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<img alt="MediMind Logo" class="w-10 h-10 object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuhZGR17YWFAhzMVztzN1JYpsirrIGbwz6SxYF6AzJoIxQXnfa6ll6MdE_dvoIekw5g8BxN9HZjVyvKFZzV5lq0iQS3jdnE_945cfOFYfK87beJSvD80US7NwBI8L_-hcrIbkQRDBZdunQH5n9C39IGKV5Oy6LPKXF5L1U8RlCRA0cHBnE6C4cY3tRj0RCg5KDBllRRX7dH_VEj18XHplyyziGDBzpIomK6l-Ni6WXgZBosO26sKAjkU1g"/>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">My Profile</h1>
+</div>
+<a href="/pages/notifications/index.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</a>
+</header>
+<main class="pt-24 pb-32 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Column 1: Patient Identity Card (Lg: 4 columns) -->
+<section class="lg:col-span-4 space-y-gutter">
+<div class="glass-card rounded-xl p-6 flex flex-col items-center text-center">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full border-4 border-primary-container p-1 overflow-hidden">
+<img class="w-full h-full object-cover rounded-full" data-alt="A professional studio portrait of a woman in her late 30s named Sarah Smith. She has a warm, confident expression and is looking directly at the camera. The lighting is soft and high-end, against a dark, monochromatic corporate healthcare background. The aesthetic is modern, clean, and trustworthy, with subtle blue and green undertones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeyX-q99MnY9izYav6ISZrWXvBFvc1Vnfj4UgeY-cZukJgGrtC3PIn1GcvxIn1aPge4NvtdBrDLwQxkfr3ArjaTMOsnF1dYpc52v-fsbu2JjiaIXhC3WFqKyVBlUgUvkIsdgdp3yQkIwR1TctHyigwOQGWzrqtrDdOcUJHwFYuuJepP1_P74Zh0zr_5RgOG2QyKMkNaKM-aMd0TkBrluY_XFoZyIItdBTht9-nZ5bQgnMn103pbIJHjyWjgZzLgLc7_EaHKB7VwAnQ"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary p-2 rounded-full shadow-lg transition-transform active:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Sarah Smith</h2>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">sarah.smith@example.com</p>
+<p class="font-label-md text-label-md text-on-surface-variant">+201000000000</p>
+<div class="flex flex-wrap justify-center gap-2 mt-6">
+<span class="bg-primary/10 text-primary px-4 py-1.5 rounded-full font-label-md text-label-md border border-primary/20">
+                            Blood Type: O+
+                        </span>
+<span class="bg-secondary/10 text-secondary px-4 py-1.5 rounded-full font-label-md text-label-md border border-secondary/20">
+                            Age: 38
+                        </span>
+</div>
+</div>
+<!-- Primary Caregiver Card (Integrated in Column 1 for Desktop, or bottom for Mobile) -->
+<div class="glass-card rounded-xl p-6 border-l-4 border-secondary">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface">Primary Caregiver</h3>
+<span class="material-symbols-outlined text-secondary">health_and_safety</span>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A small circular profile avatar of Jane Doe, a professional healthcare caregiver. She has a friendly, supportive look, wearing professional clinical attire. The image is clear and centered, framed in a clean clinical setting with soft depth-of-field blur in the background. Corporate medical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPRuGKiC43QVqtvjo5EZ9IfqPwBDNpfzw5TGSPoNRBCIisQc_AV4Zl8_ds_sXikT4Q86rxWtKDsVFQQsK8RhnNbgMaYsM2qPkiVIGkqk7BKQkQguOVVSaj-XH3H4XJ3gZvcL9j2EwWoUkpVRaJK1AFtecgVmYbvjMgdihmm7FRkKpuAS4BqWU73n2Vyv2yPbg-L3_pENgAh9hQIHAUW8Zj43sk3jywu5jwjXLKe74TDCUNiFH9w_N9sq7SjiEOxiDtfYlXdh9Q2Dtf"/>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md font-bold text-on-surface">Jane Doe</p>
+<p class="font-label-sm text-label-sm text-on-secondary-container">Connected</p>
+</div>
+<a href="/pages/caregivers/index.html" class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-md transition-all hover:brightness-110 active:scale-95 flex items-center justify-center">
+                            Manage
+                        </a>
+</div>
+</div>
+</section>
+<!-- Column 2: Navigation List (Lg: 8 columns) -->
+<section class="lg:col-span-8 space-y-4">
+<div class="glass-card rounded-xl overflow-hidden divide-y divide-outline-variant/20">
+<!-- Row 1: Personal Information -->
+<button class="w-full flex items-center p-6 gap-6 hover:bg-surface-container-highest transition-colors text-left group">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-[32px]">person</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-[18px] font-bold text-on-surface">Personal Information</h4>
+<p class="font-body-md text-label-md text-on-surface-variant mt-1">Manage name, birthdate, and emergency contacts.</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Row 2: Medical Conditions -->
+<button class="w-full flex items-center p-6 gap-6 hover:bg-surface-container-highest transition-colors text-left group">
+<div class="w-14 h-14 rounded-xl bg-tertiary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-tertiary text-[32px]">list_alt</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-[18px] font-bold text-on-surface">Medical Conditions</h4>
+<p class="font-body-md text-label-md text-on-surface-variant mt-1">View and update chronic illnesses &amp; diagnoses.</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Row 3: Medical Records -->
+<a href="/pages/medical-records/index.html" class="w-full flex items-center p-6 gap-6 hover:bg-surface-container-highest transition-colors text-left group">
+<div class="w-14 h-14 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-[32px]">folder_shared</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-[18px] font-bold text-on-surface">Medical Records</h4>
+<p class="font-body-md text-label-md text-on-surface-variant mt-1">Access lab reports, prescriptions, and attachments.</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</a>
+<!-- Row 4: Account Settings -->
+<button class="w-full flex items-center p-6 gap-6 hover:bg-surface-container-highest transition-colors text-left group">
+<div class="w-14 h-14 rounded-xl bg-outline-variant/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px]">settings</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-[18px] font-bold text-on-surface">Account Settings</h4>
+<p class="font-body-md text-label-md text-on-surface-variant mt-1">Manage password and notification preferences.</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</div>
+<!-- Bento Accent: Help/Support -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="glass-card p-6 rounded-xl border-t-4 border-primary">
+<span class="material-symbols-outlined text-primary mb-3">help_center</span>
+<h5 class="font-headline-md text-[16px] font-bold text-on-surface">Help Center</h5>
+<p class="text-label-sm text-on-surface-variant mt-1">Need assistance? Access our 24/7 support guides.</p>
+</div>
+<div class="glass-card p-6 rounded-xl border-t-4 border-error">
+<span class="material-symbols-outlined text-error mb-3">gpp_maybe</span>
+<h5 class="font-headline-md text-[16px] font-bold text-on-surface">Data Privacy</h5>
+<p class="text-label-sm text-on-surface-variant mt-1">Review how your clinical data is encrypted and protected.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg rounded-t-xl md:max-w-md md:left-1/2 md:-translate-x-1/2 md:mb-4 md:rounded-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300 active:scale-90" href="/pages/home/index.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300 active:scale-90" href="/pages/medications/index.html">
+<span class="material-symbols-outlined">medication</span>
+<span class="font-label-sm text-label-sm">Meds</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300 active:scale-90" href="/pages/adherence/index.html">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-label-sm text-label-sm">Timeline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300 active:scale-90" href="/pages/caregivers/index.html">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-sm text-label-sm">Care</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 transition-transform duration-300 active:scale-90" href="/pages/profile/index.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for feedback
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                const ripple = document.createElement('div');
+                ripple.classList.add('ripple');
+                button.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>
