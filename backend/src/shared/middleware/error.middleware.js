@@ -10,12 +10,14 @@ const errorMiddleware = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const errorCode = err.code || 'INTERNAL_SERVER_ERROR';
   const message = err.message || 'An unexpected operational failure occurred.';
+  const messages = err.messages || { en: message, ar: message };
 
   res.status(statusCode).json({
     success: false,
     error: {
       code: errorCode,
-      message: message
+      message: message,
+      messages: messages
     }
   });
 };

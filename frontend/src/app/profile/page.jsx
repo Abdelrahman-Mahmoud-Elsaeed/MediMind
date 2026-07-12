@@ -1,8 +1,38 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import PatientProfile from "./PatientProfile";
+import CaregiverProfile from "./CaregiverProfile";
+import AdminProfile from "./AdminProfile";
+
 export default function ProfilePage() {
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold">Profile</h1>
-      <p className="mt-2 text-slate-600">Profile management will be implemented here.</p>
-    </main>
-  );
+  const router = useRouter();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (user?.role === "ADMIN") {
+    return <AdminProfile />;
+  }
+
+  if (user?.role === "CAREGIVER") {
+    return <CaregiverProfile />;
+  }
+
+  // Default to Patient
+  return <PatientProfile />;
 }

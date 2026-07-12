@@ -5,33 +5,40 @@ export const authService = {
     try {
       const res = await apiClient.post('/auth/login', { email, password });
       const data = res.data;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', data.data.accessToken);
       }
-      
+
       return data.data;
     } catch (err) {
-      throw new Error(err.response?.data?.error?.message || err.message || 'Login failed');
+      const errorObj = err.response?.data?.error;
+      if (errorObj?.messages) {
+        throw new Error(JSON.stringify(errorObj.messages));
+      }
+      throw new Error(errorObj?.code || err.message || 'Login failed');
     }
   },
-  
+
   async register(userData) {
     try {
       const res = await apiClient.post('/auth/register', userData);
       const data = res.data;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', data.data.accessToken);
       }
-      
+
       return data.data;
     } catch (err) {
-
-      throw new Error(err.response?.data?.error?.message || err.message || 'Registration failed');
+      const errorObj = err.response?.data?.error;
+      if (errorObj?.messages) {
+        throw new Error(JSON.stringify(errorObj.messages));
+      }
+      throw new Error(JSON.stringify({ en: errorObj?.message || 'Registration failed', ar: errorObj?.message || 'فشل التسجيل' }));
     }
   },
-  
+
   async logout() {
     try {
       const res = await apiClient.post('/auth/logout');
@@ -47,12 +54,27 @@ export const authService = {
       return false;
     }
   },
-  
+
   getAccessToken() {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('accessToken');
     }
-    return null;
+
+    return data.data;
+  },
+
+  async getMe() {
+    const res = await apiClient.get(`/auth/me`);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(
+        data?.error?.messages
+          ? JSON.stringify(data.error.messages)
+          : JSON.stringify({ en: data?.error?.message || 'Failed to fetch user', ar: data?.error?.message || 'فشل جلب بيانات المستخدم' })
+      );
+    }
+
+    return data.data;
   }
 };
 

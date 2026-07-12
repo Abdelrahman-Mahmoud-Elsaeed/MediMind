@@ -5,32 +5,63 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
 import { loginSchema } from "../validation/authValidation";
+import Logo from "../../../assets/logo.png";
+import Image from "next/image";
+import { useTranslation } from "@/shared/lib/i18nContext";
+import { LanguageToggler } from "@/shared/components";
 
 export default function LoginComponent() {
   const router = useRouter();
   const { login, loading, error, resetError } = useAuth();
+  const { locale, t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
-  const validationResult = loginSchema.safeParse({ email, password });
-  const errors = {};
-  if (!validationResult.success) {
-    validationResult.error.issues.forEach((issue) => {
-      const path = issue.path[0];
-      if (!errors[path]) {
-        errors[path] = issue.message;
+  const isValid = loginSchema.safeParse({ email, password }).success;
+
+  const handleBlur = (field) => {
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[0] === field);
+      if (issue) {
+        let msg = "";
+        if (field === "email") {
+          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
+        } else if (field === "password") {
+          msg = t("auth.validation.passwordRequired");
+        }
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
       }
-    });
-  }
-  const isValid = validationResult.success;
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     resetError();
-    if (!isValid) return;
+    setErrors({ email: "", password: "" });
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const newErrors = { email: "", password: "" };
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        let msg = "";
+        if (field === "email") {
+          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
+        } else if (field === "password") {
+          msg = t("auth.validation.passwordRequired");
+        }
+        newErrors[field] = msg;
+      });
+      setErrors(newErrors);
+      return;
+    }
 
     try {
       const resultAction = await login({ email, password });
@@ -41,21 +72,28 @@ export default function LoginComponent() {
     }
   };
 
-  const displayError = error;
+  let backendErrorText = error;
+  if (error) {
+    try {
+      const parsed = JSON.parse(error);
+      backendErrorText = parsed[locale] || parsed["en"] || error;
+    } catch (e) {
+      const transKey = `auth.error.${error}`;
+      const translated = t(transKey);
+      backendErrorText = translated !== transKey ? translated : error;
+    }
+  }
 
-  const handleBlur = (field) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const emailHasError = touched.email && errors.email;
-  const passwordHasError = touched.password && errors.password;
+  const displayError = backendErrorText;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
+      <LanguageToggler />
+
       {/* Ambient Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]"></div>
+        <div className="absolute top-[-10%] start-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] end-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]"></div>
       </div>
 
       {/* Login Container */}
@@ -63,21 +101,22 @@ export default function LoginComponent() {
         <div className="bg-surface-container/50 backdrop-blur-2xl border border-outline-variant/30 rounded-xl p-8 shadow-2xl flex flex-col items-center">
           {/* Logo area */}
           <div className="mb-8 w-32 h-32 flex items-center justify-center">
-            <img
+            <Image
               alt="MediMind Logo"
               className="w-full h-full object-contain"
               width={128}
               height={128}
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ"
+              src={Logo}
+              priority
             />
           </div>
 
           <div className="text-center mb-8 w-full">
             <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">
-              Welcome Back
+              {t("auth.login.title")}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Sign in to continue to your care portal
+              {t("auth.login.subtitle")}
             </p>
           </div>
 
@@ -96,13 +135,10 @@ export default function LoginComponent() {
                 className="font-label-md text-label-md text-on-surface-variant block"
                 htmlFor="email"
               >
-                Email Address
+                {t("auth.login.emailLabel")}
               </label>
-              <div className={`relative rounded-lg transition-all duration-200 bg-surface-container-high border ${emailHasError
-                  ? "border-error focus-within:shadow-[0_0_0_1px_var(--error),0_0_12px_0_var(--error)] focus-within:border-error"
-                  : "border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary"
-                }`}>
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <div className="relative rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary">
+                <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-on-surface-variant">
                   <span
                     className="material-symbols-outlined"
                     style={{ fontVariationSettings: "'FILL' 0" }}
@@ -111,17 +147,17 @@ export default function LoginComponent() {
                   </span>
                 </div>
                 <input
-                  className="block w-full pl-10 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 focus:outline-none font-body-md placeholder-outline-variant"
+                  className="block w-full ps-10 pe-3 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 focus:outline-none font-body-md placeholder-outline-variant text-start"
                   id="email"
-                  placeholder="provider@medimind.com"
+                  placeholder={t("auth.login.emailPlaceholder")}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => handleBlur("email")}
                 />
               </div>
-              {emailHasError && (
-                <p className="text-error font-body-sm text-xs mt-1">{errors.email}</p>
+              {errors.email && (
+                <p className="text-error font-body-sm text-[12px] mt-1.5 px-1 text-start">{errors.email}</p>
               )}
             </div>
 
@@ -132,20 +168,17 @@ export default function LoginComponent() {
                   className="font-label-md text-label-md text-on-surface-variant block"
                   htmlFor="password"
                 >
-                  Password
+                  {t("auth.login.passwordLabel")}
                 </label>
                 <a
                   className="font-label-md text-label-md text-primary hover:text-primary-fixed transition-colors"
                   href="#"
                 >
-                  Forgot Password?
+                  {t("auth.login.forgotPassword")}
                 </a>
               </div>
-              <div className={`relative rounded-lg transition-all duration-200 bg-surface-container-high border ${passwordHasError
-                  ? "border-error focus-within:shadow-[0_0_0_1px_var(--error),0_0_12px_0_var(--error)] focus-within:border-error"
-                  : "border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary"
-                }`}>
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <div className="relative rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50 focus-within:shadow-[0_0_0_1px_var(--color-primary),0_0_12px_0_var(--color-primary)] focus-within:border-primary">
+                <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-on-surface-variant">
                   <span
                     className="material-symbols-outlined"
                     style={{ fontVariationSettings: "'FILL' 0" }}
@@ -154,16 +187,16 @@ export default function LoginComponent() {
                   </span>
                 </div>
                 <input
-                  className="block w-full pl-10 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 focus:outline-none font-body-md placeholder-outline-variant"
+                  className="block w-full ps-10 pe-10 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 focus:outline-none font-body-md placeholder-outline-variant text-start"
                   id="password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.login.passwordPlaceholder")}
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => handleBlur("password")}
                 />
                 <button
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none"
+                  className="absolute inset-y-0 end-0 pe-3 flex items-center text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -175,8 +208,8 @@ export default function LoginComponent() {
                   </span>
                 </button>
               </div>
-              {passwordHasError && (
-                <p className="text-error font-body-sm text-xs mt-1">{errors.password}</p>
+              {errors.password && (
+                <p className="text-error font-body-sm text-[12px] mt-1.5 px-1 text-start">{errors.password}</p>
               )}
             </div>
 
@@ -186,10 +219,10 @@ export default function LoginComponent() {
               type="submit"
               disabled={!isValid || loading}
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? t("auth.login.signingInButton") : t("auth.login.signInButton")}
               {!loading && (
                 <span
-                  className="material-symbols-outlined text-[20px]"
+                  className="material-symbols-outlined text-[20px] rtl:rotate-180"
                   style={{ fontVariationSettings: "'FILL' 0" }}
                 >
                   arrow_forward
@@ -200,12 +233,12 @@ export default function LoginComponent() {
 
           {/* Sign Up Link */}
           <div className="mt-8 text-center font-body-md text-body-md text-on-surface-variant">
-            Don&apos;t have an account?
+            {t("auth.login.noAccount")}
             <Link
-              className="text-primary hover:text-primary-fixed font-label-md font-semibold ml-1 transition-colors"
-              href="/auth/register"
+              className="text-primary hover:text-primary-fixed font-label-md font-semibold ms-1 transition-colors"
+              href="/register"
             >
-              Sign Up
+              {t("auth.login.signUpLink")}
             </Link>
           </div>
         </div>

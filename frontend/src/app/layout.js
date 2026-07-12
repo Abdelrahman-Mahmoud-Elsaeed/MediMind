@@ -1,5 +1,6 @@
 import { Manrope, Inter } from "next/font/google";
 import { Providers } from "./providers";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -17,11 +18,16 @@ export const metadata = {
   description: "Medication management platform",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.variable} ${inter.variable} antialiased`}>
-        <Providers>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
+      <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
+        <Providers locale={locale} >
           {children}
         </Providers>
       </body>
