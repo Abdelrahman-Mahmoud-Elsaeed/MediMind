@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Medical Condition - MediMind</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Inter:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#001d32",
+                      "primary-fixed": "#cde5ff",
+                      "on-primary-fixed-variant": "#004a75",
+                      "outline": "#8b919a",
+                      "inverse-on-surface": "#2f3034",
+                      "background": "#111316",
+                      "on-primary-container": "#00314f",
+                      "on-error-container": "#ffdad6",
+                      "secondary-fixed": "#baf2a1",
+                      "error": "#ffb4ab",
+                      "on-surface": "#e2e2e6",
+                      "on-secondary-fixed-variant": "#225113",
+                      "secondary-container": "#225113",
+                      "on-secondary": "#0a3900",
+                      "primary": "#95ccff",
+                      "tertiary": "#fabb5e",
+                      "on-tertiary": "#452b00",
+                      "on-tertiary-fixed": "#291800",
+                      "secondary-fixed-dim": "#9fd588",
+                      "primary-container": "#5c9bd1",
+                      "outline-variant": "#41474f",
+                      "on-error": "#690005",
+                      "surface-tint": "#95ccff",
+                      "on-tertiary-container": "#422900",
+                      "on-secondary-fixed": "#042100",
+                      "inverse-surface": "#e2e2e6",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "tertiary-container": "#c38b33",
+                      "inverse-primary": "#166396",
+                      "secondary": "#9fd588",
+                      "on-primary": "#003352",
+                      "surface-bright": "#37393d",
+                      "primary-fixed-dim": "#95ccff",
+                      "surface-dim": "#111316",
+                      "on-background": "#e2e2e6",
+                      "surface-container-lowest": "#0c0e11",
+                      "surface-container-high": "#282a2d",
+                      "surface-container": "#1e2023",
+                      "surface-variant": "#333538",
+                      "tertiary-fixed-dim": "#fabb5e",
+                      "tertiary-fixed": "#ffddb3",
+                      "error-container": "#93000a",
+                      "surface-container-low": "#1a1c1f",
+                      "surface": "#111316",
+                      "surface-container-highest": "#333538",
+                      "on-surface-variant": "#c1c7d0",
+                      "on-secondary-container": "#8ec378"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "container-max": "1280px",
+                      "unit": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Manrope"],
+                      "headline-lg-mobile": ["Manrope"],
+                      "display-lg": ["Manrope"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Manrope"],
+                      "label-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 32, 35, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 1px #95ccff, 0 0 15px rgba(149, 204, 255, 0.1);
+            border-color: #95ccff;
+        }
+
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #95ccff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #95ccff;
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: #111316;
+            background-color: #111316;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Modified for focused journey: Back navigation instead of global nav) -->
+<header class="w-full top-0 sticky bg-surface-container/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm z-50 transition-all">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="flex items-center justify-center p-2 rounded-full hover:bg-surface-variant transition-colors cursor-pointer active:scale-95 text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">MediMind</h1>
+</div>
+<!-- Suppressed global navigation links and FAB for this focused form screen -->
+<div class="hidden md:flex items-center">
+<span class="font-label-md text-label-md text-on-surface-variant">Medical Records</span>
+</div>
+</div>
+</header>
+<main class="w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-gutter flex justify-center pb-32 md:pb-gutter">
+<div class="w-full max-w-[600px] flex flex-col gap-8">
+<!-- Page Header -->
+<div class="flex flex-col gap-2">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Add Medical Condition</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Enter diagnosis details to keep your medical profile up to date.</p>
+</div>
+<!-- Form Container (Glassmorphic Card) -->
+<form class="glass-panel rounded-xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+<!-- Condition Name Input -->
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface" for="diseaseName">Condition Name <span class="text-error">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none" style="font-variation-settings: 'FILL' 0;">coronavirus</span>
+<input class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg py-3 pl-12 pr-4 text-on-surface placeholder:text-outline-variant font-body-md text-body-md input-glow transition-all outline-none focus:ring-0" id="diseaseName" name="diseaseName" placeholder="e.g., Hypertension Type II" required="" type="text"/>
+</div>
+</div>
+<hr class="border-outline-variant/20 my-2"/>
+<!-- Diagnosis Date Picker -->
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface" for="diagnosedDate">Diagnosis Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none" style="font-variation-settings: 'FILL' 0;">calendar_month</span>
+<input class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg py-3 pl-12 pr-4 text-on-surface font-body-md text-body-md input-glow transition-all outline-none focus:ring-0 [&amp;::-webkit-calendar-picker-indicator]:filter [&amp;::-webkit-calendar-picker-indicator]:invert [&amp;::-webkit-calendar-picker-indicator]:opacity-50" id="diagnosedDate" name="diagnosedDate" type="date"/>
+</div>
+</div>
+<!-- Chronic Toggle -->
+<div class="flex items-center justify-between p-4 rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div class="flex flex-col gap-1 pr-4">
+<span class="font-label-md text-label-md text-on-surface">Long-term / Chronic Condition</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Indicates an ongoing condition lasting 1 year or more.</span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in flex-shrink-0">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-surface-container border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-300 ease-in-out z-10 opacity-0" id="isChronic" name="isChronic" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container-high cursor-pointer transition-colors duration-300 ease-in-out border border-outline-variant/30 relative" for="isChronic">
+<span class="block absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-full bg-outline-variant transition-transform duration-300 ease-in-out shadow-sm pointer-events-none" id="toggle-thumb"></span>
+</label>
+</div>
+</div>
+<!-- Clinical Notes Textarea -->
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface" for="notes">Clinical Notes</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-4 text-outline-variant pointer-events-none" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+<textarea class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg py-3 pl-12 pr-4 text-on-surface placeholder:text-outline-variant font-body-md text-body-md input-glow transition-all outline-none focus:ring-0 resize-y min-h-[100px]" id="notes" name="notes" placeholder="Additional details, severity, or referring physician..." rows="4"></textarea>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col-reverse md:flex-row justify-end gap-4 mt-4 pt-6 border-t border-outline-variant/20">
+<button class="px-6 py-3 rounded-full font-label-md text-label-md border border-outline-variant/50 text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" type="button">
+                        Cancel
+                    </button>
+<button class="px-6 py-3 rounded-full font-label-md text-label-md bg-gradient-to-r from-primary-container to-primary text-on-primary-container hover:opacity-90 hover:shadow-[0_0_15px_rgba(149,204,255,0.25)] transition-all active:scale-95 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">save</span>
+                        Save Condition
+                    </button>
+</div>
+</form>
+</div>
+</main>
+<script>
+        // Simple script to handle custom toggle visual state
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleCheckbox = document.getElementById('isChronic');
+            const toggleThumb = document.getElementById('toggle-thumb');
+            const toggleLabel = document.querySelector('.toggle-label');
+
+            toggleCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    toggleThumb.style.transform = 'translateX(24px)';
+                    toggleThumb.style.backgroundColor = '#111316'; // Background color
+                    toggleLabel.style.backgroundColor = '#95ccff'; // Primary color
+                    toggleLabel.style.borderColor = '#95ccff';
+                } else {
+                    toggleThumb.style.transform = 'translateX(0)';
+                    toggleThumb.style.backgroundColor = '#41474f'; // Outline variant
+                    toggleLabel.style.backgroundColor = '#282a2d'; // Surface container high
+                    toggleLabel.style.borderColor = 'rgba(65, 71, 79, 0.3)';
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediMind - Registration &amp; Role Selection</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#291800",
+                    "outline": "#8b919a",
+                    "inverse-primary": "#166396",
+                    "on-primary-fixed-variant": "#004a75",
+                    "surface-container-lowest": "#0c0e11",
+                    "on-error": "#690005",
+                    "tertiary": "#fabb5e",
+                    "on-secondary-fixed-variant": "#225113",
+                    "surface-container": "#1e2023",
+                    "secondary-container": "#225113",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "surface-variant": "#333538",
+                    "error-container": "#93000a",
+                    "surface-bright": "#37393d",
+                    "on-secondary-fixed": "#042100",
+                    "secondary": "#9fd588",
+                    "tertiary-fixed": "#ffddb3",
+                    "on-tertiary-container": "#422900",
+                    "tertiary-container": "#c38b33",
+                    "secondary-fixed-dim": "#9fd588",
+                    "primary-container": "#5c9bd1",
+                    "on-surface-variant": "#c1c7d0",
+                    "primary-fixed-dim": "#95ccff",
+                    "outline-variant": "#41474f",
+                    "on-tertiary": "#452b00",
+                    "on-secondary": "#0a3900",
+                    "surface-container-high": "#282a2d",
+                    "on-error-container": "#ffdad6",
+                    "on-background": "#e2e2e6",
+                    "tertiary-fixed-dim": "#fabb5e",
+                    "surface-dim": "#111316",
+                    "primary": "#95ccff",
+                    "secondary-fixed": "#baf2a1",
+                    "on-primary-container": "#00314f",
+                    "surface-container-low": "#1a1c1f",
+                    "on-surface": "#e2e2e6",
+                    "on-secondary-container": "#8ec378",
+                    "surface": "#111316",
+                    "on-primary": "#003352",
+                    "inverse-on-surface": "#2f3034",
+                    "inverse-surface": "#e2e2e6",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#cde5ff",
+                    "background": "#111316",
+                    "surface-container-highest": "#333538",
+                    "on-primary-fixed": "#001d32",
+                    "surface-tint": "#95ccff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "40px",
+                    "container-max": "1280px",
+                    "unit": "8px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Manrope"
+                    ],
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Manrope"
+                    ],
+                    "headline-md": [
+                            "Manrope"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Manrope"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<!-- Google Fonts: Manrope & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111316; /* base background */
+            color: #e2e2e6;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        /* Subtle glow effect for active states/focus */
+        .glow-primary:focus-within {
+            box-shadow: 0 0 0 2px rgba(149, 204, 255, 0.3);
+            border-color: #95ccff;
+        }
+        
+        .role-card-active {
+            border-color: #95ccff;
+            background-color: rgba(92, 155, 209, 0.1);
+        }
+        .role-card-active .material-symbols-outlined {
+            color: #95ccff;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Simplified for Registration - Content Canvas Priority) -->
+<header class="w-full flex justify-center py-6 md:py-8 z-10 relative">
+<img alt="MediMind Logo" class="h-12 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ">
+</header>
+<!-- Main Registration Container -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop w-full relative z-10">
+<div class="w-full max-w-[480px] bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-2xl p-6 md:p-10 backdrop-blur-md relative overflow-hidden">
+<!-- Subtle background accent inside card -->
+<div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="mb-8 text-center"><div class="mb-6">
+  <div class="flex justify-between items-center mb-2">
+    <span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Step 1 of 2</span>
+    <span class="font-label-sm text-label-sm text-on-surface-variant">Account Setup</span>
+  </div>
+  <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+    <div class="h-full w-1/2 bg-primary rounded-full"></div>
+  </div>
+</div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary-fixed-dim tracking-tight mb-2">Create Account</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Join MediMind to manage care with precision.</p>
+</div>
+<form action="#" class="space-y-6" method="POST">
+<!-- Account Details Section -->
+<div class="space-y-4">
+<!-- Email Input -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="email">Email Address</label>
+<div class="relative rounded-lg bg-surface border border-outline-variant/50 transition-all glow-primary">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px]">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 placeholder-on-surface-variant/50 rounded-lg" id="email" name="email" placeholder="you@example.com" required="" type="email">
+</div>
+</div>
+<!-- Password Input -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1.5" for="password">Password</label>
+<div class="relative rounded-lg bg-surface border border-outline-variant/50 transition-all glow-primary">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px]">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-2.5 bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 placeholder-on-surface-variant/50 rounded-lg" id="password" name="password" placeholder="••••••••" required="" type="password">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
+<span class="material-symbols-outlined text-on-surface-variant text-opacity-70 text-[20px] hover:text-on-surface transition-colors">visibility_off</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Role Selection Section -->
+<div class="pt-2">
+<h2 class="font-label-md text-label-md text-on-surface mb-3 flex items-center gap-2">
+                        I am registering as a:
+                        <span class="material-symbols-outlined text-primary text-[16px] cursor-help" title="Select your primary role to customize your experience">info</span>
+</h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Patient Role Card -->
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="role" required="" type="radio" value="patient">
+<div class="h-full border border-outline-variant/40 rounded-lg p-4 flex flex-col items-center justify-center gap-3 bg-surface hover:bg-surface-variant/50 transition-all peer-checked:role-card-active">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center peer-checked:bg-primary/20">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" style="font-variation-settings: 'FILL' 1;">personal_injury</span>
+</div>
+<span class="font-label-md text-label-md text-center text-on-surface">Patient</span>
+</div>
+</label>
+<!-- Caregiver Role Card -->
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="role" type="radio" value="caregiver">
+<div class="h-full border border-outline-variant/40 rounded-lg p-4 flex flex-col items-center justify-center gap-3 bg-surface hover:bg-surface-variant/50 transition-all peer-checked:role-card-active">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center peer-checked:bg-primary/20">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" style="font-variation-settings: 'FILL' 1;">supervisor_account</span>
+</div>
+<span class="font-label-md text-label-md text-center text-on-surface">Caregiver</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="pt-4">
+<button class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all" type="submit">
+                        Continue
+                        <span class="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+</button>
+<p class="mt-4 text-center font-body-md text-label-sm text-on-surface-variant">
+                        Already have an account? <a class="font-label-md text-primary hover:text-primary-fixed transition-colors" href="#">Sign in here</a>
+</p>
+</div>
+</form>
+</div>
+</main>
+<!-- Optional: Subtle ambient background element for the whole page -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[100px] transform translate-x-[-20%] translate-y-[20%]"></div>
+</div>
+
+
+</body></html>

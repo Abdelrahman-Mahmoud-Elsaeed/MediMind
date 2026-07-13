@@ -1,0 +1,28 @@
+{
+  "name": "wafa",
+  "version": "2.0.0",
+  "description": "وفاء — منصة متكاملة لإدارة الأدوية ومتابعة المرضى المزمنين في الوطن العربي",
+  "main": "index.js",
+  "scripts": {
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:worker": "cd worker && npm start",
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:worker\"",
+    "test": "cd backend && npm test"
+  },
+  "keywords": [
+    "wafa",
+    "وفاء",
+    "medication",
+    "healthcare",
+    "pwa",
+    "egypt",
+    "arabic"
+  ],
+  "author": "Wafa Team",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
