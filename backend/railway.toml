@@ -1,0 +1,9 @@
+[deploy]
+# Railway backend deployment config
+# Docs: https://docs.railway.app/deploy/deploy-as-a-service
+
+startCommand = "node index.js"
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

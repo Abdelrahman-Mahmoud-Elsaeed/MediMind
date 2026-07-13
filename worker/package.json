@@ -1,0 +1,24 @@
+{
+  "name": "wafa-worker",
+  "version": "2.0.0",
+  "description": "وفاء Background Worker — Cron jobs for escalation, dose generation, and weekly reports",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "bullmq": "^5.79.2",
+    "dotenv": "^17.4.2",
+    "mongoose": "^9.7.3",
+    "node-cron": "^3.0.3",
+    "redis": "^6.1.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.0"
+  }
+}

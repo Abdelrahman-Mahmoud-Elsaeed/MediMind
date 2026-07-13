@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وفاء — غير متصل</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #F8FAFC;
+    color: #0F172A;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+  }
+  .container {
+    max-width: 400px;
+  }
+  .logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #0EA5E9, #0369A1);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 24px;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+  p {
+    color: #64748B;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  button {
+    background: #0EA5E9;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    min-height: 56px;
+  }
+  button:hover {
+    background: #0369A1;
+  }
+  .hint {
+    margin-top: 24px;
+    padding: 16px;
+    background: #E0F2FE;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #0369A1;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">💊</div>
+    <h1>أنت غير متصل بالإنترنت</h1>
+    <p>مش هتقدر تاخد تذكيرات الأدوية دلوقتي. بس تقدر تشوف الجدول اللي محفوظ عندك.</p>
+    <button onclick="location.href='/dashboard'">
+      🔄 حاول مرة تانية
+    </button>
+    <div class="hint">
+      💡 تأكد إنك متصل بالإنترنت عشان تستلم تذكيرات أدويتك في الوقت الصح
+    </div>
+  </div>
+</body>
+</html>

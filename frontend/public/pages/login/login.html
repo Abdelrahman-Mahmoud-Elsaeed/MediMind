@@ -1,0 +1,195 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediMind - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;family=Inter:wght@400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#291800",
+                        "outline": "#8b919a",
+                        "inverse-primary": "#166396",
+                        "on-primary-fixed-variant": "#004a75",
+                        "surface-container-lowest": "#0c0e11",
+                        "on-error": "#690005",
+                        "tertiary": "#fabb5e",
+                        "on-secondary-fixed-variant": "#225113",
+                        "surface-container": "#1e2023",
+                        "secondary-container": "#225113",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "surface-variant": "#333538",
+                        "error-container": "#93000a",
+                        "surface-bright": "#37393d",
+                        "on-secondary-fixed": "#042100",
+                        "secondary": "#9fd588",
+                        "tertiary-fixed": "#ffddb3",
+                        "on-tertiary-container": "#422900",
+                        "tertiary-container": "#c38b33",
+                        "secondary-fixed-dim": "#9fd588",
+                        "primary-container": "#5c9bd1",
+                        "on-surface-variant": "#c1c7d0",
+                        "primary-fixed-dim": "#95ccff",
+                        "outline-variant": "#41474f",
+                        "on-tertiary": "#452b00",
+                        "on-secondary": "#0a3900",
+                        "surface-container-high": "#282a2d",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e2e2e6",
+                        "tertiary-fixed-dim": "#fabb5e",
+                        "surface-dim": "#111316",
+                        "primary": "#95ccff",
+                        "secondary-fixed": "#baf2a1",
+                        "on-primary-container": "#00314f",
+                        "surface-container-low": "#1a1c1f",
+                        "on-surface": "#e2e2e6",
+                        "on-secondary-container": "#8ec378",
+                        "surface": "#111316",
+                        "on-primary": "#003352",
+                        "inverse-on-surface": "#2f3034",
+                        "inverse-surface": "#e2e2e6",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#cde5ff",
+                        "background": "#111316",
+                        "surface-container-highest": "#333538",
+                        "on-primary-fixed": "#001d32",
+                        "surface-tint": "#95ccff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "container-max": "1280px",
+                        "unit": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-panel {
+            background: theme('colors.surface-container/50');
+            backdrop-filter: blur(16px);
+            border: 1px solid theme('colors.outline-variant/30');
+        }
+        .input-glow:focus-within {
+            box-shadow: 0 0 0 1px theme('colors.primary'), 0 0 12px 0 theme('colors.primary/20');
+            border-color: theme('colors.primary');
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
+<!-- Ambient Background Effects -->
+<div class="absolute inset-0 pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]"></div>
+</div>
+<!-- Login Container -->
+<main class="relative z-10 w-full max-w-md px-margin-mobile md:px-0">
+<div class="glass-panel rounded-xl p-8 shadow-2xl flex flex-col items-center">
+<!-- Logo area -->
+<div class="mb-8 w-32 h-32 flex items-center justify-center">
+<img alt="MediMind Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-OugZQPn5PYc6lK1g2NgI6-0NcCxKaNLvBpSeA0B0oc6uFyAmJJuQo6Bnzyu2nKJhAk0UWSeHYkE2bGlsnCt3Jx92b0fCfN_4wtCu3oGHGJ_g4bdZUjLsRMcyAxNDk7W2mdxKjW8STG_-SEwQ8vqVfg04cXdgJ-53v8rBxBrwi_I8x68F2qbWoMw_F5s2bFq0RZ1iYrIpHsH1erlyWqi83HcFY1ZYpkz09WGIX-1jFrTz4wfNpO3fgQ">
+</div>
+<div class="text-center mb-8 w-full">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Welcome Back</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Sign in to continue to your care portal</p>
+</div>
+<!-- Login Form -->
+<form class="w-full space-y-5" onsubmit="event.preventDefault();">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block" for="email">Email Address</label>
+<div class="relative input-glow rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">mail</span>
+</div>
+<input class="block w-full pl-10 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 font-body-md placeholder-outline-variant" id="email" placeholder="provider@medimind.com" required="" type="email">
+</div>
+</div>
+<!-- Password Input -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant block" for="password">Password</label>
+<a class="font-label-md text-label-md text-primary hover:text-primary-fixed transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative input-glow rounded-lg transition-all duration-200 bg-surface-container-high border border-outline-variant/50">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">lock</span>
+</div>
+<input class="block w-full pl-10 py-3 bg-transparent border-none rounded-lg text-on-surface focus:ring-0 font-body-md placeholder-outline-variant" id="password" placeholder="••••••••" required="" type="password">
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Sign In Button -->
+<button class="w-full py-3 px-4 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-lg shadow-primary/20 hover:bg-primary-fixed hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 mt-6" type="submit">
+                    Sign In
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</button>
+</form>
+<!-- Sign Up Link -->
+<div class="mt-8 text-center font-body-md text-body-md text-on-surface-variant">
+                Don't have an account? 
+                <a class="text-primary hover:text-primary-fixed font-label-md font-semibold ml-1 transition-colors" href="#">Sign Up</a>
+</div>
+</div>
+</main>
+<script>
+        // Simple script to handle password visibility toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const togglePasswordBtn = document.querySelector('button[type="button"]');
+            const passwordInput = document.getElementById('password');
+            const iconSpan = togglePasswordBtn.querySelector('span');
+
+            togglePasswordBtn.addEventListener('click', () => {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    iconSpan.textContent = 'visibility';
+                } else {
+                    passwordInput.type = 'password';
+                    iconSpan.textContent = 'visibility_off';
+                }
+            });
+        });
+    </script>
+
+
+</body></html>

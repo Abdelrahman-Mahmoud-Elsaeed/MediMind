@@ -1,0 +1,80 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "title": "Doses Confirmed (per minute)",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(wafa_doses_confirmed_total[1m])) * 60",
+          "legendFormat": "doses/min",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Doses Missed (per minute)",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(wafa_doses_missed_total[1m])) * 60",
+          "legendFormat": "missed/min",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Notifications Sent (by channel)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(wafa_notifications_sent_total[5m])) by (channel)",
+          "legendFormat": "{{channel}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Escalations (by step)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(wafa_escalations_total[5m])) by (step)",
+          "legendFormat": "{{step}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Worker Jobs Processed",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum(rate(wafa_worker_jobs_processed_total[5m])) by (job_name, status)",
+          "legendFormat": "{{job_name}} ({{status}})",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["wafa", "business"],
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "وفاء — Business Metrics",
+  "uid": "wafa-business",
+  "version": 1
+}
