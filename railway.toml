@@ -1,0 +1,35 @@
+# ===== Service: Backend API =====
+[api]
+source = "backend"
+startCommand = "node index.js"
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 30
+
+# ===== Service: Background Worker =====
+[worker]
+source = "worker"
+startCommand = "node index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+
+# ===== Service: Frontend (Vercel) =====
+# Frontend is deployed to Vercel, not Railway
+# Set NEXT_PUBLIC_API_URL in Vercel to point to the Railway backend URL
+
+# ===== Variables to set in Railway Dashboard =====
+# MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/wafa?retryWrites=true&w=majority
+# REDIS_URL=redis://default:<password>@<redis-host>:6379
+# JWT_ACCESS_SECRET=<openssl rand -hex 32>
+# JWT_REFRESH_SECRET=<openssl rand -hex 32>
+# COOKIE_SECRET=<openssl rand -hex 32>
+# OTP_SALT=<random string>
+# VAPID_PUBLIC_KEY=<from npx web-push generate-vapid-keys>
+# VAPID_PRIVATE_KEY=<from npx web-push generate-vapid-keys>
+# VAPID_SUBJECT=mailto:admin@wafa.app
+# WHATSAPP_PHONE_NUMBER_ID=<from Meta for Developers>
+# WHATSAPP_ACCESS_TOKEN=<from Meta for Developers>
+# WHATSAPP_FROM_NUMBER=<phone number>
+# AWS_ACCESS_KEY_ID=<for S3/SNS>
+# AWS_SECRET_ACCESS_KEY=<for S3/SNS>
+# AWS_S3_BUCKET_NAME=wafa-uploads
+# FRONTEND_URL=https://wafa.vercel.app

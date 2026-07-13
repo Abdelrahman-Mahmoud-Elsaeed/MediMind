@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # ===== Backend API =====
+  - job_name: 'wafa-api'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['api:8080']
+        labels:
+          service: 'api'
+          environment: 'production'
+    # Also scrape from host for local dev
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels:
+          service: 'api'
+          environment: 'development'
+
+  # ===== Worker =====
+  - job_name: 'wafa-worker'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['worker:3001']
+        labels:
+          service: 'worker'
+          environment: 'production'
+
+  # ===== Prometheus self-monitoring =====
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

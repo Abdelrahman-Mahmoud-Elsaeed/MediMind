@@ -1,0 +1,1 @@
+export const companionModule = { name: "companion" };

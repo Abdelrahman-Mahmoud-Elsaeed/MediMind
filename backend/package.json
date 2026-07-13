@@ -1,0 +1,48 @@
+{
+  "name": "wafa-backend",
+  "version": "2.0.0",
+  "description": "وفاء Backend — Node.js + Express + MongoDB for medication management",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "dev": "nodemon index.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit"
+  },
+  "keywords": [
+    "wafa",
+    "وفاء",
+    "healthcare",
+    "medication",
+    "mongodb",
+    "express"
+  ],
+  "author": "Wafa Team",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@sentry/node": "^8.0.0",
+    "axios": "^1.7.0",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.79.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "prom-client": "^15.1.0",
+    "qrcode": "^1.5.4",
+    "redis": "^6.1.0",
+    "socket.io": "^4.8.3",
+    "web-push": "^3.6.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
+  }
+}
