@@ -1,0 +1,9 @@
+[deploy]
+# Railway worker deployment config
+# Worker runs cron jobs (escalation, dose generation, weekly reports)
+
+startCommand = "node index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

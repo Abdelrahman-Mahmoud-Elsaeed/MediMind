@@ -1,0 +1,61 @@
+{
+  "name": "وفاء — إدارة الأدوية",
+  "short_name": "وفاء",
+  "description": "منصة متكاملة لإدارة الأدوية ومتابعة المرضى المزمنين في الوطن العربي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#0EA5E9",
+  "categories": ["health", "medical", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "أدوية اليوم",
+      "short_name": "اليوم",
+      "description": "شوف جدول أدوية اليوم",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "إضافة دواء",
+      "short_name": "إضافة",
+      "description": "ضيف دواء جديد",
+      "url": "/medications/add",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "التقارير",
+      "short_name": "تقارير",
+      "description": "شوف تقارير التزامك",
+      "url": "/reports",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

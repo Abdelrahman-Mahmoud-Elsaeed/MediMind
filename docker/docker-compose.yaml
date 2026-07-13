@@ -1,0 +1,118 @@
+services:
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8080}:${PORT:-8080}"
+    environment:
+      # === App ===
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-8080}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+
+      # === Database ===
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/wafa?authSource=admin
+
+      # === Redis ===
+      - REDIS_URL=redis://redis:6379
+
+      # === JWT Secrets ===
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - OTP_SALT=${OTP_SALT}
+
+      # === AWS ===
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_SNS_SENDER_ID=${AWS_SNS_SENDER_ID:-WAFA}
+
+      # === WhatsApp ===
+      - WHATSAPP_API_VERSION=v18.0
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+      - WHATSAPP_FROM_NUMBER=${WHATSAPP_FROM_NUMBER}
+
+      # === VAPID ===
+      - VAPID_SUBJECT=${VAPID_SUBJECT}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+
+      # === Rate Limits ===
+      - RATE_LIMIT_GLOBAL_MAX=${RATE_LIMIT_GLOBAL_MAX:-100}
+      - RATE_LIMIT_GLOBAL_WINDOW_MS=${RATE_LIMIT_GLOBAL_WINDOW_MS:-60000}
+      - RATE_LIMIT_AUTH_MAX=${RATE_LIMIT_AUTH_MAX:-5}
+      - RATE_LIMIT_AUTH_WINDOW_MS=${RATE_LIMIT_AUTH_WINDOW_MS:-900000}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3001
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/wafa?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - BACKEND_API_URL=http://api:8080/api/v1
+      - WHATSAPP_API_VERSION=v18.0
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+      - WHATSAPP_FROM_NUMBER=${WHATSAPP_FROM_NUMBER}
+      - VAPID_SUBJECT=${VAPID_SUBJECT}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - CRON_ESCALATION=${CRON_ESCALATION:-*/1 * * * *}
+      - CRON_GENERATE_DOSES=${CRON_GENERATE_DOSES:-0 * * * *}
+      - CRON_WEEKLY_REPORTS=${CRON_WEEKLY_REPORTS:-0 18 * * 5}
+      - CRON_REFILL_CHECK=${CRON_REFILL_CHECK:-0 9 * * *}
+      - CRON_EXPIRATION_CHECK=${CRON_EXPIRATION_CHECK:-0 10 * * 1}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-wafa_admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-change_me_in_production}
+      - MONGO_INITDB_DATABASE=wafa
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo_data:
+  redis_data:
