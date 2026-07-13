@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Daily Adherence Timeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#e2e2e6",
+                        "surface-container-high": "#282a2d",
+                        "surface-dim": "#111316",
+                        "tertiary-fixed": "#ffddb3",
+                        "tertiary": "#fabb5e",
+                        "secondary-fixed": "#baf2a1",
+                        "on-tertiary": "#452b00",
+                        "outline-variant": "#41474f",
+                        "outline": "#8b919a",
+                        "secondary-fixed-dim": "#9fd588",
+                        "tertiary-fixed-dim": "#fabb5e",
+                        "surface-container-highest": "#333538",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "inverse-primary": "#166396",
+                        "on-secondary-fixed": "#042100",
+                        "primary-container": "#5c9bd1",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-bright": "#37393d",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#8ec378",
+                        "on-primary-fixed-variant": "#004a75",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#225113",
+                        "primary": "#95ccff",
+                        "on-primary-fixed": "#001d32",
+                        "inverse-on-surface": "#2f3034",
+                        "surface-variant": "#333538",
+                        "secondary": "#9fd588",
+                        "surface-tint": "#95ccff",
+                        "surface-container-lowest": "#0c0e11",
+                        "surface-container": "#1e2023",
+                        "on-primary-container": "#00314f",
+                        "on-surface": "#e2e2e6",
+                        "surface": "#111316",
+                        "background": "#111316",
+                        "on-background": "#e2e2e6",
+                        "on-secondary-fixed-variant": "#225113",
+                        "surface-container-low": "#1a1c1f",
+                        "primary-fixed-dim": "#95ccff",
+                        "on-surface-variant": "#c1c7d0",
+                        "primary-fixed": "#cde5ff",
+                        "on-primary": "#003352",
+                        "tertiary-container": "#c38b33",
+                        "on-secondary": "#0a3900",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#422900",
+                        "on-error": "#690005"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-lg docked full-width top-0 sticky z-50 border-b border-outline-variant/30 flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 shadow-none">
+<div class="flex items-center gap-3">
+<img alt="MediMind Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida/AP1WRLtjBaLbJF8d34ZdJ1AmrgZMMP_-LM7-kl46fHtj-SEulL6CH3nS1KGu1Vq9KqE3Ue_-pW0m-4OSV47tq70KsX6Q2HsLwuTIkTeE-iQv4YCTSNtU12sPKfUI_3yaeqVAIrQaGQ4ftyW2u4eiB5NZbJnIfTgNCfIBJw6bDPL_YKuHAVjpasRyowYfbJQwoW0KexsVcqf_Hq4T6odLUGwNpBTOUghS3GdHgM2hj4wjsoklPGSOLlxjLAqnT6A"/>
+<span class="font-display-lg text-headline-md tracking-tight text-primary dark:text-primary-fixed-dim">MediMind</span>
+</div>
+<div>
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar portrait of a modern healthcare professional or patient, high resolution, dark mode aesthetic, subtle lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh0YA4fteVocbGoBnkVB61ksYzuJi-5k3-XpZjDjkZWv2Qh9wBq1XQyZ0ELULmO8qKjcPgaqWJUPMawm7JChukBM17ijCmnGX93rhs9RMZ3uDyH5Z3EC1VlRkm-9WMi2-SsBS2INTkGBBBrXDwvt6EtamE0yN7Sg-qkf3nLL-RL5lJFMTD6b-uxQ-dogTZHk_pJ5kakv7W_roEQNx4mHOqRFccLYjsjnfLMNT0c-A0-KcDMRyNF92ReQ"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin-mobile py-6 overflow-y-auto pb-24 max-w-container-max mx-auto w-full">
+<div class="mb-6 flex justify-between items-end">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Today's Schedule</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Wednesday, Oct 25</p>
+</div>
+<div class="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-2 border border-outline-variant/30">
+<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
+<span class="font-label-sm text-label-sm text-on-surface">3/5 Taken</span>
+</div>
+</div>
+<!-- Timeline Container -->
+<div class="relative border-l-2 border-surface-container-high ml-4 space-y-8">
+<!-- Morning Slot -->
+<div class="relative pl-6">
+<!-- Timeline Dot -->
+<div class="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">wb_sunny</span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface-variant mb-4 uppercase tracking-wider">Morning (8:00 AM)</h2>
+<div class="space-y-4">
+<!-- Taken Medication Card -->
+<div class="bg-surface-container rounded-lg p-4 border border-outline-variant/20 flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Lisinopril</h3>
+<p class="font-body-md text-label-md text-on-surface-variant">10mg Tablet • With food</p>
+</div>
+<span class="material-symbols-outlined filled text-secondary">check_circle</span>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/10 px-2 py-1 rounded-full">TAKEN at 8:15 AM</span>
+</div>
+</div>
+<!-- Missed Medication Card -->
+<div class="bg-surface-container rounded-lg p-4 border border-outline-variant/20 flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-error"></div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Vitamin D3</h3>
+<p class="font-body-md text-label-md text-on-surface-variant">2000 IU Capsule</p>
+</div>
+<span class="material-symbols-outlined filled text-error">cancel</span>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="font-label-sm text-label-sm text-error bg-error/10 px-2 py-1 rounded-full">MISSED</span>
+<button class="font-label-md text-label-md text-primary hover:text-primary-fixed transition-colors">Mark Taken</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Afternoon Slot -->
+<div class="relative pl-6">
+<!-- Timeline Dot -->
+<div class="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-primary-container border-2 border-surface flex items-center justify-center shadow-[0_0_12px_rgba(92,155,209,0.4)]">
+<span class="material-symbols-outlined text-[12px] text-on-primary-container">light_mode</span>
+</div>
+<h2 class="font-label-md text-label-md text-primary mb-4 uppercase tracking-wider font-bold">Afternoon (1:00 PM) - Current</h2>
+<div class="space-y-4">
+<!-- Pending Medication Card -->
+<div class="bg-surface-container rounded-lg p-4 border border-primary/30 flex flex-col gap-3 relative overflow-hidden shadow-[0_4px_24px_rgba(149,204,255,0.05)]">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="bg-surface-container-high p-2 rounded-md flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">pill</span>
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Metformin</h3>
+<p class="font-body-md text-label-md text-on-surface-variant">500mg Tablet • After meal</p>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> PENDING
+                              </span>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-6 py-2 rounded-full hover:opacity-90 transition-opacity flex items-center gap-2">
+                                  Take Now <span class="material-symbols-outlined text-[18px]">water_drop</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Evening Slot -->
+<div class="relative pl-6">
+<!-- Timeline Dot -->
+<div class="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">bedtime</span>
+</div>
+<h2 class="font-label-md text-label-md text-on-surface-variant mb-4 uppercase tracking-wider">Evening (8:00 PM)</h2>
+<div class="space-y-4">
+<!-- Upcoming Medication Card -->
+<div class="bg-surface-container rounded-lg p-4 border border-outline-variant/10 flex flex-col gap-3 relative overflow-hidden opacity-70">
+<div class="absolute top-0 left-0 w-1 h-full bg-outline"></div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Atorvastatin</h3>
+<p class="font-body-md text-label-md text-on-surface-variant">20mg Tablet • Before bed</p>
+</div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full flex items-center gap-1">
+                                  UPCOMING
+                              </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface-container dark:bg-surface-container-low backdrop-blur-md fixed bottom-0 w-full z-50 rounded-t-xl border-t border-outline-variant/20 shadow-lg flex justify-around items-center h-20 pb-safe px-4">
+<!-- Medication (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-primary transition-all scale-110 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="medication">medication</span>
+<span class="font-label-sm text-label-sm mt-1">Medication</span>
+</a>
+<!-- Adherence (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1.5 hover:text-primary transition-all scale-110 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined filled" data-icon="pill">pill</span>
+<span class="font-label-sm text-label-sm mt-1">Adherence</span>
+</a>
+<!-- Caregivers (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-primary transition-all scale-110 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="supervisor_account">supervisor_account</span>
+<span class="font-label-sm text-label-sm mt-1">Caregivers</span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:text-primary transition-all scale-110 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
