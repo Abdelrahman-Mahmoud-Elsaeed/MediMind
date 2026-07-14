@@ -1,0 +1,11 @@
+variable "project_name" { type = string }
+variable "environment" { type = string }
+variable "aws_region" { type = string }
+variable "docdb_master_username" { type = string }
+variable "docdb_master_password" { type = string }
+variable "docdb_endpoint" { type = string }
+variable "s3_bucket_id" { type = string }
+variable "s3_bucket_arn" { type = string }
+variable "sns_topic_arn" { type = string }
+variable "sqs_queue_id" { type = string }
+variable "sqs_queue_arn" { type = string }

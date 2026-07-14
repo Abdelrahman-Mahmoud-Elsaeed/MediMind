@@ -1,5 +1,5 @@
-const { verifyToken } = require('../utils/jwt.util');
-const logger = require('../utils/logger');
+const { verifyToken } = require("../utils/jwt.util");
+const { logger } = require("../utils/logger");
 
 /**
  * Authentication middleware
@@ -9,14 +9,14 @@ const authenticate = (req, res, next) => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
         error: {
-          code: 'UNAUTHORIZED',
-          message: 'Access token is required'
-        }
+          code: "UNAUTHORIZED",
+          message: "Access token is required",
+        },
       });
     }
 
@@ -31,14 +31,14 @@ const authenticate = (req, res, next) => {
 
     next();
   } catch (error) {
-    logger.error('Authentication error:', error);
-    
+    logger.error("Authentication error:", error);
+
     return res.status(401).json({
       success: false,
       error: {
-        code: 'UNAUTHORIZED',
-        message: 'Invalid or expired access token'
-      }
+        code: "UNAUTHORIZED",
+        message: "Invalid or expired access token",
+      },
     });
   }
 };
@@ -54,9 +54,9 @@ const authorize = (...allowedRoles) => {
       return res.status(401).json({
         success: false,
         error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authentication required'
-        }
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+        },
       });
     }
 
@@ -64,9 +64,9 @@ const authorize = (...allowedRoles) => {
       return res.status(403).json({
         success: false,
         error: {
-          code: 'FORBIDDEN',
-          message: 'Insufficient permissions'
-        }
+          code: "FORBIDDEN",
+          message: "Insufficient permissions",
+        },
       });
     }
 
@@ -76,5 +76,5 @@ const authorize = (...allowedRoles) => {
 
 module.exports = {
   authenticate,
-  authorize
+  authorize,
 };

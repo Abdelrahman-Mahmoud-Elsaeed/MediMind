@@ -28,3 +28,19 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 ehthumbs.db
+
+.cursor
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/*.tfvars.json
+terraform/crash.log
+terraform/*.tfplan
+terraform/plan.out
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
