@@ -1,5 +1,5 @@
 const Patient = require('../../auth/models/Patient.model');
-const Caregiver = require('../../auth/models/Caregiver.model');
+const Caregiver = require('../../auth/models/FamilyCaregiver.model');
 const AppError = require('../../../shared/utils/AppError');
 
 class ProfilesService {

@@ -25,6 +25,16 @@ const FamilyCaregiverSchema = new Schema(
       required: true,
     },
 
+    address: {
+      street: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
+      postalCode: { type: String, trim: true },
+      country: { type: String, trim: true, default: "Egypt" },
+    },
+
+    profilePictureUrl: { type: String, trim: true },
+
     subscription: {
       plan: {
         type: String,
@@ -53,10 +63,8 @@ const FamilyCaregiverSchema = new Schema(
 );
 
 FamilyCaregiverSchema.pre('save', function (next) {
-  if (this.isModified('whatsappOptIn')) {
-    this.whatsappOptInDate = this.whatsappOptIn ? new Date() : null;
-  }
-  next();
+  if (this.isModified('whatsappOptIn')) this.whatsappOptInDate = this.whatsappOptIn ? new Date() : null;
+
 });
 
 module.exports = mongoose.model("FamilyCaregiver", FamilyCaregiverSchema);

@@ -1,45 +1,42 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
-const { registerSchema, loginSchema } = require('../validators/auth.validator');
-const { authenticate } = require('../../../shared/middleware/auth.middleware');
-const validate  = require('../../../shared/middleware/validation.middleware');
-const { authRateLimiter } = require('../../../shared/middleware/rateLimit.middleware');
+const authController = require("../controllers/auth.controller");
+const validateByRole = require("../../../shared/middleware/validateByRole.middleware");
+
+const { registerProviderSchema: doctorSchema } = require("../validators/doctor.validation");
+const { registerPharmacistSchema } = require("../validators/pharmacist.validation");
+const { registerProfessionalCaregiverSchema } = require("../validators/professionalCaregiver.validation");
+
+const { registerEmailSchema: patientEmailSchema, registerPhoneSchema: patientPhoneSchema } = require("../validators/patient.validation");
+const { registerEmailSchema: familyEmailSchema, registerPhoneSchema: familyPhoneSchema } = require("../validators/familyCaregiver.validation");
 
 
-/**
- * @route   POST /api/v1/auth/register
- * @desc    Register a new user
- * @access  Public
- */
-router.post('/register', authRateLimiter, validate(registerSchema), authController.register);
+const emailSchemas = {
+  PATIENT: patientEmailSchema,
+  FAMILY_CAREGIVER: familyEmailSchema,
+};
 
-/**
- * @route   POST /api/v1/auth/login
- * @desc    Login user
- * @access  Public
- */
-router.post('/login', authRateLimiter, validate(loginSchema), authController.login);
+const phoneSchemas = {
+  PATIENT: patientPhoneSchema,
+  FAMILY_CAREGIVER: familyPhoneSchema,
+};
 
-/**
- * @route   POST /api/v1/auth/refresh
- * @desc    Refresh access token
- * @access  Public (requires refresh token cookie)
- */
-router.post('/refresh', authController.refresh);
+const providerSchemas = {
+  DOCTOR: doctorSchema,
+  PHARMACIST: registerPharmacistSchema,
+  PROFESSIONAL_CAREGIVER: registerProfessionalCaregiverSchema,
+};
 
-/**
- * @route   POST /api/v1/auth/logout
- * @desc    Logout user
- * @access  Public
- */
-router.post('/logout', authController.logout);
 
-/**
- * @route   GET /api/v1/auth/me
- * @desc    Get current user info
- * @access  Private (requires authentication)
- */
-router.get('/me', authenticate, authController.getMe);
+router.post("/login", authController.login);
+router.post("/token/refresh", authController.refreshSession);
+router.post("/logout", authController.logout);
+
+
+router.post("/register/email", validateByRole(emailSchemas), authController.registerEmail);
+router.post("/register/phone", validateByRole(phoneSchemas), authController.registerPhone);
+router.post("/register/provider", validateByRole(providerSchemas), authController.registerProvider);
+
+
 
 module.exports = router;

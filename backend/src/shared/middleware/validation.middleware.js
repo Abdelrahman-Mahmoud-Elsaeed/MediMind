@@ -6,15 +6,23 @@ const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof ZodError) {
+      const details = error.issues.map(issue => ({
+        field: issue.path.join("."),
+        message: issue.message
+      }));
+
+      const dynamicDetailsString = details.map(d => `${d.field}: ${d.message}`).join(", ");
+
       return res.status(400).json({
         success: false,
         error: {
           code: "VALIDATION_ERROR",
-          message: "Validation failed",
-          details: error.issues.map(issue => ({
-            field: issue.path.join("."),
-            message: issue.message
-          }))
+          message: `Validation failed: ${dynamicDetailsString}`,
+          messages: {
+            en: `Validation failed on: ${dynamicDetailsString}`,
+            ar: `فشل التحقق من البيانات في الأقسام التالية: ${dynamicDetailsString}`
+          },
+          details
         }
       });
     }
@@ -22,4 +30,4 @@ const validate = (schema) => (req, res, next) => {
   }
 };
 
-module.exports = validate
+module.exports = validate;

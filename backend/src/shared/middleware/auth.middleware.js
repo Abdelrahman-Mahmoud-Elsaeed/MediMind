@@ -7,7 +7,6 @@ const { logger } = require("../utils/logger");
  */
 const authenticate = (req, res, next) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -16,16 +15,18 @@ const authenticate = (req, res, next) => {
         error: {
           code: "UNAUTHORIZED",
           message: "Access token is required",
+          messages: {
+            en: "Authentication token is missing or malformed.",
+            ar: "رمز المصادقة مفقود أو غير صالح."
+          }
         },
       });
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    // Verify token
     const decoded = verifyToken(token);
 
-    // Attach user info to request
+    // Attach user identity data properties directly to request context
     req.accountId = decoded.accountId;
     req.role = decoded.role;
 
@@ -38,6 +39,10 @@ const authenticate = (req, res, next) => {
       error: {
         code: "UNAUTHORIZED",
         message: "Invalid or expired access token",
+        messages: {
+          en: "Your session has expired or the token is invalid. Please log in again.",
+          ar: "انتهت صلاحية الجلسة أو الرمز غير صالح. يرجى تسجيل الدخول مرة أخرى."
+        }
       },
     });
   }
@@ -56,6 +61,10 @@ const authorize = (...allowedRoles) => {
         error: {
           code: "UNAUTHORIZED",
           message: "Authentication required",
+          messages: {
+            en: "You must be logged in to access this resource.",
+            ar: "يجب تسجيل الدخول للوصول إلى هذا المورد."
+          }
         },
       });
     }
@@ -66,6 +75,10 @@ const authorize = (...allowedRoles) => {
         error: {
           code: "FORBIDDEN",
           message: "Insufficient permissions",
+          messages: {
+            en: "You do not have the required permissions to perform this action.",
+            ar: "ليس لديك الصلاحيات الكافية لإتمام هذا الإجراء."
+          }
         },
       });
     }
