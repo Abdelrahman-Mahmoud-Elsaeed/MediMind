@@ -10,6 +10,11 @@ out/
 .next/
 .vite/
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 
 
 # Debug and execution logs
