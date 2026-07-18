@@ -30,29 +30,95 @@ This module index is the architectural entry point for the platform and is inten
 - **Content-Type:** `application/json`
 - **Authentication (Short-Lived):** `Authorization: Bearer <ACCESS_TOKEN>`
 - **Authentication (Long-Lived):** `refreshToken` managed exclusively via an `HttpOnly`, `Secure`, `SameSite=Strict` cookie.
+- **Standard Response Format:**
+```json
+{
+  "success": true,
+  "status": "SUCCESS",
+  "messages": {
+    "en": "Success message in English",
+    "ar": "رسالة نجاح باللغة العربية"
+  },
+  "data": {}
+}
+```
 - **Standard Error Response (4xx/5xx):**
 ```json
-  {
-    "success": false,
-    "error": { "code": "VALIDATION_ERROR", "message": "Human readable message" }
-  }
+{
+  "success": false,
+  "status": "ERROR",
+  "messages": {
+    "en": "Error message in English",
+    "ar": "رسالة خطأ باللغة العربية"
+  },
+  "data": {}
+}
 ```
 
 ## 2. Authentication & Identity (/auth)
 
-### 2.1 Register User
-**POST** `/auth/register`
+### 2.1 Login
+**POST** `/auth/login`
 
 **Request:**
 
 ```JSON
 {
   "email": "patient@example.com",
-  "password": "securepassword123",
+  "password": "securepassword123"
+}
+```
+OR
+
+```JSON
+{
+  "phone": "+201000000000",
+  "password": "securepassword123"
+}
+```
+**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
+
+**Response (200 OK):**
+
+```JSON
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUz...",
+    "user": { "accountId": "64a1b...", "role": "PATIENT" }
+  }
+}
+```
+
+### 2.2 Register via Email (Patient & Family Caregiver)
+**POST** `/auth/register/email`
+
+**Request:**
+
+```JSON
+{
+  "email": "patient@example.com",
+  "password": "SecurePass123",
   "role": "PATIENT",
   "firstName": "John",
   "lastName": "Doe",
-  "phone": "+201000000000"
+  "dateOfBirth": "1990-01-15T00:00:00.000Z",
+  "gender": "male",
+  "bloodType": "O+",
+  "height": 175,
+  "weight": 70,
+  "profilePictureUrl": "https://example.com/image.jpg",
+  "whatsappOptIn": true,
+  "preferredLanguage": "en",
+  "address": [],
+  "emergencyContact": [],
+  "allergies": ["penicillin"],
+  "consents": {
+    "familyCaregiver": true,
+    "professionalCaregiver": false,
+    "doctor": true,
+    "pharmacy": false
+  }
 }
 ```
 **Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
@@ -60,7 +126,6 @@ This module index is the architectural entry point for the platform and is inten
 **Response (201 Created):**
 
 ```JSON
-
 {
   "success": true,
   "data": {
@@ -74,35 +139,132 @@ This module index is the architectural entry point for the platform and is inten
 }
 ```
 
-### 2.2 Login
-**POST** `/auth/login`
+### 2.3 Register via Phone (Patient & Family Caregiver)
+**POST** `/auth/register/phone`
 
 **Request:**
 
 ```JSON
-
 {
-  "email": "patient@example.com",
-  "password": "securepassword123"
+  "phone": "+201000000000",
+  "nationalNumber": {
+    "code": "+20",
+    "number": "1000000000"
+  },
+  "password": "SecurePass123",
+  "role": "PATIENT",
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1990-01-15T00:00:00.000Z",
+  "gender": "male",
+  "bloodType": "O+",
+  "height": 175,
+  "weight": 70,
+  "profilePictureUrl": "https://example.com/image.jpg",
+  "whatsappOptIn": true,
+  "preferredLanguage": "en",
+  "address": [],
+  "emergencyContact": [],
+  "allergies": ["penicillin"],
+  "consents": {
+    "familyCaregiver": true,
+    "professionalCaregiver": false,
+    "doctor": true,
+    "pharmacy": false
+  }
 }
 ```
 **Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
 
-**Response (200 OK):**
+**Response (201 Created):**
 
 ```JSON
-
 {
   "success": true,
   "data": {
     "accessToken": "eyJhbGciOiJIUz...",
-    "user": { "accountId": "64a1b...", "role": "PATIENT" }
+    "user": {
+      "accountId": "64a1b...",
+      "role": "PATIENT",
+      "profileId": "64a1c..."
+    }
   }
 }
 ```
 
-### 2.3 Refresh Token
-**POST** `/auth/refresh`
+### 2.4 Register Provider (Doctor, Pharmacist, Professional Caregiver)
+**POST** `/auth/register/provider`
+
+**Request (Doctor):**
+
+```JSON
+{
+  "email": "doctor@example.com",
+  "phone": "+201000000001",
+  "password": "SecurePass123",
+  "role": "DOCTOR",
+  "firstName": "Dr. Sarah",
+  "lastName": "Johnson",
+  "specialization": "Cardiology",
+  "licenseNumber": "MD12345",
+  "clinicName": "Heart Care Clinic",
+  "clinicAddress": "123 Medical St, Cairo",
+  "yearsOfExperience": 15
+}
+```
+
+**Request (Pharmacist):**
+
+```JSON
+{
+  "email": "pharmacist@example.com",
+  "phone": "+201000000002",
+  "password": "SecurePass123",
+  "role": "PHARMACIST",
+  "firstName": "Ahmed",
+  "lastName": "Mohamed",
+  "licenseNumber": "PH67890",
+  "pharmacyName": "City Pharmacy",
+  "pharmacyAddress": "456 Health Ave, Alexandria"
+}
+```
+
+**Request (Professional Caregiver):**
+
+```JSON
+{
+  "email": "caregiver@example.com",
+  "phone": "+201000000003",
+  "password": "SecurePass123",
+  "role": "PROFESSIONAL_CAREGIVER",
+  "firstName": "Fatima",
+  "lastName": "Ali",
+  "certificationNumber": "CG11223",
+  "agencyName": "Care Services Ltd",
+  "specializations": ["elderly care", "chronic disease management"],
+  "yearsOfExperience": 8
+}
+```
+**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
+
+**Response (201 Created):**
+
+```JSON
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUz...",
+    "user": {
+      "accountId": "64a1b...",
+      "role": "DOCTOR",
+      "profileId": "64a1c..."
+    }
+  }
+}
+```
+
+### 2.5 Refresh Token
+**POST** `/auth/token/refresh`
 
 **Description:** Reads the HttpOnly cookie containing the refresh token and issues a new access token.
 
@@ -111,17 +273,15 @@ This module index is the architectural entry point for the platform and is inten
 **Response (200 OK):**
 
 ```JSON
-
 {
   "success": true,
   "data": {
     "accessToken": "eyJhbGciOiJIUz..."
   }
 }
-
 ```
 
-### 2.4 Logout
+### 2.6 Logout
 **POST** `/auth/logout`
 
 **Request:** None
@@ -131,10 +291,77 @@ This module index is the architectural entry point for the platform and is inten
 **Response (200 OK):**
 
 ```JSON
-
 {
   "success": true,
   "data": { "message": "Logged out successfully." }
+}
+```
+
+### 2.7 Send OTP
+**POST** `/auth/otp/send`
+
+**Access:** Protected (Requires valid access token)
+
+**Request:**
+
+```JSON
+{
+  "target": "patient@example.com",
+  "type": "EMAIL"
+}
+```
+OR
+
+```JSON
+{
+  "target": "+201000000000",
+  "type": "PHONE"
+}
+```
+
+**Response (200 OK):**
+
+```JSON
+{
+  "success": true,
+  "status": "SUCCESS",
+  "data": {},
+  "en": "OTP sent successfully",
+  "ar": "تم إرسال رمز التحقق بنجاح"
+}
+```
+
+### 2.8 Verify OTP
+**POST** `/auth/otp/verify`
+
+**Access:** Protected (Requires valid access token)
+
+**Request:**
+
+```JSON
+{
+  "type": "EMAIL",
+  "code": "123456"
+}
+```
+OR
+
+```JSON
+{
+  "type": "PHONE",
+  "code": "123456"
+}
+```
+
+**Response (200 OK):**
+
+```JSON
+{
+  "success": true,
+  "status": "SUCCESS",
+  "data": {},
+  "en": "OTP verified successfully",
+  "ar": "تم التحقق من رمز التحقق بنجاح"
 }
 ```
 

@@ -36,6 +36,10 @@ const env = {
   AWS_SNS_REGION: process.env.AWS_SNS_REGION || 'us-east-1',
   AWS_SNS_SENDER_ID: process.env.AWS_SNS_SENDER_ID || 'MEDTRACK',
 
+  // TRANSACTIONAL EMAIL: AWS SES TRANSACTIONAL PIPELINE
+  AWS_SES_REGION: process.env.AWS_SES_REGION || 'us-east-1',
+  AWS_SES_FROM_EMAIL: process.env.AWS_SES_FROM_EMAIL || 'no-reply@medplatform.com',
+
   // PWA FRONTEND MECHANICS: WEB-PUSH NOTIFICATIONS
   VAPID_SUBJECT: process.env.VAPID_SUBJECT,
   VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,

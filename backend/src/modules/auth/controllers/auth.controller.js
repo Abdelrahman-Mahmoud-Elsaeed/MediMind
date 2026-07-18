@@ -4,7 +4,7 @@ const familyCaregiverService = require("../services/familyCaregiver.service");
 const doctorService = require("../services/doctor.service");
 const pharmacistService = require("../services/pharmacist.service");
 const professionalCaregiverService = require("../services/professionalCaregiver.service");
-
+const otpService = require("../services/otp.service");
 const AppError = require("../../../shared/utils/AppError");
 
 class AuthController {
@@ -18,7 +18,7 @@ class AuthController {
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      
+
       // Remove it so it doesn't leak in the JSON response
       delete result.data.refreshToken;
     }
@@ -69,10 +69,9 @@ class AuthController {
       if (result.send && typeof result.send === "function") {
         return result.send(res);
       }
-      
+
       // Fixed fallback
       return res.status(200).json(result);
-
     } catch (error) {
       next(error);
     }
@@ -80,7 +79,7 @@ class AuthController {
 
   async registerEmail(req, res, next) {
     try {
-      const { role } = req.body;
+      const { role, email } = req.body;
       let result;
 
       if (role === "PATIENT") {
@@ -90,15 +89,23 @@ class AuthController {
       } else {
         // Fixed AppError localization
         throw new AppError(
-          "Invalid role for email registration", 
-          400, 
+          "Invalid role for email registration",
+          400,
           "INVALID_ROLE",
           {
             en: "Invalid role for email registration.",
-            ar: "دور غير صالح للتسجيل بالبريد الإلكتروني."
-          }
+            ar: "دور غير صالح للتسجيل بالبريد الإلكتروني.",
+          },
         );
       }
+
+      const accountId = result.data.user?.accountId;
+
+      await otpService.sendOtp({
+        accountId,
+        target: email,
+        type: "EMAIL",
+      });
 
       this._setAuthCookie(res, result);
       return result.send(res);
@@ -109,7 +116,7 @@ class AuthController {
 
   async registerPhone(req, res, next) {
     try {
-      const { role } = req.body;
+      const { role, phone } = req.body;
       let result;
 
       if (role === "PATIENT") {
@@ -117,17 +124,23 @@ class AuthController {
       } else if (role === "FAMILY_CAREGIVER") {
         result = await familyCaregiverService.registerPhone(req.body);
       } else {
-        // Fixed AppError localization
         throw new AppError(
-          "Invalid role for phone registration", 
-          400, 
+          "Invalid role for phone registration",
+          400,
           "INVALID_ROLE",
           {
             en: "Invalid role for phone registration.",
-            ar: "دور غير صالح للتسجيل برقم الهاتف."
-          }
+            ar: "دور غير صالح للتسجيل برقم الهاتف.",
+          },
         );
       }
+      const accountId = result.data.user?.accountId;
+
+      await otpService.sendOtp({
+        accountId,
+        target: phone,
+        type: "PHONE",
+      });
 
       this._setAuthCookie(res, result);
       return result.send(res);
@@ -138,7 +151,7 @@ class AuthController {
 
   async registerProvider(req, res, next) {
     try {
-      const { role } = req.body;
+      const { role, email, phone } = req.body;
       let result;
 
       switch (role) {
@@ -149,21 +162,24 @@ class AuthController {
           result = await pharmacistService.registerProvider(req.body);
           break;
         case "PROFESSIONAL_CAREGIVER":
-          result = await professionalCaregiverService.registerProvider(req.body);
+          result = await professionalCaregiverService.registerProvider(
+            req.body,
+          );
           break;
         default:
           // Fixed AppError localization
-          throw new AppError(
-            "Invalid provider role", 
-            400, 
-            "INVALID_ROLE",
-            {
-              en: "Invalid provider role.",
-              ar: "دور مزود الخدمة غير صالح."
-            }
-          );
+          throw new AppError("Invalid provider role", 400, "INVALID_ROLE", {
+            en: "Invalid provider role.",
+            ar: "دور مزود الخدمة غير صالح.",
+          });
       }
 
+      const accountId = result.data.user?.accountId;
+      if (email) {
+        await otpService.sendOtp({ accountId, target: email, type: "EMAIL" });
+      } else if (phone) {
+        await otpService.sendOtp({ accountId, target: phone, type: "PHONE" });
+      }
       this._setAuthCookie(res, result);
       return result.send(res);
     } catch (error) {
@@ -174,12 +190,17 @@ class AuthController {
 
 const authController = new AuthController();
 // Bind the helper to ensure 'this' context isn't lost
-authController._setAuthCookie = authController._setAuthCookie.bind(authController);
+authController._setAuthCookie =
+  authController._setAuthCookie.bind(authController);
 authController.login = authController.login.bind(authController);
-authController.refreshSession = authController.refreshSession.bind(authController);
+authController.refreshSession =
+  authController.refreshSession.bind(authController);
 authController.logout = authController.logout.bind(authController);
-authController.registerEmail = authController.registerEmail.bind(authController);
-authController.registerPhone = authController.registerPhone.bind(authController);
-authController.registerProvider = authController.registerProvider.bind(authController);
+authController.registerEmail =
+  authController.registerEmail.bind(authController);
+authController.registerPhone =
+  authController.registerPhone.bind(authController);
+authController.registerProvider =
+  authController.registerProvider.bind(authController);
 
 module.exports = authController;

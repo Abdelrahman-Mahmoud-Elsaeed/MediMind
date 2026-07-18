@@ -26,7 +26,6 @@ const authenticate = (req, res, next) => {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     const decoded = verifyToken(token);
 
-    // Attach user identity data properties directly to request context
     req.accountId = decoded.accountId;
     req.role = decoded.role;
 
