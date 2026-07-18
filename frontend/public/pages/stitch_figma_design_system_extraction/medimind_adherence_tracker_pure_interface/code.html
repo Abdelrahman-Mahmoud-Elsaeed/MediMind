@@ -1,0 +1,465 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediMind | Adherence Tracker</title>
+<!-- Tailwind CSS & Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed-dim": "#4adea9",
+            "primary": "#006c4e",
+            "on-primary-fixed": "#002115",
+            "tertiary-container": "#72a6ff",
+            "surface-container-high": "#dce9ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#e5eeff",
+            "surface-variant": "#d3e4fe",
+            "outline-variant": "#bbcac1",
+            "on-tertiary-fixed": "#001b3f",
+            "on-secondary-fixed-variant": "#00513a",
+            "on-primary-container": "#004430",
+            "tertiary": "#005cbb",
+            "on-surface": "#0b1c30",
+            "on-tertiary-fixed-variant": "#00458f",
+            "on-secondary-container": "#007353",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#4adea9",
+            "on-primary-fixed-variant": "#00513a",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "surface-dim": "#cbdbf5",
+            "primary-container": "#09bc8a",
+            "primary-fixed": "#6bfbc4",
+            "on-error-container": "#93000a",
+            "surface-bright": "#f8f9ff",
+            "on-error": "#ffffff",
+            "secondary-fixed": "#6bfbc4",
+            "outline": "#6c7a72",
+            "surface-container-highest": "#d3e4fe",
+            "on-background": "#0b1c30",
+            "surface-container-low": "#eff4ff",
+            "error-container": "#ffdad6",
+            "secondary": "#006c4e",
+            "on-surface-variant": "#3c4a43",
+            "surface": "#f8f9ff",
+            "inverse-surface": "#213145",
+            "inverse-primary": "#4adea9",
+            "secondary-container": "#6bfbc4",
+            "on-secondary": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "background": "#F8FAFB"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-mobile": "16px",
+            "sm": "8px",
+            "base": "4px",
+            "xl": "40px",
+            "md": "16px",
+            "xs": "4px",
+            "gutter": "24px",
+            "margin-desktop": "48px",
+            "lg": "24px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Manrope"],
+            "headline-md": ["Manrope"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-sm": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "headline-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+            "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1 / 1;
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<main class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-xl">
+<!-- 1. Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-lg mb-xl">
+<div class="space-y-xs">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Adherence Tracker</h1>
+<p class="text-on-surface-variant font-body-md">Personalized insights for your health journey.</p>
+</div>
+<div class="flex items-center gap-sm bg-surface-container border border-outline-variant p-xs rounded-xl">
+<button class="px-md py-sm bg-white shadow-sm text-primary font-bold rounded-lg transition-all active:scale-95">Last 30 Days</button>
+<button class="px-md py-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors">Last 90 Days</button>
+<button class="px-md py-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors">Yearly</button>
+</div>
+</header>
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-sm">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary-container">speed</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Overall Adherence</span>
+</div>
+<div class="text-headline-lg font-headline-lg text-on-surface">94.2%</div>
+<div class="flex items-center gap-xs text-primary font-bold text-label-sm">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+2.4% from last month</span>
+</div>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-sm">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary-container">bolt</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Current Streak</span>
+</div>
+<div class="text-headline-lg font-headline-lg text-on-surface">18 Days</div>
+<div class="flex items-center gap-xs text-on-surface-variant text-label-sm">
+<span>Personal best: 22 days</span>
+</div>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-sm">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary-container">verified</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Perfect Days</span>
+</div>
+<div class="text-headline-lg font-headline-lg text-on-surface">24/30</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden mt-base">
+<div class="bg-primary-container h-full w-[80%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Main Content Layout (Heatmap + Insights) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-xl">
+<!-- 2. Adherence Heatmap -->
+<section class="lg:col-span-2 bg-white border border-outline-variant rounded-xl p-lg">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Monthly Adherence Heatmap</h2>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm text-label-sm">
+<div class="w-3 h-3 rounded-sm bg-primary-container"></div>
+<span>Perfect</span>
+</div>
+<div class="flex items-center gap-sm text-label-sm">
+<div class="w-3 h-3 rounded-sm bg-primary-container/40"></div>
+<span>Partial</span>
+</div>
+<div class="flex items-center gap-sm text-label-sm">
+<div class="w-3 h-3 rounded-sm bg-error-container"></div>
+<span>Missed</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-sm">
+<!-- Week Headers -->
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">M</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">T</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">W</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">T</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">F</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">S</div>
+<div class="text-center text-label-sm font-bold text-on-surface-variant py-xs">S</div>
+<!-- Generation logic for cells -->
+<!-- Simplified static representation for the prompt -->
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">1</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">2</div>
+<div class="heatmap-cell bg-primary-container/40 rounded-md flex items-center justify-center text-on-surface-variant text-[10px] font-bold">3</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">4</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">5</div>
+<div class="heatmap-cell bg-error-container rounded-md flex items-center justify-center text-error text-[10px] font-bold">6</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">7</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">8</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">9</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">10</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">11</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">12</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">13</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">14</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">15</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">16</div>
+<div class="heatmap-cell bg-primary-container rounded-md flex items-center justify-center text-white text-[10px] font-bold">17</div>
+<div class="heatmap-cell bg-primary-container rounded-md border-4 border-primary/20 flex items-center justify-center text-white text-[10px] font-extrabold shadow-sm">18</div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+<div class="heatmap-cell bg-surface-container border border-dashed border-outline-variant rounded-md"></div>
+</div>
+</section>
+<!-- 4. Insights & Trends -->
+<section class="bg-surface-container-high border border-outline-variant rounded-xl p-lg flex flex-col gap-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-md">psychology</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Consistency Insights</h2>
+</div>
+<div class="space-y-md">
+<div class="bg-white/60 p-md rounded-lg border border-white/40 flex items-start gap-md">
+<span class="material-symbols-outlined text-primary-container">lightbulb</span>
+<p class="text-body-md text-on-surface">You are most consistent with your <strong class="text-primary">8:00 AM doses</strong>. Consider linking other habits to this timeframe.</p>
+</div>
+<div class="bg-white/60 p-md rounded-lg border border-white/40 flex items-start gap-md">
+<span class="material-symbols-outlined text-primary-container">auto_graph</span>
+<p class="text-body-md text-on-surface">Weekend adherence has improved by <strong class="text-primary">15% this month</strong>. Your new notification settings are working well.</p>
+</div>
+<div class="bg-white/60 p-md rounded-lg border border-white/40 flex items-start gap-md">
+<span class="material-symbols-outlined text-primary-container">event_note</span>
+<p class="text-body-md text-on-surface">Longest streak recorded this year: <strong class="text-primary">22 Days</strong>. You are only 4 days away from beating it!</p>
+</div>
+</div>
+<button class="mt-auto w-full py-md bg-white text-primary border border-primary/20 rounded-xl font-bold hover:bg-primary-container hover:text-white transition-all">
+          View Full AI Report
+        </button>
+</section>
+</div>
+<!-- 3. Medication Breakdown -->
+<section class="mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-lg">Medication Performance</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Med Card 1 -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-md hover:border-primary-container/30 transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-on-surface text-body-lg">Metformin</h3>
+<p class="text-on-surface-variant text-label-sm">500mg • Twice Daily</p>
+</div>
+<div class="bg-surface-container p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">medication</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-extrabold text-primary">98%</div>
+<!-- Mock Sparkline -->
+<div class="flex items-end gap-xs h-10">
+<div class="w-1 bg-primary-container h-[80%] rounded-full opacity-40"></div>
+<div class="w-1 bg-primary-container h-[90%] rounded-full opacity-60"></div>
+<div class="w-1 bg-primary-container h-[85%] rounded-full opacity-50"></div>
+<div class="w-1 bg-primary-container h-[100%] rounded-full"></div>
+<div class="w-1 bg-primary-container h-[95%] rounded-full opacity-80"></div>
+</div>
+</div>
+<div class="text-xs text-on-surface-variant font-medium">Near perfect compliance this month</div>
+</div>
+<!-- Med Card 2 -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-md hover:border-primary-container/30 transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-on-surface text-body-lg">Lisinopril</h3>
+<p class="text-on-surface-variant text-label-sm">5mg • Once Daily</p>
+</div>
+<div class="bg-surface-container p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">medication</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-extrabold text-primary">92%</div>
+<!-- Mock Sparkline -->
+<div class="flex items-end gap-xs h-10">
+<div class="w-1 bg-primary-container h-[100%] rounded-full"></div>
+<div class="w-1 bg-primary-container h-[40%] rounded-full opacity-30"></div>
+<div class="w-1 bg-primary-container h-[90%] rounded-full opacity-70"></div>
+<div class="w-1 bg-primary-container h-[95%] rounded-full opacity-80"></div>
+<div class="w-1 bg-primary-container h-[100%] rounded-full"></div>
+</div>
+</div>
+<div class="text-xs text-on-surface-variant font-medium">1 missed dose on Sunday</div>
+</div>
+<!-- Med Card 3 -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg flex flex-col gap-md hover:border-primary-container/30 transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-on-surface text-body-lg">Atorvastatin</h3>
+<p class="text-on-surface-variant text-label-sm">10mg • Nightly</p>
+</div>
+<div class="bg-surface-container p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">medication</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-extrabold text-primary">89%</div>
+<!-- Mock Sparkline -->
+<div class="flex items-end gap-xs h-10">
+<div class="w-1 bg-primary-container h-[70%] rounded-full opacity-40"></div>
+<div class="w-1 bg-primary-container h-[80%] rounded-full opacity-50"></div>
+<div class="w-1 bg-primary-container h-[60%] rounded-full opacity-30"></div>
+<div class="w-1 bg-primary-container h-[100%] rounded-full"></div>
+<div class="w-1 bg-primary-container h-[85%] rounded-full opacity-60"></div>
+</div>
+</div>
+<div class="text-xs text-on-surface-variant font-medium">Trending upwards (+5%)</div>
+</div>
+</div>
+</section>
+<!-- 5. History Log -->
+<section class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface">Activity Log</h2>
+<button class="text-primary font-bold text-label-sm flex items-center gap-xs">
+          Export CSV <span class="material-symbols-outlined text-md">download</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-lg py-md text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Medication</th>
+<th class="px-lg py-md text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Scheduled</th>
+<th class="px-lg py-md text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Taken At</th>
+<th class="px-lg py-md text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-lg py-md text-label-sm font-bold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Metformin 500mg</span>
+<span class="text-xs text-on-surface-variant">Today</span>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant">08:00 AM</td>
+<td class="px-lg py-md text-on-surface">08:05 AM</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-primary-container/10 text-primary-container text-xs font-bold rounded-full border border-primary-container/20">On Time</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Lisinopril 5mg</span>
+<span class="text-xs text-on-surface-variant">Today</span>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant">08:00 AM</td>
+<td class="px-lg py-md text-on-surface">08:12 AM</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-primary-container/10 text-primary-container text-xs font-bold rounded-full border border-primary-container/20">On Time</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Atorvastatin 10mg</span>
+<span class="text-xs text-on-surface-variant">Yesterday</span>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant">09:00 PM</td>
+<td class="px-lg py-md text-on-surface">09:45 PM</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-surface-variant text-on-surface-variant text-xs font-bold rounded-full border border-outline-variant">Late</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Metformin 500mg</span>
+<span class="text-xs text-on-surface-variant">Yesterday</span>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant">08:00 AM</td>
+<td class="px-lg py-md text-on-surface">08:02 AM</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-primary-container/10 text-primary-container text-xs font-bold rounded-full border border-primary-container/20">On Time</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Lisinopril 5mg</span>
+<span class="text-xs text-on-surface-variant">2 days ago</span>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant">08:00 AM</td>
+<td class="px-lg py-md text-error">—</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-error-container text-error text-xs font-bold rounded-full border border-error/20">Missed</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-lg py-md bg-surface-container-low text-center">
+<button class="text-primary font-bold hover:underline transition-all">Load More Records</button>
+</div>
+</section>
+</main>
+<!-- Interactive Atmosphere -->
+<script>
+    // Micro-interaction for summary cards hover
+    const summaryCards = document.querySelectorAll('.grid-cols-1.md\\:grid-cols-3 > div');
+    summaryCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('border-primary', 'shadow-md');
+        card.style.transform = 'translateY(-4px)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('border-primary', 'shadow-md');
+        card.style.transform = 'translateY(0)';
+      });
+      card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    });
+
+    // Animate heatmap appearance
+    const cells = document.querySelectorAll('.heatmap-cell');
+    cells.forEach((cell, index) => {
+      cell.style.opacity = '0';
+      cell.style.transform = 'scale(0.8)';
+      setTimeout(() => {
+        cell.style.transition = 'all 0.5s ease';
+        cell.style.opacity = '1';
+        cell.style.transform = 'scale(1)';
+      }, index * 20);
+    });
+  </script>
+</body></html>

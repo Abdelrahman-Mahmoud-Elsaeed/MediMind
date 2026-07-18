@@ -1,0 +1,401 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "secondary-fixed-dim": "#4adea9",
+                            "surface-dim": "#cbdbf5",
+                            "inverse-surface": "#213145",
+                            "surface-container-high": "#dce9ff",
+                            "surface-container-low": "#eff4ff",
+                            "on-background": "#0b1c30",
+                            "on-secondary-fixed": "#002115",
+                            "primary-fixed": "#6bfbc4",
+                            "on-secondary-fixed-variant": "#00513a",
+                            "on-tertiary-container": "#003a7a",
+                            "surface-container-highest": "#d3e4fe",
+                            "on-error-container": "#93000a",
+                            "on-surface": "#0b1c30",
+                            "secondary-fixed": "#6bfbc4",
+                            "on-primary": "#ffffff",
+                            "tertiary-container": "#72a6ff",
+                            "surface-variant": "#d3e4fe",
+                            "on-secondary-container": "#007353",
+                            "tertiary-fixed-dim": "#abc7ff",
+                            "on-primary-fixed": "#002115",
+                            "inverse-primary": "#4adea9",
+                            "surface-tint": "#006c4e",
+                            "on-primary-container": "#004430",
+                            "surface-container": "#e5eeff",
+                            "surface-bright": "#f8f9ff",
+                            "primary-container": "#09bc8a",
+                            "secondary-container": "#6bfbc4",
+                            "on-tertiary-fixed": "#001b3f",
+                            "on-surface-variant": "#3c4a43",
+                            "primary": "#006c4e",
+                            "primary-fixed-dim": "#4adea9",
+                            "on-tertiary-fixed-variant": "#00458f",
+                            "tertiary": "#005cbb",
+                            "outline-variant": "#bbcac1",
+                            "on-primary-fixed-variant": "#00513a",
+                            "surface-container-lowest": "#ffffff",
+                            "on-tertiary": "#ffffff",
+                            "secondary": "#006c4e",
+                            "on-error": "#ffffff",
+                            "outline": "#6c7a72",
+                            "surface": "#f8f9ff",
+                            "on-secondary": "#ffffff",
+                            "inverse-on-surface": "#eaf1ff",
+                            "error": "#ba1a1a",
+                            "background": "#f8f9ff",
+                            "tertiary-fixed": "#d7e3ff",
+                            "error-container": "#ffdad6"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "spacing": {
+                            "margin-mobile": "16px",
+                            "xs": "4px",
+                            "margin-desktop": "48px",
+                            "lg": "24px",
+                            "base": "4px",
+                            "xl": "40px",
+                            "sm": "8px",
+                            "md": "16px",
+                            "gutter": "24px"
+                        },
+                        "fontFamily": {
+                            "body-md": ["Inter"],
+                            "headline-lg": ["Manrope"],
+                            "headline-md": ["Manrope"],
+                            "label-sm": ["JetBrains Mono"],
+                            "headline-lg-mobile": ["Manrope"],
+                            "body-lg": ["Inter"]
+                        },
+                        "fontSize": {
+                            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                            "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                            "headline-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                        }
+                    },
+                },
+            }
+        } catch (_e) {}
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #006c4e;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface bg-background min-h-screen">
+<div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-xl">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+<div class="flex flex-wrap gap-sm">
+<button class="px-md py-1.5 rounded-full bg-primary text-white font-bold transition-all">All</button>
+<button class="px-md py-1.5 rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all">Active</button>
+<button class="px-md py-1.5 rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all">Finished</button>
+<button class="px-md py-1.5 rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all flex items-center gap-xs">
+                    Low Stock
+                    <span class="bg-error text-white text-[10px] px-1.5 rounded-full">2</span>
+</button>
+</div>
+<button class="bg-primary text-white px-lg py-sm rounded-lg font-bold flex items-center justify-center gap-sm hover:shadow-lg transition-all active:scale-95">
+<span class="material-symbols-outlined">add_circle</span>
+                Add New Medication
+            </button>
+</div>
+<!-- Inventory Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-xl">
+<!-- Metformin 100mg - Optimal -->
+<div class="glass-card rounded-xl p-lg flex flex-col hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-primary-container/20 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<span class="px-2 py-1 rounded bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-wider">Optimal</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Metformin 100mg</h3>
+<p class="text-on-surface-variant text-sm mb-lg">Twice daily, with meals</p>
+<div class="mt-auto space-y-sm">
+<div class="flex justify-between text-[11px] font-label-sm text-on-surface-variant">
+<span class="">CURRENT STOCK</span>
+<span class="text-primary font-bold">24/32 UNITS</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-xs mt-lg opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center" title="History">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+<button class="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-colors flex justify-center" title="Refill">
+<span class="material-symbols-outlined text-[20px]">autorenew</span>
+</button>
+</div>
+</div>
+<!-- Lisinopril 5mg - Healthy -->
+<div class="glass-card rounded-xl p-lg flex flex-col hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-tertiary-container/20 rounded-lg flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication_liquid</span>
+</div>
+<span class="px-2 py-1 rounded bg-surface-container-high text-tertiary text-[10px] font-bold uppercase tracking-wider">Healthy</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Lisinopril 5mg</h3>
+<p class="text-on-surface-variant text-sm mb-lg">Once daily, morning</p>
+<div class="mt-auto space-y-sm">
+<div class="flex justify-between text-[11px] font-label-sm text-on-surface-variant">
+<span class="">CURRENT STOCK</span>
+<span class="text-tertiary font-bold">18/30 UNITS</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[60%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-xs mt-lg opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+<button class="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">autorenew</span>
+</button>
+</div>
+</div>
+<!-- Lisinopril 15mg - Mid-level (Warning) -->
+<div class="glass-card rounded-xl p-lg flex flex-col hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-error-container/10 rounded-lg flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+</div>
+<span class="px-2 py-1 rounded bg-error-container text-error text-[10px] font-bold uppercase tracking-wider">Low</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Lisinopril 15mg</h3>
+<p class="text-on-surface-variant text-sm mb-lg">Once daily, as needed</p>
+<div class="mt-auto space-y-sm">
+<div class="flex justify-between text-[11px] font-label-sm text-on-surface-variant">
+<span class="">CURRENT STOCK</span>
+<span class="text-error font-bold">6/30 UNITS</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[20%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-xs mt-lg opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+<button class="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">autorenew</span>
+</button>
+</div>
+</div>
+<!-- Metformin 500mg - Urgent -->
+<div class="glass-card rounded-xl p-lg flex flex-col border-error/30 bg-error/5 group">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-error/20 rounded-lg flex items-center justify-center text-error animate-pulse">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pill</span>
+</div>
+<span class="px-2 py-1 rounded bg-error text-white text-[10px] font-bold uppercase tracking-wider">Urgent Refill</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Metformin 500mg</h3>
+<p class="text-on-surface-variant text-sm mb-lg">Twice daily, high dose</p>
+<div class="mt-auto space-y-sm">
+<div class="flex justify-between text-[11px] font-label-sm text-error">
+<span class="">CURRENT STOCK</span>
+<span class="font-bold">2/60 UNITS</span>
+</div>
+<div class="w-full h-1.5 bg-error-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[3%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-xs mt-lg">
+<button class="p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant transition-colors flex justify-center">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+<button class="p-2 rounded bg-error text-white hover:bg-error/90 transition-colors flex justify-center animate-bounce shadow-md">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Adherence Insights & Refill History (Bento) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter pb-xl">
+<!-- Adherence Chart Container -->
+<div class="lg:col-span-2 glass-card rounded-xl p-lg">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-headline-md text-headline-md">Monthly Adherence</h3>
+<div class="flex gap-sm">
+<span class="flex items-center gap-xs text-xs font-label-sm text-primary">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Taken
+                        </span>
+<span class="flex items-center gap-xs text-xs font-label-sm text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span> Missed
+                        </span>
+</div>
+</div>
+<!-- Mock Chart Visualization -->
+<div class="h-64 flex items-end justify-between gap-2 px-md border-b border-l border-outline-variant relative">
+<div class="h-[80%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[75%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[90%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[85%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[40%] w-full bg-tertiary-container/30 rounded-t-sm hover:bg-tertiary transition-colors"></div>
+<div class="h-[95%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[88%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[70%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[82%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[92%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+<div class="h-[65%] w-full bg-tertiary-container/30 rounded-t-sm hover:bg-tertiary transition-colors"></div>
+<div class="h-[100%] w-full bg-primary-container/20 rounded-t-sm hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex justify-between mt-sm text-[10px] font-label-sm text-on-surface-variant px-md">
+<span class="">WEEK 1</span>
+<span class="">WEEK 2</span>
+<span class="">WEEK 3</span>
+<span class="">WEEK 4</span>
+</div>
+</div>
+<!-- Quick Action / Status Box -->
+<div class="flex flex-col gap-gutter">
+<div class="glass-card rounded-xl p-lg bg-primary-container/10 border-primary/20 flex-1">
+<h4 class="font-bold text-primary flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined">auto_stories</span>
+                        Cabinet Analytics
+                    </h4>
+<p class="text-xs text-on-surface-variant mb-md">Overall cabinet health is excellent. Adherence increased by 12% this month.</p>
+<div class="space-y-md">
+<div class="flex items-center justify-between p-sm rounded bg-white shadow-sm">
+<span class="text-xs font-bold">Refill Efficiency</span>
+<span class="text-xs font-label-sm text-primary">94.2%</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded bg-white shadow-sm">
+<span class="text-xs font-bold">Active RXs</span>
+<span class="text-xs font-label-sm text-primary">4 Units</span>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-xl p-lg overflow-hidden relative group cursor-pointer">
+<div class="absolute inset-0 z-0 opacity-10 group-hover:opacity-20 transition-opacity">
+<div class="w-full h-full bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHM5xLhKO6a6CNbFG1U2p4fNcQeKUeE5HifINsOQGnqHkR2SLeFJ66WesoBzONMWr5YjbDQACtYDLlLVJFV_r1PS3uqNlb1CUFr-3xG6abr6ebwLOMg94SHuneF4X0gk-D7RX7GZwEllpZIIp4huqR1l6BttGIV4kMJpvsV1V7oKELROdjEEL1hfg3kvLUhgZ_mAnXN6hFj5EK8zk-Z26HNVHlr1nFCBdM_QH-kFIPVwdJtF-R0Kpxcw')"></div>
+</div>
+<div class="relative z-10">
+<h4 class="font-bold text-on-surface flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined">autorenew</span>
+                            Auto-Refill
+                        </h4>
+<p class="text-xs text-on-surface-variant">Enabled for Metformin 100mg. Next shipment arriving June 12th.</p>
+<button class="mt-md text-[11px] font-bold text-primary flex items-center gap-xs">
+                            MANAGE SERVICES <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Refill Transactions Table -->
+<div class="glass-card rounded-xl overflow-hidden mb-lg">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<h3 class="font-bold text-on-surface">Recent Refill Requests</h3>
+<button class="text-sm text-primary font-bold hover:underline">View All History</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container/30 text-[11px] font-label-sm text-on-surface-variant uppercase tracking-wider">
+<th class="px-lg py-sm">Medication</th>
+<th class="px-lg py-sm">Pharmacy</th>
+<th class="px-lg py-sm">Request Date</th>
+<th class="px-lg py-sm">Status</th>
+<th class="px-lg py-sm text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Metformin 500mg</span>
+<span class="text-xs text-on-surface-variant">Refill #RX-9921</span>
+</div>
+</td>
+<td class="px-lg py-md text-sm">Walgreens Specialty</td>
+<td class="px-lg py-md text-sm font-label-sm">May 24, 2024</td>
+<td class="px-lg py-md">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-tertiary text-[10px] font-bold">SHIPPING</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-primary hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">track_changes</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Lisinopril 5mg</span>
+<span class="text-xs text-on-surface-variant">Refill #RX-8842</span>
+</div>
+</td>
+<td class="px-lg py-md text-sm">CVS Pharmacy</td>
+<td class="px-lg py-md text-sm font-label-sm">May 12, 2024</td>
+<td class="px-lg py-md">
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary text-[10px] font-bold">COMPLETED</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-primary hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">description</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Contextual FAB -->
+<button class="fixed bottom-lg right-lg w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add</span>
+<span class="absolute right-16 bg-inverse-surface text-inverse-on-surface px-md py-xs rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Scan New RX</span>
+</button>
+</body></html>

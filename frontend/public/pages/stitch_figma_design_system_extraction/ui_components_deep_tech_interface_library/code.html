@@ -1,0 +1,970 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-tertiary": "#0e305e",
+                "on-secondary-fixed": "#002115",
+                "on-tertiary-fixed-variant": "#294676",
+                "on-background": "#e1e2e9",
+                "inverse-surface": "#e1e2e9",
+                "primary": "#4adea9",
+                "surface-variant": "#282a31",
+                "secondary-fixed": "#6cfbc4",
+                "outline-variant": "#3c4a43",
+                "inverse-on-surface": "#2b322e",
+                "on-secondary-fixed-variant": "#005139",
+                "on-primary-container": "#005e43",
+                "surface-container-highest": "#33353c",
+                "primary-fixed-dim": "#4adea9",
+                "on-error-container": "#ffdad6",
+                "background": "#111319",
+                "on-surface-variant": "#bbcac1",
+                "surface-container-lowest": "#0c0e14",
+                "surface-bright": "#373940",
+                "primary-fixed": "#6cfbc4",
+                "on-tertiary-fixed": "#001b3f",
+                "secondary-container": "#00b987",
+                "surface-container-low": "#191b22",
+                "surface": "#111319",
+                "on-primary-fixed-variant": "#005139",
+                "on-tertiary-container": "#365283",
+                "tertiary": "#d7e3ff",
+                "on-primary-fixed": "#002115",
+                "secondary": "#4adea9",
+                "tertiary-fixed": "#d7e2ff",
+                "on-secondary-container": "#00422e",
+                "error-container": "#93000a",
+                "on-error": "#690005",
+                "on-surface": "#e1e2e9",
+                "tertiary-container": "#abc7ff",
+                "secondary-fixed-dim": "#4adea9",
+                "inverse-primary": "#006c4d",
+                "outline": "#86948b",
+                "surface-tint": "#4adea9",
+                "surface-container-high": "#282a31",
+                "surface-container": "#1d1f26",
+                "on-primary": "#003827",
+                "primary-container": "#4adea9",
+                "surface-dim": "#111319",
+                "on-secondary": "#003827",
+                "error": "#ffb4ab",
+                "tertiary-fixed-dim": "#abc7ff"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.5rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "xs": "4px",
+                "margin-desktop": "32px",
+                "lg": "24px",
+                "2xl": "48px",
+                "sm": "8px",
+                "gutter": "24px",
+                "margin-mobile": "16px",
+                "base": "4px",
+                "md": "16px",
+                "3xl": "64px",
+                "xl": "32px"
+        },
+        "fontFamily": {
+                "title-md": [
+                        "Manrope"
+                ],
+                "label-lg": [
+                        "Manrope"
+                ],
+                "label-md": [
+                        "Manrope"
+                ],
+                "title-lg": [
+                        "Manrope"
+                ],
+                "headline-md": [
+                        "Manrope"
+                ],
+                "headline-lg-mobile": [
+                        "Manrope"
+                ],
+                "display-lg": [
+                        "Manrope"
+                ],
+                "body-lg": [
+                        "Manrope"
+                ],
+                "headline-lg": [
+                        "Manrope"
+                ],
+                "body-md": [
+                        "Manrope"
+                ]
+        },
+        "fontSize": {
+                "title-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "0.15px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "label-lg": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.1px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.5px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "title-lg": [
+                        "22px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-md": [
+                        "28px",
+                        {
+                                "lineHeight": "36px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "28px",
+                        {
+                                "lineHeight": "36px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg": [
+                        "57px",
+                        {
+                                "lineHeight": "64px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "0.5px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.25px",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen">
+<div class="max-w-7xl mx-auto px-margin-mobile py-xl lg:px-margin-desktop">
+<header class="mb-xl">
+<h1 class="text-headline-lg font-headline-lg text-primary mb-sm">UI Components Library</h1>
+<p class="text-body-lg text-on-surface-variant">Deep Tech Interface System</p>
+</header>
+<div class="grid grid-cols-1 gap-xl">
+<!-- 1. Buttons Section -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">1. Buttons</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="flex flex-wrap gap-md items-center">
+<button class="bg-primary text-on-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> Message
+                            </button>
+<button class="border border-primary text-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> Message
+                            </button>
+<button class="text-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> Message
+                            </button>
+</div>
+</div>
+<div dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="flex flex-wrap gap-md items-center">
+<button class="bg-primary text-on-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> رسالة
+                            </button>
+<button class="border border-primary text-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> رسالة
+                            </button>
+<button class="text-primary px-lg py-sm rounded-DEFAULT font-medium flex items-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span> رسالة
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Alarm & Dropdowns -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">2. Alarm &amp; Dropdowns</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-lg" dir="ltr">
+<p class="text-label-md text-outline mb-sm uppercase">English (LTR)</p>
+<div class="w-full max-w-xs">
+<label class="block text-body-md font-medium mb-sm text-on-surface">Reminder Type</label>
+<div class="relative">
+<div class="border border-outline-variant rounded-DEFAULT p-md flex items-center justify-between cursor-pointer bg-surface-container">
+<span class="text-on-surface-variant">Select reminder type...</span>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+<div class="mt-sm border border-outline-variant rounded-DEFAULT shadow-lg bg-surface-container overflow-hidden">
+<div class="p-md hover:bg-surface-container-high cursor-pointer text-on-surface">Alarm</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">SMS</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">Notification</div>
+<div class="p-md bg-primary/20 text-primary cursor-pointer border-t border-outline-variant/10">Ringing</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">Screen on</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-lg" dir="rtl">
+<p class="text-label-md text-outline mb-sm uppercase">Arabic (RTL)</p>
+<div class="w-full max-w-xs">
+<label class="block text-body-md font-medium mb-sm text-on-surface">نوع التذكير</label>
+<div class="relative">
+<div class="border border-outline-variant rounded-DEFAULT p-md flex items-center justify-between cursor-pointer bg-surface-container">
+<span class="text-on-surface-variant">اختر نوع التذكير...</span>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+<div class="mt-sm border border-outline-variant rounded-DEFAULT shadow-lg bg-surface-container overflow-hidden">
+<div class="p-md hover:bg-surface-container-high cursor-pointer text-on-surface">تنبيه</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">رسالة نصية</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">إشعار</div>
+<div class="p-md bg-primary/20 text-primary cursor-pointer border-t border-outline-variant/10">رنين</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">تشغيل الشاشة</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Medication Types -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">3. Medication Types</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="border border-primary rounded-DEFAULT p-md bg-surface-container">
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">pill</span>
+<span class="flex-grow">Pill</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">medication</span>
+<span class="flex-grow">Capsule</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">liquor</span>
+<span class="flex-grow">Syrup</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">colorize</span>
+<span class="flex-grow">Drop</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">vaccines</span>
+<span class="flex-grow">Injection</span>
+</div>
+</div>
+</div>
+<div dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="border border-primary rounded-DEFAULT p-md bg-surface-container">
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">pill</span>
+<span class="flex-grow">حبة</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">medication</span>
+<span class="flex-grow">كبسولة</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">liquor</span>
+<span class="flex-grow">شراب</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">colorize</span>
+<span class="flex-grow">قطرة</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-high rounded-DEFAULT cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-primary">vaccines</span>
+<span class="flex-grow">حقنة</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Time Selectors -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">4. Time Selectors</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md" dir="ltr">
+<p class="text-label-md text-outline mb-sm uppercase">English (LTR)</p>
+<div class="flex flex-col gap-sm max-w-[120px]">
+<div class="border border-primary rounded-DEFAULT p-sm flex items-center justify-between cursor-pointer bg-surface-container text-on-surface">
+<span class="">Day</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="border border-outline-variant rounded-DEFAULT p-sm flex items-center justify-between cursor-pointer bg-surface-container text-on-surface">
+<span class="">Week</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="space-y-md" dir="rtl">
+<p class="text-label-md text-outline mb-sm uppercase">Arabic (RTL)</p>
+<div class="flex flex-col gap-sm max-w-[120px]">
+<div class="border border-primary rounded-DEFAULT p-sm flex items-center justify-between cursor-pointer bg-surface-container text-on-surface">
+<span class="">يوم</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="border border-outline-variant rounded-DEFAULT p-sm flex items-center justify-between cursor-pointer bg-surface-container text-on-surface">
+<span class="">أسبوع</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Selection Controls -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">5. Selection Controls</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="flex flex-col gap-md">
+<label class="flex items-center gap-md cursor-pointer group">
+<input class="w-6 h-6 rounded-DEFAULT border-outline-variant bg-surface-container text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-md text-on-surface">Unchecked</span>
+</label>
+<label class="flex items-center gap-md cursor-pointer group">
+<input checked="" class="w-6 h-6 rounded-DEFAULT border-primary bg-primary text-on-primary focus:ring-primary appearance-none flex items-center justify-center after:content-['\e5ca'] after:font-['Material_Symbols_Outlined'] after:text-[18px] after:text-on-primary" type="checkbox">
+<span class="text-body-md text-on-surface">Checked</span>
+</label>
+</div>
+</div>
+<div dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="flex flex-col gap-md">
+<label class="flex items-center gap-md cursor-pointer group">
+<input class="w-6 h-6 rounded-DEFAULT border-outline-variant bg-surface-container text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-md text-on-surface">غير محدد</span>
+</label>
+<label class="flex items-center gap-md cursor-pointer group">
+<input checked="" class="w-6 h-6 rounded-DEFAULT border-primary bg-primary text-on-primary focus:ring-primary appearance-none flex items-center justify-center after:content-['\e5ca'] after:font-['Material_Symbols_Outlined'] after:text-[18px] after:text-on-primary" type="checkbox">
+<span class="text-body-md text-on-surface">محدد</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Popups -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">6. Popups</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">Vitamin D tablet added successfully!</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">info</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">Vitamin D tablet info updated.</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-error-container/30 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">Vitamin D tablet removed.</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+</div>
+</div>
+<div class="space-y-md" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">تم إضافة قرص فيتامين د بنجاح!</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">info</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">تم تحديث معلومات قرص فيتامين د.</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+<div class="flex items-center gap-md bg-surface-container p-md rounded-lg shadow-sm border border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-error-container/30 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<span class="text-body-md flex-grow text-on-surface">تم حذف قرص فيتامين د.</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface transition-colors">close</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. Progress Bars -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">7. Progress Bars</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="flex flex-col gap-lg py-md">
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full" style="width: 25%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full" style="width: 45%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full" style="width: 70%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full" style="width: 90%"></div></div>
+</div>
+</div>
+<div dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="flex flex-col gap-lg py-md">
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full mr-auto" style="width: 25%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full mr-auto" style="width: 45%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full mr-auto" style="width: 70%"></div></div>
+<div class="w-full bg-primary/20 rounded-full h-3"><div class="bg-primary h-3 rounded-full mr-auto" style="width: 90%"></div></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. Navigation -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">8. Navigation</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-xl" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="bg-surface-container border border-outline-variant/20 rounded-lg p-md">
+<div class="flex items-center justify-between mb-lg bg-surface-container-high px-md py-sm rounded-DEFAULT text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+<span class="font-bold">App Bar</span>
+<span class="material-symbols-outlined">search</span>
+</div>
+<div class="flex justify-around border-t border-outline-variant/20 pt-md">
+<div class="flex flex-col items-center gap-xs text-primary">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-md">Home</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+<span class="text-label-md">Search</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-md">History</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">medication</span>
+<span class="text-label-md">Medicines</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-xl" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="bg-surface-container border border-outline-variant/20 rounded-lg p-md">
+<div class="flex items-center justify-between mb-lg bg-surface-container-high px-md py-sm rounded-DEFAULT text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+<span class="font-bold">شريط التطبيق</span>
+<span class="material-symbols-outlined">search</span>
+</div>
+<div class="flex justify-around border-t border-outline-variant/20 pt-md">
+<div class="flex flex-col items-center gap-xs text-primary">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-md">الرئيسية</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+<span class="text-label-md">بحث</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-md">السجل</span>
+</div>
+<div class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">medication</span>
+<span class="text-label-md">الأدوية</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 9. Reminder Inputs -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">9. Reminder Inputs</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-lg" dir="ltr">
+<p class="text-label-md text-outline mb-sm uppercase">English (LTR)</p>
+<div class="space-y-md">
+<div>
+<label class="block text-body-md font-medium mb-sm text-on-surface">Reminder Text (Optional)</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-DEFAULT p-md focus:border-primary focus:ring-1 focus:ring-primary h-24 resize-none text-on-surface" placeholder="Write your text here..."></textarea>
+</div>
+<div class="space-y-sm">
+<label class="flex items-center justify-between p-md border border-primary bg-primary/10 rounded-lg cursor-pointer">
+<span class="text-body-md font-medium text-on-surface">Once daily</span>
+<input checked="" class="w-6 h-6 border-primary bg-surface-container text-primary focus:ring-primary" name="freq-ltr" type="radio">
+</label>
+<label class="flex items-center justify-between p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="text-body-md text-on-surface">Twice daily</span>
+<input class="w-6 h-6 border-outline-variant bg-surface-container text-primary focus:ring-primary" name="freq-ltr" type="radio">
+</label>
+</div>
+</div>
+</div>
+<div class="space-y-lg" dir="rtl">
+<p class="text-label-md text-outline mb-sm uppercase">Arabic (RTL)</p>
+<div class="space-y-md">
+<div>
+<label class="block text-body-md font-medium mb-sm text-on-surface">نص التذكير (اختياري)</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-DEFAULT p-md focus:border-primary focus:ring-1 focus:ring-primary h-24 resize-none text-on-surface" placeholder="اكتب نصك هنا..."></textarea>
+</div>
+<div class="space-y-sm">
+<label class="flex items-center justify-between p-md border border-primary bg-primary/10 rounded-lg cursor-pointer">
+<span class="text-body-md font-medium text-on-surface">مرة يومياً</span>
+<input checked="" class="w-6 h-6 border-primary bg-surface-container text-primary focus:ring-primary" name="freq-rtl" type="radio">
+</label>
+<label class="flex items-center justify-between p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="text-body-md text-on-surface">مرتين يومياً</span>
+<input class="w-6 h-6 border-outline-variant bg-surface-container text-primary focus:ring-primary" name="freq-rtl" type="radio">
+</label>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 10. Circular Progress -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">10. Circular Progress</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="flex justify-around items-center py-md">
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-error stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="188.4" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">25%</span>
+</div>
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-tertiary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="125.6" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">50%</span>
+</div>
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">75%</span>
+</div>
+</div>
+</div>
+<div dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="flex justify-around items-center py-md">
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-error stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="188.4" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">٢٥٪</span>
+</div>
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-tertiary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="125.6" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">٥٠٪</span>
+</div>
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-bold text-on-surface">٧٥٪</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 11. System Switches -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">11. System Switches</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="p-md bg-surface-container border border-outline-variant/30 rounded-lg space-y-md">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-medium text-on-surface">Reorder Medication</span>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors">
+<span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-on-primary transition-transform"></span>
+</button>
+</div>
+<div class="border-t border-outline-variant/10 pt-md space-y-sm">
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface">Remaining quantity</span>
+<div class="flex items-center border border-primary rounded px-sm py-xs gap-sm bg-primary/10">
+<span class="text-label-md text-on-surface">30 items</span>
+<span class="material-symbols-outlined text-[18px] text-primary">expand_more</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface">Remind me at</span>
+<div class="flex items-center border border-primary rounded px-sm py-xs gap-sm bg-primary/10">
+<span class="text-label-md text-on-surface">10 items</span>
+<span class="material-symbols-outlined text-[18px] text-primary">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-md" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="p-md bg-surface-container border border-outline-variant/30 rounded-lg space-y-md">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-medium text-on-surface">هشدار شراء الدواء مجدداً</span>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors">
+<span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-on-primary transition-transform"></span>
+</button>
+</div>
+<div class="border-t border-outline-variant/10 pt-md space-y-sm">
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface">الكمية المتبقية</span>
+<div class="flex items-center border border-primary rounded px-sm py-xs gap-sm bg-primary/10">
+<span class="text-label-md text-on-surface">٣٠ قطعة</span>
+<span class="material-symbols-outlined text-[18px] text-primary">expand_more</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface">ذكرني عند وصولها إلى</span>
+<div class="flex items-center border border-primary rounded px-sm py-xs gap-sm bg-primary/10">
+<span class="text-label-md text-on-surface">١٠ قطع</span>
+<span class="material-symbols-outlined text-[18px] text-primary">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 12. Elevation & Shadows -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">12. Elevation &amp; Shadows</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-lg py-md">
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-[0_2px_4px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 1</div>
+<div class="bg-surface-container-low p-lg rounded-xl shadow-[0_4px_8px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 2</div>
+<div class="bg-surface-container p-lg rounded-xl shadow-[0_6px_14px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 3</div>
+<div class="bg-surface-container-high p-lg rounded-xl shadow-[0_8px_20px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 4</div>
+<div class="bg-surface-bright p-lg rounded-xl shadow-[0_26px_26px_0_rgba(0,0,0,0.3)] text-center text-label-md text-on-surface">Elevation 5</div>
+<div class="bg-surface-bright p-lg rounded-xl shadow-[0_26px_32px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 6</div>
+<div class="bg-surface-bright p-lg rounded-xl shadow-[0_32px_36px_0_rgba(0,0,0,0.4)] text-center text-label-md text-on-surface">Elevation 7</div>
+<div class="bg-surface-bright p-lg rounded-xl shadow-[0_40px_44px_0_rgba(0,0,0,0.5)] text-center text-label-md text-on-surface">Elevation 8</div>
+</div>
+</section>
+<!-- 13. Advanced Time Pickers -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">13. Advanced Time Pickers</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-lg" dir="ltr">
+<p class="text-label-md text-outline mb-sm uppercase">English (LTR)</p>
+<div class="flex flex-col gap-md">
+<div class="flex items-center justify-between border border-outline-variant rounded-lg p-md max-w-xs bg-surface-container text-on-surface">
+<span class="text-body-md">Today</span>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+<div class="border border-outline-variant rounded-lg overflow-hidden max-w-xs bg-surface-container shadow-lg">
+<div class="p-md flex items-center justify-between border-b border-outline-variant/10 bg-surface-container-high">
+<span class="text-body-md font-medium text-on-surface">Today</span>
+<span class="material-symbols-outlined text-on-surface">expand_less</span>
+</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer text-on-surface">Today</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">Tomorrow</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">In 2 days</div>
+</div>
+</div>
+</div>
+<div class="space-y-lg" dir="rtl">
+<p class="text-label-md text-outline mb-sm uppercase">Arabic (RTL)</p>
+<div class="flex flex-col gap-md">
+<div class="flex items-center justify-between border border-outline-variant rounded-lg p-md max-w-xs bg-surface-container text-on-surface">
+<span class="text-body-md">اليوم</span>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+<div class="border border-outline-variant rounded-lg overflow-hidden max-w-xs bg-surface-container shadow-lg">
+<div class="p-md flex items-center justify-between border-b border-outline-variant/10 bg-surface-container-high">
+<span class="text-body-md font-medium text-on-surface">اليوم</span>
+<span class="material-symbols-outlined text-on-surface">expand_less</span>
+</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer text-on-surface">اليوم</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">غداً</div>
+<div class="p-md hover:bg-surface-container-high cursor-pointer border-t border-outline-variant/10 text-on-surface">بعد يومين</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 14. Clinical To-Do Cards -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">14. Clinical To-Do Cards</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="space-y-md">
+<!-- Unchecked -->
+<div class="bg-surface-container border border-outline-variant p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant flex-shrink-0"></div>
+<div class="flex-grow">
+<h4 class="font-bold text-on-surface">Amoxicillin</h4>
+<p class="text-label-md text-on-surface-variant">500mg • 08:00 AM</p>
+</div>
+</div>
+<!-- Checked -->
+<div class="bg-primary/10 border border-primary p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-primary">check</span>
+</div>
+<div class="flex-grow">
+<h4 class="font-bold text-on-surface line-through opacity-50">Paracetamol</h4>
+<p class="text-label-md text-on-surface-variant line-through opacity-50">1000mg • 09:30 AM</p>
+</div>
+</div>
+<!-- Error/Alert -->
+<div class="bg-error/10 border border-error p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full border-2 border-error flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-error">priority_high</span>
+</div>
+<div class="flex-grow">
+<h4 class="font-bold text-error">Vitamin B12</h4>
+<p class="text-label-md text-error/70">Missed • 07:00 AM</p>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-md" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="space-y-md">
+<!-- Unchecked -->
+<div class="bg-surface-container border border-outline-variant p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant flex-shrink-0"></div>
+<div class="flex-grow text-right">
+<h4 class="font-bold text-on-surface">أموكسيسيلين</h4>
+<p class="text-label-md text-on-surface-variant">٥٠٠ ملغ • ٠٨:٠٠ صباحاً</p>
+</div>
+</div>
+<!-- Checked -->
+<div class="bg-primary/10 border border-primary p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-primary">check</span>
+</div>
+<div class="flex-grow text-right">
+<h4 class="font-bold text-on-surface line-through opacity-50">باراسيتامول</h4>
+<p class="text-label-md text-on-surface-variant line-through opacity-50">١٠٠٠ ملغ • ٠٩:٣٠ صباحاً</p>
+</div>
+</div>
+<!-- Error/Alert -->
+<div class="bg-error/10 border border-error p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full border-2 border-error flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-error">priority_high</span>
+</div>
+<div class="flex-grow text-right">
+<h4 class="font-bold text-error">فيتامين ب١٢</h4>
+<p class="text-label-md text-error/70">فاتت الجرعة • ٠٧:٠٠ صباحاً</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 15. Text Input Fields -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">15. Text Input Fields</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="space-y-lg">
+<div>
+<label class="block text-label-md font-medium text-on-surface-variant mb-xs">Patient Name</label>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg p-md focus:ring-0 focus:border-primary text-on-surface" placeholder="Enter name..." type="text">
+</div>
+<div>
+<label class="block text-label-md font-medium text-tertiary mb-xs">Email Address</label>
+<input class="w-full bg-surface-container border-2 border-tertiary rounded-lg p-md focus:ring-0 text-on-surface" type="email" value="dr.smith@clinic.com">
+</div>
+<div>
+<label class="block text-label-md font-medium text-primary mb-xs">Medication Strength</label>
+<input class="w-full bg-surface-container-high border border-outline-variant rounded-lg p-md focus:ring-0 text-on-surface" type="text" value="250 mg">
+</div>
+<div>
+<label class="block text-label-md font-medium text-error mb-xs">Date of Birth</label>
+<input class="w-full bg-surface-container border border-error rounded-lg p-md focus:ring-0 text-on-surface" placeholder="YYYY-MM-DD" type="text">
+<p class="text-label-md text-error mt-xs">Required field</p>
+</div>
+</div>
+</div>
+<div class="space-y-md" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="space-y-lg">
+<div>
+<label class="block text-label-md font-medium text-on-surface-variant mb-xs">اسم المريض</label>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg p-md focus:ring-0 focus:border-primary text-on-surface" placeholder="أدخل الاسم..." type="text">
+</div>
+<div>
+<label class="block text-label-md font-medium text-tertiary mb-xs">البريد الإلكتروني</label>
+<input class="w-full bg-surface-container border-2 border-tertiary rounded-lg p-md focus:ring-0 text-on-surface" type="email" value="dr.smith@clinic.com">
+</div>
+<div>
+<label class="block text-label-md font-medium text-primary mb-xs">قوة الدواء</label>
+<input class="w-full bg-surface-container-high border border-outline-variant rounded-lg p-md focus:ring-0 text-on-surface" type="text" value="٢٥٠ ملغ">
+</div>
+<div>
+<label class="block text-label-md font-medium text-error mb-xs">تاريخ الميلاد</label>
+<input class="w-full bg-surface-container border border-error rounded-lg p-md focus:ring-0 text-on-surface" placeholder="YYYY-MM-DD" type="text">
+<p class="text-label-md text-error mt-xs">حقل مطلوب</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 16. Tooltips -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">16. Tooltips</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-xl" dir="ltr">
+<p class="text-label-md text-outline mb-md uppercase">English (LTR)</p>
+<div class="grid grid-cols-2 gap-xl py-lg">
+<!-- Top Arrow -->
+<div class="relative bg-inverse-surface text-inverse-on-surface p-md rounded-lg max-w-[160px] shadow-lg">
+<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-inverse-surface rotate-45"></div>
+<p class="text-label-md mb-sm relative">You can track your medication inventory here.</p>
+<button class="text-primary text-label-md font-bold relative hover:underline">GOT IT</button>
+</div>
+<!-- Bottom Arrow -->
+<div class="relative bg-inverse-surface text-inverse-on-surface p-md rounded-lg max-w-[160px] shadow-lg">
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-inverse-surface rotate-45"></div>
+<p class="text-label-md mb-sm relative">Double check the dosage with your doctor.</p>
+<button class="text-primary text-label-md font-bold relative hover:underline">GOT IT</button>
+</div>
+</div>
+</div>
+<div class="space-y-xl" dir="rtl">
+<p class="text-label-md text-outline mb-md uppercase">Arabic (RTL)</p>
+<div class="grid grid-cols-2 gap-xl py-lg">
+<!-- Top Arrow -->
+<div class="relative bg-inverse-surface text-inverse-on-surface p-md rounded-lg max-w-[160px] shadow-lg">
+<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-inverse-surface rotate-45"></div>
+<p class="text-label-md mb-sm relative">يمكنك تتبع مخزون الأدوية الخاص بك هنا.</p>
+<button class="text-primary text-label-md font-bold relative uppercase hover:underline">متوجه شدم</button>
+</div>
+<!-- Bottom Arrow -->
+<div class="relative bg-inverse-surface text-inverse-on-surface p-md rounded-lg max-w-[160px] shadow-lg">
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-inverse-surface rotate-45"></div>
+<p class="text-label-md mb-sm relative">تأكد من الجرعة مع طبيبك الخاص.</p>
+<button class="text-primary text-label-md font-bold relative uppercase hover:underline">متوجه شدم</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 17. Advanced Scheduling -->
+<section class="bg-surface-container-low p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h2 class="text-headline-md mb-lg border-b border-outline-variant pb-base text-on-surface">17. Advanced Scheduling</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-lg" dir="ltr">
+<p class="text-label-md text-outline mb-sm uppercase">English (LTR)</p>
+<div class="border border-outline-variant rounded-xl p-md bg-surface-container">
+<div class="flex gap-sm mb-md">
+<button class="bg-primary text-on-primary px-md py-xs rounded-full text-label-md">Daily</button>
+<button class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full text-label-md">Weekly</button>
+<button class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full text-label-md">Monthly</button>
+</div>
+<div class="grid grid-cols-7 gap-xs">
+<div class="aspect-square bg-primary/20 text-primary font-bold text-center flex items-center justify-center rounded text-label-md">S</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">M</div>
+<div class="aspect-square bg-primary text-on-primary font-bold text-center flex items-center justify-center rounded text-label-md">T</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">W</div>
+<div class="aspect-square bg-primary text-on-primary font-bold text-center flex items-center justify-center rounded text-label-md">T</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">F</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">S</div>
+</div>
+</div>
+</div>
+<div class="space-y-lg" dir="rtl">
+<p class="text-label-md text-outline mb-sm uppercase">Arabic (RTL)</p>
+<div class="border border-outline-variant rounded-xl p-md bg-surface-container">
+<div class="flex gap-sm mb-md">
+<button class="bg-primary text-on-primary px-md py-xs rounded-full text-label-md">يومياً</button>
+<button class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full text-label-md">أسبوعياً</button>
+<button class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full text-label-md">شهرياً</button>
+</div>
+<div class="grid grid-cols-7 gap-xs">
+<div class="aspect-square bg-primary/20 text-primary font-bold text-center flex items-center justify-center rounded text-label-md">ح</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">ن</div>
+<div class="aspect-square bg-primary text-on-primary font-bold text-center flex items-center justify-center rounded text-label-md">ث</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">ر</div>
+<div class="aspect-square bg-primary text-on-primary font-bold text-center flex items-center justify-center rounded text-label-md">خ</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">ج</div>
+<div class="aspect-square bg-surface-container-high text-on-surface-variant text-center flex items-center justify-center rounded text-label-md">س</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</body></html>

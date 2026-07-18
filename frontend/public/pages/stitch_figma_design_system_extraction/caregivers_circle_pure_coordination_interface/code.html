@@ -1,0 +1,363 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Caregivers Circle | MediMind</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#72a6ff",
+                        "secondary-fixed-dim": "#4adea9",
+                        "on-surface-variant": "#3c4a43",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#0b1c30",
+                        "on-primary-fixed": "#002115",
+                        "inverse-surface": "#213145",
+                        "on-secondary-fixed": "#002115",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#bbcac1",
+                        "surface": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "inverse-primary": "#4adea9",
+                        "error": "#ba1a1a",
+                        "on-background": "#0b1c30",
+                        "surface-tint": "#006c4e",
+                        "secondary-container": "#6bfbc4",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#6bfbc4",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-secondary-container": "#007353",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "surface-variant": "#d3e4fe",
+                        "primary": "#006c4e",
+                        "primary-fixed-dim": "#4adea9",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "on-primary-container": "#004430",
+                        "outline": "#6c7a72",
+                        "on-tertiary-container": "#003a7a",
+                        "primary-container": "#09bc8a",
+                        "tertiary-fixed": "#d7e3ff",
+                        "secondary-fixed": "#6bfbc4",
+                        "on-tertiary-fixed": "#001b3f",
+                        "surface-container-high": "#dce9ff",
+                        "secondary": "#006c4e",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary": "#005cbb",
+                        "surface-container": "#e5eeff",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-primary-fixed-variant": "#00513a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "xs": "4px",
+                        "base": "4px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFB;
+            font-family: 'Inter', sans-serif;
+            color: #0b1c30;
+        }
+        .card-elevation-1 {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            transition: border-color 200ms ease;
+        }
+        .card-elevation-1:hover {
+            border-color: rgba(9, 188, 138, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bbcac1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+<main class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-lg space-y-lg">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+<div>
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-on-surface">Caregivers Circle</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-xs">Coordinate and connect with your dedicated support network.</p>
+</div>
+<button class="flex items-center justify-center gap-sm bg-primary-container text-white px-lg py-md rounded-lg font-headline-md text-body-md hover:brightness-105 transition-all duration-200 active:scale-95 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person_add</span>
+                Invite New Caregiver
+            </button>
+</header>
+<!-- Care Team Grid -->
+<section>
+<div class="flex items-center justify-between mb-lg">
+<h2 class="text-headline-md font-headline-md text-on-surface">Care Team</h2>
+<span class="text-label-sm font-label-sm text-primary uppercase tracking-widest bg-primary/10 px-sm py-xs rounded">3 Members Active</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Dr. James Wilson -->
+<div class="card-elevation-1 rounded-xl p-lg flex flex-col justify-between group">
+<div class="flex items-start justify-between mb-md">
+<div class="flex items-center gap-md">
+<div class="w-14 h-14 rounded-full border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of an experienced male doctor in his 50s wearing a clean white lab coat and a stethoscope. The background is a brightly lit, high-end medical facility with soft blue and green accents. The lighting is crisp and natural, emphasizing a trustworthy and compassionate persona in a modern healthcare setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUI0ukQiZ0kpCQTetreU3kQxCcu1pn7yKrT_wdV_tXz91wQjKXeTk5sOw-kV_cHRZk8OlNWkdngXc8LApUQ_CAKb2EW7Hnabh1WfvbFJdFx0qBgiI3i4qzu4WCqBgA5aWWSjRI9x3MG6Fus9AE2AWMMXYzeksAxyE-knL4DzMR2qRWKObcmK5_Tre1Bk9EnIKF_KvcI9xm6H7lEhkYzB2oKuVZGYqUejmKbs5IqGXpNbTtgqvQv1vA0Q">
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Dr. James Wilson</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Primary Physician</p>
+</div>
+</div>
+<div class="flex items-center gap-xs bg-success-container/10 px-sm py-1 rounded-full">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[10px] font-bold text-primary uppercase tracking-tighter">Available</span>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 py-sm px-md rounded-lg border border-primary text-primary font-semibold text-label-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">call</span> Call
+                        </button>
+<button class="flex-1 py-sm px-md rounded-lg border border-primary text-primary font-semibold text-label-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">mail</span> Email
+                        </button>
+</div>
+</div>
+<!-- Martha Sarah -->
+<div class="card-elevation-1 rounded-xl p-lg flex flex-col justify-between group">
+<div class="flex items-start justify-between mb-md">
+<div class="flex items-center gap-md">
+<div class="w-14 h-14 rounded-full border-2 border-tertiary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A warm, candid portrait of a middle-aged woman with a kind smile, representing a family caregiver. She is in a cozy, sunlit home environment with soft domestic textures like linen and warm wood in the background. The aesthetic is clean, professional, and full of empathy, maintaining the vibrant professionalism of the MediMind platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRNNvSoQY47i19KZTsYigsnnkMmrciRq-0bERXZSQgdmMBzsgTcbVhsqRNEgWFM_PL3nPJkXcRw8fRzhTZhzvuula16VN5bMUZeZgiQ9DLI4tR8wL99r00IBl4hc6GwkCYV6jXQLUKB_QAc8Q6jBVFdRPI6t_yG9HYaMCu4nRJ2IFO1PJjRl1prDzbQUHy8_SIAzfxKqJHK_sXSeZk8b6A1McsDMt4J6mOeJ8TgtIKonLXYV1460c7wQ">
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Martha Sarah</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Family Member</p>
+</div>
+</div>
+<div class="flex items-center gap-xs bg-tertiary-container/10 px-sm py-1 rounded-full">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Online</span>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 py-sm px-md rounded-lg border border-primary text-primary font-semibold text-label-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">chat_bubble</span> Message
+                        </button>
+<button class="flex-1 py-sm px-md rounded-lg border border-primary text-primary font-semibold text-label-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">videocam</span> Video
+                        </button>
+</div>
+</div>
+<!-- Sarah Chen -->
+<div class="card-elevation-1 rounded-xl p-lg flex flex-col justify-between group">
+<div class="flex items-start justify-between mb-md">
+<div class="flex items-center gap-md">
+<div class="w-14 h-14 rounded-full border-2 border-outline overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional young woman of Asian descent acting as a care coordinator, photographed in a modern, high-tech office environment. She wears a smart-casual outfit and has a friendly yet focused expression. The lighting is balanced and professional, with a clean architectural background that suggests efficiency and medical expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr5QT_AeKU8Vllw4TDK4rKFx-RrdHy56_6kdSfg4WieZ1CWpzvPoIQjwhInUSrtlf8goGQPlxi8hg8-3y0UaPVgWC27QRgFoLOVwDP9pd3M33zSOdXqCm_kl4yl-MEV7m8voN3E0ZOhctPWzTO7r1MCw6zZEPd8rMEFQYeNxs7K9RVOuxL8LAbcCkbgWrltNA7Ako8KKxzKUOQwnh5tNC9NUwnUcMVYLhTRQ6y4DOW1GY0YOQ3_wFlzg">
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Sarah Chen</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Care Coordinator</p>
+</div>
+</div>
+<div class="flex items-center gap-xs bg-error-container/20 px-sm py-1 rounded-full">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-[10px] font-bold text-error uppercase tracking-tighter">Busy</span>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="w-full py-sm px-md rounded-lg border border-primary text-primary font-semibold text-label-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">chat_bubble</span> Message
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Coordination Panel -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Shared Care Notes -->
+<div class="card-elevation-1 rounded-xl flex flex-col h-[500px]">
+<div class="p-lg border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">description</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Shared Care Notes</h2>
+</div>
+<button class="text-primary hover:bg-primary/5 p-xs rounded-full transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg space-y-md custom-scrollbar">
+<div class="flex gap-md p-md bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-full flex-shrink-0 bg-primary/20 flex items-center justify-center font-bold text-primary">JW</div>
+<div class="space-y-xs">
+<div class="flex items-center justify-between">
+<span class="text-label-sm font-bold text-on-surface">Dr. James Wilson</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm">2h ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant text-sm">Updated prescription for Metformin. Please ensure the patient takes it after dinner to avoid nausea.</p>
+</div>
+</div>
+<div class="flex gap-md p-md hover:bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-full flex-shrink-0 bg-tertiary/20 flex items-center justify-center font-bold text-tertiary">MS</div>
+<div class="space-y-xs">
+<div class="flex items-center justify-between">
+<span class="text-label-sm font-bold text-on-surface">Martha Sarah</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm">5h ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant text-sm">Patient's blood pressure was slightly higher this morning (135/85). Will monitor again at 4 PM.</p>
+</div>
+</div>
+<div class="flex gap-md p-md hover:bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<div class="w-10 h-10 rounded-full flex-shrink-0 bg-secondary-container/30 flex items-center justify-center font-bold text-primary">SC</div>
+<div class="space-y-xs">
+<div class="flex items-center justify-between">
+<span class="text-label-sm font-bold text-on-surface">Sarah Chen</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm">Yesterday</span>
+</div>
+<p class="text-body-md text-on-surface-variant text-sm">Appointment with the physical therapist confirmed for Thursday at 10:00 AM.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Circle Activity Feed -->
+<div class="card-elevation-1 rounded-xl flex flex-col h-[500px]">
+<div class="p-lg border-b border-outline-variant flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">history</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Circle Activity Feed</h2>
+</div>
+<div class="flex-1 overflow-y-auto p-lg space-y-lg custom-scrollbar">
+<div class="relative pl-lg border-l-2 border-outline-variant ml-sm space-y-lg">
+<!-- Log Item 1 -->
+<div class="relative">
+<div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white"></div>
+<div class="space-y-1">
+<p class="text-body-md text-on-surface leading-tight">
+<span class="font-bold">Dr. James Wilson</span> updated the <span class="text-primary font-semibold">medication plan</span>
+</p>
+<p class="text-label-sm text-on-surface-variant">Today, 10:45 AM</p>
+</div>
+</div>
+<!-- Log Item 2 -->
+<div class="relative">
+<div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-tertiary border-4 border-white"></div>
+<div class="space-y-1">
+<p class="text-body-md text-on-surface leading-tight">
+<span class="font-bold">Martha Sarah</span> confirmed the <span class="text-tertiary font-semibold">morning dose</span>
+</p>
+<p class="text-label-sm text-on-surface-variant">Today, 8:15 AM</p>
+</div>
+</div>
+<!-- Log Item 3 -->
+<div class="relative">
+<div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-outline border-4 border-white"></div>
+<div class="space-y-1">
+<p class="text-body-md text-on-surface leading-tight">
+<span class="font-bold">Sarah Chen</span> scheduled a <span class="text-on-surface font-semibold">Physical Therapy Session</span>
+</p>
+<p class="text-label-sm text-on-surface-variant">Yesterday, 4:30 PM</p>
+</div>
+</div>
+<!-- Log Item 4 -->
+<div class="relative">
+<div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-white"></div>
+<div class="space-y-1">
+<p class="text-body-md text-on-surface leading-tight">
+<span class="font-bold">Dr. James Wilson</span> joined the <span class="text-primary font-semibold">Care Circle</span>
+</p>
+<p class="text-label-sm text-on-surface-variant">2 days ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Credits -->
+<footer class="pt-xl pb-lg flex flex-col md:flex-row justify-between items-center text-on-surface-variant border-t border-outline-variant mt-xl">
+<p class="text-label-sm font-label-sm">© 2024 MediMind Health Coordination. All rights reserved.</p>
+<div class="flex gap-lg mt-md md:mt-0">
+<a class="text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Help Center</a>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Simple scroll reveal for cards
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-4');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card-elevation-1').forEach(card => {
+            card.classList.add('transition-all', 'duration-500', 'opacity-0', 'translate-y-4');
+            observer.observe(card);
+        });
+    </script>
+</body></html>
