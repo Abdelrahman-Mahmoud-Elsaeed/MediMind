@@ -11,6 +11,7 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:worker": "npm --prefix worker run dev",
     "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:worker\"",
+    "dev:no-docker": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
     "setup": "npm run install:all && npm run docker:up",
     "start": "npm run setup && npm run dev"
   },

@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-const { NODE_ENV, COOKIE_SECRET } = require('./config/env');
+const { NODE_ENV, COOKIE_SECRET, FRONTEND_URL } = require('./config/env');
 const { morganLogger } = require('./shared/utils/logger');
 const rootRouter = require('./index.route');
 const { errorMiddleware, notFoundMiddleware } = require('./shared/middleware/error.middleware');
