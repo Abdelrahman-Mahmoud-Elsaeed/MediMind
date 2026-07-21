@@ -1,7 +1,7 @@
 // worker/src/config/queue.js
 const { REDIS_URL } = require('./env');
 const { logger } = require('../shared/logger');
-
+console.log("REDIS_URL:", REDIS_URL);
 // Parse Redis URL into ioredis-compatible connection options
 const parsedUrl = new URL(REDIS_URL);
 const redisConnectionOptions = {

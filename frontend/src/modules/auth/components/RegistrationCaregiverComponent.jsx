@@ -7,6 +7,7 @@ import { useTranslation } from "@/shared/lib/i18nContext";
 import { useTheme } from 'next-themes';
 import { registerCaregiverSchema } from "../validation/authValidation";
 import { parseApiMessage } from "@/shared/lib/parseApiMessage";
+import BrandingSidebar from "./BrandingSidebar";
 
 export default function RegistrationCaregiverComponent() {
   const router = useRouter();
@@ -355,57 +356,7 @@ export default function RegistrationCaregiverComponent() {
       </div>
 
       {/* Right Side (Visual Panel) */}
-      <div className="hidden lg:flex w-full relative bg-butterfly-gradient overflow-hidden flex-col justify-center items-center px-12 py-12 select-none">
-        {/* Grid Overlay */}
-        <div className="absolute inset-0 dot-grid opacity-30"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-
-        {/* Butterfly SVG Particles */}
-        <svg className="absolute top-1/4 left-1/4 animate-float opacity-50 w-12 h-12" fill="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z"></path>
-        </svg>
-        <svg className="absolute top-1/3 right-1/4 animate-float-delayed opacity-30 w-8 h-8" fill="white" style={{ transform: "rotate(45deg)" }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z"></path>
-        </svg>
-        <svg className="absolute bottom-1/4 left-1/3 animate-float opacity-40 w-10 h-10" fill="white" style={{ transform: "rotate(-15deg)" }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z"></path>
-        </svg>
-
-        {/* Content Container */}
-        <div className="relative z-10 max-w-lg text-center flex flex-col items-center">
-          {/* Main Icon */}
-          <div className="w-32 h-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-6 shadow-lg border border-white/30 animate-pulse-slow">
-            <span className="material-symbols-outlined text-[64px] text-white">volunteer_activism</span>
-          </div>
-
-          <h2 className="font-headline-lg text-headline-lg text-white mb-2 drop-shadow-md">
-            Empowering Trusted Caregivers.
-          </h2>
-          <p className="font-body-lg text-body-lg text-white/90 mb-8 drop-shadow-sm leading-relaxed">
-            Coordinate medications, track adherence, and stay connected with your loved ones every step of the way.
-          </p>
-
-          {/* Feature Pills */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <div className="flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[16px] mr-1">monitor_heart</span>
-              <span>Patient Monitoring</span>
-            </div>
-            <div className="flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[16px] mr-1">notifications_active</span>
-              <span>Quick Alerts</span>
-            </div>
-            <div className="flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[16px] mr-1">group_add</span>
-              <span>Care Circles</span>
-            </div>
-            <div className="flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[16px] mr-1">vpn_key</span>
-              <span>Secure Access</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BrandingSidebar/>
     </div>
   );
 }

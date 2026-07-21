@@ -1,5 +1,5 @@
-import RegistrationStep1Component from '@/modules/auth/components/RegistrationStep1Component';
+import RegistrationComponent from "@/modules/auth/components/RegistrationComponent";
 
 export default function RegisterPage() {
-  return <RegistrationStep1Component />;
+  return <RegistrationComponent />;
 }

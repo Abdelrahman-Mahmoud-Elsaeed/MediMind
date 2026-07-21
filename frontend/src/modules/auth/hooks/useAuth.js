@@ -9,9 +9,12 @@ import {
 } from '../store/authSelectors';
 import { loginThunk, registerThunk, logoutThunk } from '../store/authActions';
 import { clearError, setRegistrationData as setRegData, clearRegistrationData as clearRegData } from '../store/authSlice';
+import { useTranslation } from "@/shared/lib/i18nContext";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
+  const { t, locale, dir } = useTranslation();
+  
   const user = useSelector(selectAuthUser);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const loading = useSelector(selectAuthLoading);
@@ -53,6 +56,9 @@ export const useAuth = () => {
     logout,
     resetError,
     setRegistrationData,
-    clearRegistrationData
+    clearRegistrationData,
+    t,
+    locale,
+    dir
   };
 };
