@@ -42,6 +42,11 @@ export const registerPatientSchema = z.object({
     .regex(/^01[0125]\d{8}$/, "Invalid Egyptian phone number"),
   dob: z.string().optional().or(z.literal("")),
   bloodType: z.string().optional().or(z.literal("")),
+  gender: z.string().optional().or(z.literal("")),
+  height: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  weight: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  whatsappOptIn: z.boolean().optional(),
+  preferredLanguage: z.string().optional(),
   emName: z.string().optional().or(z.literal("")),
   emPhone: z
     .string()
@@ -56,7 +61,11 @@ export const registerCaregiverSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   phone: z
-  .string()
-  .trim()
-  .regex(/^01[0125]\d{8}$/, "Invalid Egyptian phone number"),
+    .string()
+    .trim()
+    .regex(/^01[0125]\d{8}$/, "Invalid Egyptian phone number")
+    .optional()
+    .or(z.literal("")),
+  relation: z.enum(["son", "daughter", "spouse", "parent", "sibling", "friend", "other"]),
+  whatsappOptIn: z.boolean().optional(),
 });

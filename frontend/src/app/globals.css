@@ -364,3 +364,47 @@ body {
   margin: 0;
   padding: 0;
 }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 7s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.bg-butterfly-gradient {
+  background: linear-gradient(160deg, #4F9DFF 0%, #F7A8C4 55%, #37B7A5 100%);
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px);
+  background-size: 28px 28px;
+}
+
+.butterfly-input {
+  background-color: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--outline-variant);
+}
+.butterfly-input:focus {
+  border-color: var(--primary-container);
+  box-shadow: 0 0 0 2px rgba(9, 188, 138, 0.2);
+  outline: none;
+}
