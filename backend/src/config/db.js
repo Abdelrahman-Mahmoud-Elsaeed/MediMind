@@ -13,7 +13,7 @@ const connectDB = async () => {
     logger.info('Successfully established secure connection to MongoDB Database.');
   } catch (error) {
     logger.error(error, 'Critical database connection failure');
-    process.exit(1);
+    logger.warn('Server will continue running without database. API endpoints requiring DB will fail.');
   }
 };
 
