@@ -12,33 +12,38 @@ const mongoose = require("mongoose");
 const {
   _finalizeSession,
   _verifyUniqueness,
-} = require("../utiltis/auth.utils");
+} = require("../utils/auth.utils");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 
 class DoctorService {
-  
   async registerProvider(userData) {
-
+    const { credentials, email, phone, nationalNumber, licenseNumber, role } =
+      userData;
     let account;
     let profile;
 
+    const primaryEmail = credentials?.email || email;
+    const primaryPhone = credentials?.phone || phone;
+    const password = credentials?.password;
+
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
+      // Check uniqueness for email, phone, and license
       await _verifyUniqueness(
         {
-          email: userData.email,
-          phone: userData.phone,
-          license: userData.licenseNumber,
+          email: primaryEmail,
+          phone: primaryPhone,
+          license: licenseNumber,
         },
         session,
       );
 
       account = new Account({
-        email: userData.email,
-        phone: userData.phone,
-        nationalNumber: userData.nationalNumber,
-        passwordHash: userData.password,
-        role: "DOCTOR",
+        email: primaryEmail || null,
+        phone: primaryPhone || null,
+        nationalNumber: nationalNumber || null,
+        passwordHash: password,
+        role: role || "DOCTOR",
         isActive: false,
         sessions: [],
       });
@@ -48,12 +53,12 @@ class DoctorService {
       await profile.save({ session });
     });
     session.endSession();
-    
+
     const isEmailVerified = account.isEmailVerified || false;
     const isPhoneVerified = account.isPhoneVerified || false;
-    const isVerified = isEmailVerified || isPhoneVerified || profile?.isVerified === true;
+    const isVerified =
+      isEmailVerified || isPhoneVerified || profile?.isVerified === true;
 
-    // 2. Wrap the final payload within the unified global ServiceResponse template instance
     return new ServiceResponse({
       status: "PENDING_VERIFICATION",
       en: "Registration complete. Please wait while we verify your medical license.",
@@ -68,7 +73,6 @@ class DoctorService {
       },
     });
   }
-
 
   _createProfileInstance(Model, accountId, userData) {
     const {

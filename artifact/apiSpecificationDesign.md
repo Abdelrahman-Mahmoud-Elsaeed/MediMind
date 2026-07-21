@@ -57,313 +57,307 @@ This module index is the architectural entry point for the platform and is inten
 
 ## 2. Authentication & Identity (/auth)
 
+All authentication endpoints apply rate-limiting protection (`authRateLimiter`) and return standardized `ServiceResponse` envelopes with bilingual (`en`/`ar`) messages.
+
 ### 2.1 Login
 **POST** `/auth/login`
 
-**Request:**
+**Request (Email Login):**
 
-```JSON
+```json
 {
-  "email": "patient@example.com",
-  "password": "securepassword123"
+  "credentials": {
+    "email": "patient@example.com",
+    "password": "SecurePassword123"
+  }
 }
 ```
-OR
 
-```JSON
+**Request (Phone Login):**
+
+```json
 {
-  "phone": "+201000000000",
-  "password": "securepassword123"
+  "credentials": {
+    "phone": "01000000000",
+    "password": "SecurePassword123"
+  }
 }
 ```
-**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
+
+**Response Headers:** `Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/`
 
 **Response (200 OK):**
 
-```JSON
+```json
 {
   "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUz...",
-    "user": { "accountId": "64a1b...", "role": "PATIENT" }
-  }
-}
-```
-
-### 2.2 Register via Email (Patient & Family Caregiver)
-**POST** `/auth/register/email`
-
-**Request:**
-
-```JSON
-{
-  "email": "patient@example.com",
-  "password": "SecurePass123",
-  "role": "PATIENT",
-  "firstName": "John",
-  "lastName": "Doe",
-  "dateOfBirth": "1990-01-15T00:00:00.000Z",
-  "gender": "male",
-  "bloodType": "O+",
-  "height": 175,
-  "weight": 70,
-  "profilePictureUrl": "https://example.com/image.jpg",
-  "whatsappOptIn": true,
-  "preferredLanguage": "en",
-  "address": [],
-  "emergencyContact": [],
-  "allergies": ["penicillin"],
-  "consents": {
-    "familyCaregiver": true,
-    "professionalCaregiver": false,
-    "doctor": true,
-    "pharmacy": false
-  }
-}
-```
-**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
-
-**Response (201 Created):**
-
-```JSON
-{
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUz...",
-    "user": {
-      "accountId": "64a1b...",
-      "role": "PATIENT",
-      "profileId": "64a1c..."
-    }
-  }
-}
-```
-
-### 2.3 Register via Phone (Patient & Family Caregiver)
-**POST** `/auth/register/phone`
-
-**Request:**
-
-```JSON
-{
-  "phone": "+201000000000",
-  "nationalNumber": {
-    "code": "+20",
-    "number": "1000000000"
+  "status": "SUCCESS",
+  "messages": {
+    "en": "Logged in successfully.",
+    "ar": "تم تسجيل الدخول بنجاح."
   },
-  "password": "SecurePass123",
-  "role": "PATIENT",
-  "firstName": "John",
-  "lastName": "Doe",
-  "dateOfBirth": "1990-01-15T00:00:00.000Z",
-  "gender": "male",
-  "bloodType": "O+",
-  "height": 175,
-  "weight": 70,
-  "profilePictureUrl": "https://example.com/image.jpg",
-  "whatsappOptIn": true,
-  "preferredLanguage": "en",
-  "address": [],
-  "emergencyContact": [],
-  "allergies": ["penicillin"],
-  "consents": {
-    "familyCaregiver": true,
-    "professionalCaregiver": false,
-    "doctor": true,
-    "pharmacy": false
-  }
-}
-```
-**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
-
-**Response (201 Created):**
-
-```JSON
-{
-  "success": true,
   "data": {
     "accessToken": "eyJhbGciOiJIUz...",
     "user": {
-      "accountId": "64a1b...",
+      "accountId": "64a1b2c3d4e5f67890123456",
       "role": "PATIENT",
-      "profileId": "64a1c..."
+      "profileId": "64a1c2d3e4f5a67890123457",
+      "isEmailVerified": false,
+      "isPhoneVerified": true,
+      "isVerified": true
     }
   }
 }
 ```
 
-### 2.4 Register Provider (Doctor, Pharmacist, Professional Caregiver)
-**POST** `/auth/register/provider`
+---
+
+### 2.2 Self-Registration
+**POST** `/auth/register`
+
+Single unified registration endpoint with role-based body validation (`validateByRole`).
+
+#### A. Patient Registration
+**Request:**
+
+```json
+{
+  "role": "PATIENT",
+  "credentials": {
+    "email": "patient@example.com",
+    "password": "SecurePassword123"
+  },
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1990-01-15T00:00:00.000Z",
+  "gender": "male",
+  "bloodType": "O+",
+  "whatsappOptIn": true,
+  "preferredLanguage": "en"
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "success": true,
+  "status": "SUCCESS",
+  "messages": {
+    "en": "Registered successfully.",
+    "ar": "تم التسجيل بنجاح."
+  },
+  "data": {
+    "accessToken": "eyJhbGciOiJIUz...",
+    "user": {
+      "accountId": "64a1b2c3d4e5f67890123456",
+      "role": "PATIENT",
+      "profileId": "64a1c2d3e4f5a67890123457",
+      "isEmailVerified": false,
+      "isPhoneVerified": false,
+      "isVerified": false
+    }
+  }
+}
+```
+
+#### B. Family Caregiver Registration
+**Request:**
+
+```json
+{
+  "role": "FAMILY_CAREGIVER",
+  "credentials": {
+    "email": "caregiver@example.com",
+    "password": "SecurePassword123"
+  },
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "relation": "daughter",
+  "whatsappOptIn": true,
+  "preferredLanguage": "ar"
+}
+```
+
+#### C. Provider Self-Registration (Doctor & Pharmacist)
+Providers self-register in a `PENDING_VERIFICATION` state awaiting admin verification.
 
 **Request (Doctor):**
 
-```JSON
+```json
 {
-  "email": "doctor@example.com",
-  "phone": "+201000000001",
-  "password": "SecurePass123",
   "role": "DOCTOR",
+  "credentials": {
+    "email": "doctor@example.com",
+    "password": "SecurePassword123"
+  },
   "firstName": "Dr. Sarah",
   "lastName": "Johnson",
-  "specialization": "Cardiology",
-  "licenseNumber": "MD12345",
+  "specialty": "Cardiology",
+  "syndicateId": "SYN123456",
   "clinicName": "Heart Care Clinic",
-  "clinicAddress": "123 Medical St, Cairo",
-  "yearsOfExperience": 15
+  "preferredLanguage": "ar"
 }
 ```
 
-**Request (Pharmacist):**
+**Response (201 Created - Pending Verification):**
 
-```JSON
-{
-  "email": "pharmacist@example.com",
-  "phone": "+201000000002",
-  "password": "SecurePass123",
-  "role": "PHARMACIST",
-  "firstName": "Ahmed",
-  "lastName": "Mohamed",
-  "licenseNumber": "PH67890",
-  "pharmacyName": "City Pharmacy",
-  "pharmacyAddress": "456 Health Ave, Alexandria"
-}
-```
-
-**Request (Professional Caregiver):**
-
-```JSON
-{
-  "email": "caregiver@example.com",
-  "phone": "+201000000003",
-  "password": "SecurePass123",
-  "role": "PROFESSIONAL_CAREGIVER",
-  "firstName": "Fatima",
-  "lastName": "Ali",
-  "certificationNumber": "CG11223",
-  "agencyName": "Care Services Ltd",
-  "specializations": ["elderly care", "chronic disease management"],
-  "yearsOfExperience": 8
-}
-```
-**Response Headers:** Set-Cookie: refreshToken=eyJhb...; HttpOnly; Secure; SameSite=Strict; Path=/
-
-**Response (201 Created):**
-
-```JSON
+```json
 {
   "success": true,
+  "status": "PENDING_VERIFICATION",
+  "messages": {
+    "en": "Registration complete. Please wait while we verify your medical license.",
+    "ar": "تمت عملية التسجيل. يرجى الانتظار لحين التحقق من ترخيصك الطبي."
+  },
   "data": {
-    "accessToken": "eyJhbGciOiJIUz...",
-    "user": {
-      "accountId": "64a1b...",
-      "role": "DOCTOR",
-      "profileId": "64a1c..."
-    }
+    "accountId": "64a1b2c3d4e5f67890123456",
+    "role": "DOCTOR",
+    "profileId": "64a1c2d3e4f5a67890123457",
+    "isVerified": false
   }
 }
 ```
 
-### 2.5 Refresh Token
+---
+
+### 2.3 Refresh Token
 **POST** `/auth/token/refresh`
 
-**Description:** Reads the HttpOnly cookie containing the refresh token and issues a new access token.
-
-**Request:** None (Token is sent automatically by the browser via Cookie header)
+Rotates session tokens using the `refreshToken` HttpOnly cookie.
 
 **Response (200 OK):**
 
-```JSON
+```json
 {
   "success": true,
+  "status": "SUCCESS",
+  "messages": {
+    "en": "Session tokens renewed successfully.",
+    "ar": "تم تجديد رموز الجلسة بنجاح."
+  },
   "data": {
     "accessToken": "eyJhbGciOiJIUz..."
   }
 }
 ```
 
-### 2.6 Logout
-**POST** `/auth/logout`
+---
 
-**Request:** None
+### 2.4 Verify Access Token
+**GET** `/auth/verify-token`
 
-**Response Headers:** Set-Cookie: refreshToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0
+**Access:** Protected (`authenticate`)
 
 **Response (200 OK):**
 
-```JSON
+```json
 {
   "success": true,
-  "data": { "message": "Logged out successfully." }
+  "status": "SUCCESS",
+  "messages": ["Token is valid"],
+  "data": {
+    "user": {
+      "accountId": "64a1b2c3d4e5f67890123456",
+      "role": "PATIENT"
+    }
+  }
 }
 ```
 
-### 2.7 Send OTP
+---
+
+### 2.5 Logout
+**POST** `/auth/logout`
+
+**Access:** Protected (`authenticate`)
+
+**Response Headers:** `Set-Cookie: refreshToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": "SUCCESS",
+  "messages": {
+    "en": "Logged out successfully.",
+    "ar": "تم تسجيل الخروج بنجاح."
+  },
+  "data": {}
+}
+```
+
+---
+
+### 2.6 Send OTP
 **POST** `/auth/otp/send`
 
-**Access:** Protected (Requires valid access token)
+**Access:** Protected (`authenticate`)
 
 **Request:**
 
-```JSON
+```json
 {
   "target": "patient@example.com",
   "type": "EMAIL"
 }
 ```
-OR
-
-```JSON
-{
-  "target": "+201000000000",
-  "type": "PHONE"
-}
-```
 
 **Response (200 OK):**
 
-```JSON
+```json
 {
   "success": true,
   "status": "SUCCESS",
-  "data": {},
-  "en": "OTP sent successfully",
-  "ar": "تم إرسال رمز التحقق بنجاح"
+  "messages": {
+    "en": "OTP verification code sent successfully.",
+    "ar": "تم إرسال رمز التحقق بنجاح."
+  },
+  "data": {}
 }
 ```
 
-### 2.8 Verify OTP
+---
+
+### 2.7 Verify OTP
 **POST** `/auth/otp/verify`
 
-**Access:** Protected (Requires valid access token)
+**Access:** Protected (`authenticate`)
 
 **Request:**
 
-```JSON
+```json
 {
   "type": "EMAIL",
   "code": "123456"
 }
 ```
-OR
-
-```JSON
-{
-  "type": "PHONE",
-  "code": "123456"
-}
-```
 
 **Response (200 OK):**
 
-```JSON
+```json
 {
   "success": true,
   "status": "SUCCESS",
-  "data": {},
-  "en": "OTP verified successfully",
-  "ar": "تم التحقق من رمز التحقق بنجاح"
+  "messages": {
+    "en": "OTP verified successfully.",
+    "ar": "تم التحقق من رمز التحقق بنجاح."
+  },
+  "data": {}
 }
 ```
+
+---
+
+### 2.8 Admin Provisioning & Verification Endpoints
+All admin endpoints require `ADMIN` role access (`authenticate`, `authorize("ADMIN")`).
+
+* **POST** `/auth/admin/register/professional` – Admin-only registration for `PROFESSIONAL_CAREGIVER`.
+* **POST** `/auth/admin/register/provider` – Admin provisioning for `DOCTOR` or `PHARMACIST`.
+* **PATCH** `/auth/admin/verify/doctor/:id` – Admin verification for doctor license (`isVerified: true`).
+* **PATCH** `/auth/admin/verify/pharmacist/:id` – Admin verification for pharmacist license (`isVerified: true`).
+* **PATCH** `/auth/admin/accounts/:id/status` – Update user account active status (`isActive: true/false`).
 
 ## 3. Profile Management (/profiles)
 

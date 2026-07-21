@@ -3,8 +3,8 @@ const rateLimit = require('express-rate-limit');
 const globalRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // Limit each IP to 100 requests per minute
-  standardHeaders: true, 
-  legacyHeaders: false, 
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
     success: false,
     status: 'TOO_MANY_REQUESTS',
@@ -17,7 +17,7 @@ const globalRateLimiter = rateLimit({
 
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

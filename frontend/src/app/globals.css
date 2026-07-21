@@ -409,3 +409,15 @@ body {
   box-shadow: 0 0 0 2px rgba(9, 188, 138, 0.2);
   outline: none;
 }
+
+/* Accessible Muted Placeholders */
+input::placeholder, select::placeholder, textarea::placeholder {
+  color: var(--on-surface-variant) !important;
+  opacity: 0.45 !important;
+}
+
+.dark input::placeholder, .dark select::placeholder, .dark textarea::placeholder {
+  color: var(--on-surface-variant) !important;
+  opacity: 0.55 !important;
+}
+

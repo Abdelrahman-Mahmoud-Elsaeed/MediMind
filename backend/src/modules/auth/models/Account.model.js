@@ -13,16 +13,12 @@ const AccountSchema = new Schema(
   {
     email: {
       type: String,
-      unique: true,
-      sparse: true,
       trim: true,
       lowercase: true,
     },
 
     phone: {
       type: String,
-      unique: true,
-      sparse: true,
       trim: true,
     },
 
@@ -63,6 +59,22 @@ const AccountSchema = new Schema(
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
+);
+
+AccountSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { email: { $type: "string" } },
+  }
+);
+
+AccountSchema.index(
+  { phone: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { phone: { $type: "string" } },
+  }
 );
 
 AccountSchema.index(

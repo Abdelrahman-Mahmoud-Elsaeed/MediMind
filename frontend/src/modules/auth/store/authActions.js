@@ -3,9 +3,9 @@ import { authService } from '../services/authService';
 
 export const loginThunk = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async (loginPayload, { rejectWithValue }) => {
     try {
-      return await authService.login(email, password);
+      return await authService.login(loginPayload);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -38,10 +38,20 @@ export const logoutThunk = createAsyncThunk(
 export const checkAuthThunk = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
+    const existingToken = authService.getAccessToken();
+    if (existingToken) {
+      try {
+        const user = await authService.getMe();
+        return { accessToken: existingToken, user };
+      } catch (err) {
+        // Token in storage is invalid/expired, try refresh token
+      }
+    }
+
     try {
       const refreshResult = await authService.refreshToken();
-      const accessToken = refreshResult.accessToken;
-      const user = await authService.getMe(accessToken);
+      const accessToken = refreshResult?.accessToken || authService.getAccessToken();
+      const user = await authService.getMe();
       return { accessToken, user };
     } catch (error) {
       return rejectWithValue(error.message);

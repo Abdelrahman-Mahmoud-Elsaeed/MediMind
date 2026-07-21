@@ -1,6 +1,8 @@
 const { z } = require("zod");
 const { parsePhoneNumberFromString } = require("libphonenumber-js");
 
+// --- Helper Schemas & Validation Functions ---
+
 const nationalNumberSchema = z.object({
   code: z
     .string()
@@ -14,7 +16,10 @@ const nationalNumberSchema = z.object({
 });
 
 const validatePhoneMatch = (data) => {
-  if (!data.phone || !data.nationalNumber) return true;
+  // Extract phone either from credentials or root level
+  const phoneValue = data.credentials?.phone || data.phone;
+
+  if (!phoneValue || !data.nationalNumber) return true;
 
   // Normalize country code
   const cleanCode = data.nationalNumber.code.replace(/^(\+|00)/, "");
@@ -29,7 +34,7 @@ const validatePhoneMatch = (data) => {
   }
 
   // Normalize flat phone
-  let normalizedPhone = data.phone.trim();
+  let normalizedPhone = phoneValue.trim();
 
   if (normalizedPhone.startsWith("00")) {
     normalizedPhone = `+${normalizedPhone.slice(2)}`;
@@ -52,32 +57,20 @@ const validatePhoneMatch = (data) => {
 const normalizePhoneCode = (data) => {
   if (data.nationalNumber) {
     const cleanCode = data.nationalNumber.code.replace(/^(\+|00)/, "");
-
     data.nationalNumber.code = `+${cleanCode}`;
   }
-
   return data;
 };
 
+// --- Base Profile Fields ---
+
 const basePatientProfileFields = {
-  firstName: z
-    .string()
-    .min(2)
-    .max(50)
-    .transform((val) => val.trim()),
-  lastName: z
-    .string()
-    .min(2)
-    .max(50)
-    .transform((val) => val.trim()),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-    ),
   role: z.literal("PATIENT"),
+
+  // Optional root-level contact overrides (if user wants to attach extra email/phone)
+  email: z.string().trim().email("Invalid email format").toLowerCase().optional(),
+  phone: z.string().trim().min(5, "Phone number is too short").optional(),
+  nationalNumber: nationalNumberSchema.optional(),
 
   // Health Metrics & Identifiers
   dateOfBirth: z.string().datetime({ precision: 3 }).or(z.date()).optional(),
@@ -123,27 +116,53 @@ const basePatientProfileFields = {
     }),
 };
 
-const registerEmailSchema = z.object({
-  email: z.string().trim().email("Invalid email format").toLowerCase(),
-  ...basePatientProfileFields,
-});
+// --- Main Credentials Schema ---
 
-const registerPhoneSchema = z
+const credentialsSchema = z
   .object({
-    phone: z.string().trim().min(5, "Phone number is too short"),
-    nationalNumber: nationalNumberSchema,
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      ),
+    email: z.string().trim().email("Invalid email format").toLowerCase().optional(),
+    phone: z.string().trim().min(5, "Phone number is too short").optional(),
+  })
+  .refine(
+    (data) => (data.email && !data.phone) || (!data.email && data.phone),
+    {
+      message: "Credentials must contain either an email or a phone number, but not both.",
+      path: ["email"],
+    }
+  );
+
+
+const registerSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(2)
+      .max(50)
+      .transform((val) => val.trim()),
+    lastName: z
+      .string()
+      .min(2)
+      .max(50)
+      .transform((val) => val.trim()),
+    credentials: credentialsSchema,
     ...basePatientProfileFields,
   })
   .refine(validatePhoneMatch, {
     message:
       "The phone number value does not match the nationalNumber code and number object details.",
-    path: ["phone"],
+    path: ["credentials", "phone"],
   })
   .transform(normalizePhoneCode);
 
 module.exports = {
-  registerEmailSchema,
-  registerPhoneSchema,
+  registerSchema,
   nationalNumberSchema,
   validatePhoneMatch,
   normalizePhoneCode,

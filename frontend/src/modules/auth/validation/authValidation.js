@@ -20,6 +20,12 @@ export const passwordSchema = z
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[0-9]/, "Password must contain at least one number");
 
+export const loginSchema = z.object({
+  email: emailSchema.optional(),
+  phone: phoneSchema.optional(),
+  password: passwordSchema,
+});
+
 export const getStep1Schema = (inputType) => {
   return z.object({
     password: passwordSchema,

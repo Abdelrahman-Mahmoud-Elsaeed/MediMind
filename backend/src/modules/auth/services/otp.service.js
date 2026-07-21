@@ -32,8 +32,26 @@ class OtpService {
    * @returns {Promise<ServiceResponse>}
    */
   async sendOtp({ accountId, target, type }) {
-    const cleanTarget = target.trim();
-    const channel = type.toLowerCase();
+    let resolvedTarget = target ? target.trim() : null;
+    const channel = type ? type.toLowerCase() : "email";
+
+    if (!resolvedTarget) {
+      const account = await Account.findById(accountId);
+      if (!account) {
+        throw new AppError("Account not found", 404, "ACCOUNT_NOT_FOUND", {
+          en: "Account not found.",
+          ar: "الحساب غير موجود."
+        });
+      }
+      resolvedTarget = channel === "email" ? account.email : account.phone;
+    }
+
+    if (!resolvedTarget) {
+      throw new AppError("Verification target destination is missing", 400, "MISSING_TARGET", {
+        en: "No email or phone number found to send verification code.",
+        ar: "لم يتم العثور على بريد إلكتروني أو رقم هاتف لإرسال رمز التحقق."
+      });
+    }
 
     const otp = Math.floor(100000 + crypto.randomInt(900000)).toString();
 
@@ -51,9 +69,9 @@ class OtpService {
     );
 
     if (type === "PHONE") {
-      await this._sendSMS(cleanTarget, otp);
+      await this._sendSMS(resolvedTarget, otp);
     } else if (type === "EMAIL") {
-      await this._sendEmail(cleanTarget, otp);
+      await this._sendEmail(resolvedTarget, otp);
     } else {
       throw new AppError("Unsupported transport verification channel type", 400, "INVALID_TYPE", {
         en: "Unsupported channel type specified.",
