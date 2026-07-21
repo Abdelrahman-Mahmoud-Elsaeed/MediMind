@@ -5,7 +5,7 @@ const Doctor = require("../models/Doctor.model");
 const Pharmacist = require("../models/Pharmacist.model");
 const ProfessionalCaregiver = require("../models/ProfessionalCaregiver.model");
 const Admin = require("../models/Admin.model");
-const { _finalizeSession } = require("../utiltis/auth.utils");
+const { _finalizeSession } = require("../utils/auth.utils");
 const AppError = require("../../../shared/utils/AppError");
 const bcrypt = require("bcrypt");
 const {

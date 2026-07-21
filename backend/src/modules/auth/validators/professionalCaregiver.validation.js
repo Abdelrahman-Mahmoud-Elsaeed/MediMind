@@ -3,24 +3,16 @@ const {
   parsePhoneNumberFromString,
   getCountryCallingCode,
 } = require("libphonenumber-js");
-const { validatePhoneMatch, nationalNumberSchema, normalizePhoneCode } = require("./patient.validation");
+const {
+  validatePhoneMatch,
+  nationalNumberSchema,
+  normalizePhoneCode,
+} = require("./patient.validation");
 
-const registerProfessionalCaregiverSchema = z
+// --- Credentials Sub-Schema ---
+
+const credentialsSchema = z
   .object({
-    // --- Core Account Fields ---
-    email: z
-      .string()
-      .trim()
-      .email("Invalid email format")
-      .toLowerCase()
-      .optional(),
-
-    // Flat login/lookup phone string (can be global: "+2010...", "010...", "5123...")
-    phone: z.string().trim().min(5, "Phone number is too short").optional(),
-
-    // Structured international payload fields
-    nationalNumber: nationalNumberSchema,
-
     password: z
       .string()
       .min(8, "Password must be at least 8 characters long")
@@ -28,7 +20,43 @@ const registerProfessionalCaregiverSchema = z
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       ),
+    email: z
+      .string()
+      .trim()
+      .email("Invalid email format")
+      .toLowerCase()
+      .optional(),
+    phone: z.string().trim().min(5, "Phone number is too short").optional(),
+  })
+  .refine(
+    (data) => (data.email && !data.phone) || (!data.email && data.phone),
+    {
+      message:
+        "Credentials must contain either an email or a phone number, but not both.",
+      path: ["email"],
+    },
+  );
+
+// --- Professional Caregiver Registration Schema ---
+
+const registerProfessionalCaregiverSchema = z
+  .object({
+    // --- Nested Credentials & Role ---
+    credentials: credentialsSchema,
     role: z.literal("PROFESSIONAL_CAREGIVER"),
+
+    // --- Core Account Fields (Optional root-level overrides) ---
+    email: z
+      .string()
+      .trim()
+      .email("Invalid email format")
+      .toLowerCase()
+      .optional(),
+
+    phone: z.string().trim().min(5, "Phone number is too short").optional(),
+
+    // Structured international payload fields
+    nationalNumber: nationalNumberSchema,
 
     // --- Profile Meta Fields ---
     firstName: z
@@ -112,11 +140,6 @@ const registerProfessionalCaregiverSchema = z
       }),
   })
 
-  .refine((data) => data.email || data.phone, {
-    message: "Either email or phone number must be provided",
-    path: ["email"],
-  })
-
   .refine((data) => data.licenseNumber || data.syndicateId, {
     message: "Either licenseNumber or syndicateId must be provided",
     path: ["licenseNumber"],
@@ -125,7 +148,7 @@ const registerProfessionalCaregiverSchema = z
   .refine(validatePhoneMatch, {
     message:
       "The phone number value does not match the nationalNumber code and number object details.",
-    path: ["phone"],
+    path: ["credentials", "phone"],
   })
   .transform(normalizePhoneCode)
   .transform((data) => {
@@ -153,7 +176,6 @@ const registerProfessionalCaregiverSchema = z
           coordinates: coordinates,
         }
       : null;
-
 
     return {
       ...cleanData,

@@ -11,7 +11,7 @@ import { parseApiMessage } from "@/shared/lib/parseApiMessage";
 
 export default function LoginComponent() {
   const router = useRouter();
-  const { login, loading, error, resetError } = useAuth();
+  const { login, loading, error, resetError, isAuthenticated, user } = useAuth();
   const { locale, dir, t, toggleLanguage } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -19,6 +19,13 @@ export default function LoginComponent() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
+      router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+    }
+  }, [isAuthenticated, loading, user, router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

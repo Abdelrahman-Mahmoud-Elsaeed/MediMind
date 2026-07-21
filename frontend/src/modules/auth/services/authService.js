@@ -1,48 +1,85 @@
 import { apiClient } from '@/shared/lib';
 
 export const authService = {
-  async login(email, password) {
+  async login(loginPayload, passwordParam) {
     try {
-      const res = await apiClient.post('/auth/login', { email, password });
+      let bodyData = {};
+      if (typeof loginPayload === "object" && loginPayload !== null) {
+        if (loginPayload.credentials) {
+          bodyData = loginPayload;
+        } else {
+          const { email, phone, password } = loginPayload;
+          bodyData = {
+            credentials: {
+              ...(email ? { email } : {}),
+              ...(phone ? { phone } : {}),
+              password: password || passwordParam,
+            },
+          };
+        }
+      } else {
+        const isEmail = String(loginPayload).includes("@");
+        bodyData = {
+          credentials: {
+            [isEmail ? "email" : "phone"]: loginPayload,
+            password: passwordParam,
+          },
+        };
+      }
+
+      const res = await apiClient.post('/auth/login', bodyData);
       const body = res.data;
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && body?.data?.accessToken) {
         localStorage.setItem('accessToken', body.data.accessToken);
       }
 
       return body.data;
     } catch (err) {
-      // API standard: { success:false, messages:{ en, ar } }
       const messages = err.response?.data?.messages;
       if (messages?.en || messages?.ar) {
         throw new Error(JSON.stringify(messages));
       }
-      // Legacy / network error fallback
       const legacyMsg = err.response?.data?.error?.message || err.message || 'Login failed';
-      throw new Error(JSON.stringify({ en: legacyMsg, ar: legacyMsg }));
+      throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل تسجيل الدخول' }));
     }
   },
 
   async register(userData) {
     try {
-      const endpoint = userData.email ? '/auth/register/email' : '/auth/register/phone';
-      const res = await apiClient.post(endpoint, userData);
+      const res = await apiClient.post('/auth/register', userData);
       const body = res.data;
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && body?.data?.accessToken) {
+        localStorage.setItem('accessToken', body.data.accessToken);
+      }
+
+      return body.data || body;
+    } catch (err) {
+      const messages = err.response?.data?.messages;
+      if (messages?.en || messages?.ar) {
+        throw new Error(JSON.stringify(messages));
+      }
+      const legacyMsg = err.response?.data?.error?.message || err.message || 'Registration failed';
+      throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل التسجيل' }));
+    }
+  },
+
+  async refreshToken() {
+    try {
+      const res = await apiClient.post('/auth/token/refresh');
+      const body = res.data;
+
+      if (typeof window !== 'undefined' && body?.data?.accessToken) {
         localStorage.setItem('accessToken', body.data.accessToken);
       }
 
       return body.data;
     } catch (err) {
-      // API standard: { success:false, messages:{ en, ar } }
-      const messages = err.response?.data?.messages;
-      if (messages?.en || messages?.ar) {
-        throw new Error(JSON.stringify(messages));
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
       }
-      // Legacy / network error fallback
-      const legacyMsg = err.response?.data?.error?.message || err.message || 'Registration failed';
-      throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل التسجيل' }));
+      throw err;
     }
   },
 
@@ -57,7 +94,6 @@ export const authService = {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
       }
-      // Even if network logout fails, we consider the local session terminated
       return false;
     }
   },
@@ -66,22 +102,21 @@ export const authService = {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('accessToken');
     }
-
-    return data.data;
+    return null;
   },
 
   async getMe() {
-    const res = await apiClient.get(`/auth/me`);
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(
-        data?.error?.messages
-          ? JSON.stringify(data.error.messages)
-          : JSON.stringify({ en: data?.error?.message || 'Failed to fetch user', ar: data?.error?.message || 'فشل جلب بيانات المستخدم' })
-      );
+    try {
+      const res = await apiClient.get('/auth/verify-token');
+      const body = res.data;
+      return body.data?.user || body.data;
+    } catch (err) {
+      const messages = err.response?.data?.messages;
+      if (messages?.en || messages?.ar) {
+        throw new Error(JSON.stringify(messages));
+      }
+      const legacyMsg = err.response?.data?.error?.message || err.message || 'Failed to fetch user';
+      throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل جلب بيانات المستخدم' }));
     }
-
-    return data.data;
   }
 };
-

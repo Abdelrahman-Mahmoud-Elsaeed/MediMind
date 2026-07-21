@@ -9,38 +9,42 @@ const {
 const { logger } = require("../../../shared/utils/logger");
 const AppError = require("../../../shared/utils/AppError");
 const mongoose = require("mongoose");
-const { _verifyUniqueness } = require("../utiltis/auth.utils");
+const { _verifyUniqueness } = require("../utils/auth.utils");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 
 class PharmacistService {
-  
   async registerProvider(userData) {
-
+    const { credentials, email, phone, nationalNumber, licenseNumber, role } =
+      userData;
     let account;
     let profile;
+
+    const primaryEmail = credentials?.email || email;
+    const primaryPhone = credentials?.phone || phone;
+    const password = credentials?.password || userData.password;
 
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
       await _verifyUniqueness(
         {
-          email: userData.email,
-          phone: userData.phone,
-          license: userData.licenseNumber,
+          email: primaryEmail,
+          phone: primaryPhone,
+          license: licenseNumber,
         },
         session,
       );
 
       account = new Account({
-        email: userData.email,
-        phone: userData.phone,
-        nationalNumber: userData.nationalNumber,
-        passwordHash: userData.password,
-        role: "PHARMACIST",
+        email: primaryEmail || null,
+        phone: primaryPhone || null,
+        nationalNumber: nationalNumber || null,
+        passwordHash: password,
+        role: role || "PHARMACIST",
         isActive: false,
         sessions: [],
       });
       await account.save({ session });
-      
+
       profile = this._createProfileInstance(Pharmacist, account._id, userData);
       await profile.save({ session });
     });
@@ -48,9 +52,9 @@ class PharmacistService {
 
     const isEmailVerified = account.isEmailVerified || false;
     const isPhoneVerified = account.isPhoneVerified || false;
-    const isVerified = isEmailVerified || isPhoneVerified || profile?.isVerified === true;
+    const isVerified =
+      isEmailVerified || isPhoneVerified || profile?.isVerified === true;
 
-    // 2. Wrap output in the unified ServiceResponse template instance
     return new ServiceResponse({
       status: "PENDING_VERIFICATION",
       en: "Registration complete. Please wait while we verify your medical license.",
@@ -65,8 +69,6 @@ class PharmacistService {
       },
     });
   }
-
-
 
   _createProfileInstance(Model, accountId, userData) {
     const {

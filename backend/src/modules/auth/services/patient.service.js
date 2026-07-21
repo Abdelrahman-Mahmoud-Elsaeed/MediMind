@@ -9,27 +9,34 @@ const {
 const { logger } = require("../../../shared/utils/logger");
 const AppError = require("../../../shared/utils/AppError");
 const mongoose = require("mongoose");
-const { _verifyUniqueness, _finalizeSession } = require("../utiltis/auth.utils");
+const {
+  _verifyUniqueness,
+  _finalizeSession,
+} = require("../utils/auth.utils");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 
 class PatientService {
-  
   async registerEmail(userData) {
-
+    const { credentials, phone, nationalNumber, role } = userData;
     let account;
     let profile;
 
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
       await _verifyUniqueness(
-        { email: userData.email },
+        {
+          email: credentials.email,
+          phone,
+        },
         session,
       );
 
       account = new Account({
-        email: userData.email,
-        passwordHash: userData.password,
-        role: "PATIENT",
+        email: credentials.email,
+        ...(phone ? { phone } : {}),
+        ...(nationalNumber ? { nationalNumber } : {}),
+        passwordHash: credentials.password,
+        role: role || "PATIENT",
         isActive: true,
         sessions: [],
       });
@@ -46,27 +53,31 @@ class PatientService {
       status: "SUCCESS",
       en: "Registration completed successfully.",
       ar: "تمت عملية التسجيل بنجاح.",
-      data: sessionData
+      data: sessionData,
     });
   }
 
   async registerPhone(userData) {
-
+    const { credentials, email, nationalNumber, role } = userData;
     let account;
     let profile;
 
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
       await _verifyUniqueness(
-        {  phone: userData.phone },
+        {
+          phone: credentials.phone,
+          email,
+        },
         session,
       );
 
       account = new Account({
-        phone: userData.phone,
-        nationalNumber: userData.nationalNumber,
-        passwordHash: userData.password,
-        role: "PATIENT",
+        phone: credentials.phone,
+        ...(email ? { email } : {}),
+        ...(nationalNumber ? { nationalNumber } : {}),
+        passwordHash: credentials.password,
+        role: role || "PATIENT",
         isActive: true,
         sessions: [],
       });
@@ -83,7 +94,7 @@ class PatientService {
       status: "SUCCESS",
       en: "Registration completed successfully.",
       ar: "تمت عملية التسجيل بنجاح.",
-      data: sessionData
+      data: sessionData,
     });
   }
 
@@ -130,7 +141,6 @@ class PatientService {
       ...extraFields,
     });
   }
-
 }
 
 module.exports = new PatientService();

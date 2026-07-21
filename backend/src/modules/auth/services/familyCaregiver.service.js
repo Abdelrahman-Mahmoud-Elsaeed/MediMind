@@ -12,27 +12,32 @@ const mongoose = require("mongoose");
 const {
   _verifyUniqueness,
   _finalizeSession,
-} = require("../utiltis/auth.utils");
+} = require("../utils/auth.utils");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 
 class FamilyCaregiverService {
-  
-  async registerEmail(userData) {
 
+  async registerEmail(userData) {
+    const { credentials, phone, nationalNumber, role } = userData;
     let account;
     let profile;
 
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
       await _verifyUniqueness(
-        { email: userData.email },
+        {
+          email: credentials.email,
+          phone,
+        },
         session,
       );
 
       account = new Account({
-        email: userData.email,
-        passwordHash: userData.password,
-        role: "FAMILY_CAREGIVER",
+        email: credentials.email,
+        ...(phone ? { phone } : {}),
+        ...(nationalNumber ? { nationalNumber } : {}),
+        passwordHash: credentials.password,
+        role: role || "FAMILY_CAREGIVER",
         isActive: true,
         sessions: [],
       });
@@ -47,35 +52,38 @@ class FamilyCaregiverService {
     });
     session.endSession();
 
-    // 2. Finalize session token object structure
     const sessionData = await _finalizeSession(account, profile);
 
-    // 3. Wrap output inside your unified global ServiceResponse template instance
     return new ServiceResponse({
       status: "SUCCESS",
       en: "Registration completed successfully.",
       ar: "تمت عملية التسجيل بنجاح.",
-      data: sessionData
+      data: sessionData,
     });
   }
-
+  
   async registerPhone(userData) {
-
+    const { credentials, email, nationalNumber, role } = userData;
     let account;
     let profile;
 
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
+      // Check uniqueness for primary phone and optional email
       await _verifyUniqueness(
-        { phone: userData.phone },
+        {
+          phone: credentials.phone,
+          email,
+        },
         session,
       );
 
       account = new Account({
-        phone: userData.phone,
-        passwordHash: userData.password,
-        nationalNumber: userData.nationalNumber,
-        role: "FAMILY_CAREGIVER",
+        phone: credentials.phone,
+        ...(email ? { email } : {}),
+        ...(nationalNumber ? { nationalNumber } : {}),
+        passwordHash: credentials.password,
+        role: role || "FAMILY_CAREGIVER",
         isActive: true,
         sessions: [],
       });
@@ -96,7 +104,7 @@ class FamilyCaregiverService {
       status: "SUCCESS",
       en: "Registration completed successfully.",
       ar: "تمت عملية التسجيل بنجاح.",
-      data: sessionData
+      data: sessionData,
     });
   }
 
@@ -148,7 +156,6 @@ class FamilyCaregiverService {
       ...extraFields,
     });
   }
-
 }
 
 module.exports = new FamilyCaregiverService();

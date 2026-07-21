@@ -49,3 +49,7 @@ terraform/override.tf
 terraform/override.tf.json
 terraform/*_override.tf
 terraform/*_override.tf.json
+
+# MCP and Stitch configurations
+mcp.json
+stitch.json
