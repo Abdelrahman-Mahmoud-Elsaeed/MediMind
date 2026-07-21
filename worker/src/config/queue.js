@@ -2,8 +2,11 @@
 const { REDIS_URL } = require('./env');
 const { logger } = require('../shared/logger');
 
+// Parse Redis URL into ioredis-compatible connection options
+const parsedUrl = new URL(REDIS_URL);
 const redisConnectionOptions = {
-  connectionString: REDIS_URL,
+  host: parsedUrl.hostname || '127.0.0.1',
+  port: parseInt(parsedUrl.port, 10) || 6379,
   maxRetriesPerRequest: null,
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);
