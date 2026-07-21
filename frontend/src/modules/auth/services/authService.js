@@ -4,38 +4,45 @@ export const authService = {
   async login(email, password) {
     try {
       const res = await apiClient.post('/auth/login', { email, password });
-      const data = res.data;
+      const body = res.data;
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', data.data.accessToken);
+        localStorage.setItem('accessToken', body.data.accessToken);
       }
 
-      return data.data;
+      return body.data;
     } catch (err) {
-      const errorObj = err.response?.data?.error;
-      if (errorObj?.messages) {
-        throw new Error(JSON.stringify(errorObj.messages));
+      // API standard: { success:false, messages:{ en, ar } }
+      const messages = err.response?.data?.messages;
+      if (messages?.en || messages?.ar) {
+        throw new Error(JSON.stringify(messages));
       }
-      throw new Error(errorObj?.code || err.message || 'Login failed');
+      // Legacy / network error fallback
+      const legacyMsg = err.response?.data?.error?.message || err.message || 'Login failed';
+      throw new Error(JSON.stringify({ en: legacyMsg, ar: legacyMsg }));
     }
   },
 
   async register(userData) {
     try {
-      const res = await apiClient.post('/auth/register', userData);
-      const data = res.data;
+      const endpoint = userData.email ? '/auth/register/email' : '/auth/register/phone';
+      const res = await apiClient.post(endpoint, userData);
+      const body = res.data;
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', data.data.accessToken);
+        localStorage.setItem('accessToken', body.data.accessToken);
       }
 
-      return data.data;
+      return body.data;
     } catch (err) {
-      const errorObj = err.response?.data?.error;
-      if (errorObj?.messages) {
-        throw new Error(JSON.stringify(errorObj.messages));
+      // API standard: { success:false, messages:{ en, ar } }
+      const messages = err.response?.data?.messages;
+      if (messages?.en || messages?.ar) {
+        throw new Error(JSON.stringify(messages));
       }
-      throw new Error(JSON.stringify({ en: errorObj?.message || 'Registration failed', ar: errorObj?.message || 'فشل التسجيل' }));
+      // Legacy / network error fallback
+      const legacyMsg = err.response?.data?.error?.message || err.message || 'Registration failed';
+      throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل التسجيل' }));
     }
   },
 
