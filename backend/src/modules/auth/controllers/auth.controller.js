@@ -99,13 +99,13 @@ class AuthController {
         );
       }
 
-      const accountId = result.data.user?.accountId;
+      // const accountId = result.data.user?.accountId;
 
-      await otpService.sendOtp({
-        accountId,
-        target: email,
-        type: "EMAIL",
-      });
+      // await otpService.sendOtp({
+      //   accountId,
+      //   target: email,
+      //   type: "EMAIL",
+      // });
 
       this._setAuthCookie(res, result);
       return result.send(res);
@@ -134,13 +134,13 @@ class AuthController {
           },
         );
       }
-      const accountId = result.data.user?.accountId;
+      // const accountId = result.data.user?.accountId;
 
-      await otpService.sendOtp({
-        accountId,
-        target: phone,
-        type: "PHONE",
-      });
+      // await otpService.sendOtp({
+      //   accountId,
+      //   target: phone,
+      //   type: "PHONE",
+      // });
 
       this._setAuthCookie(res, result);
       return result.send(res);
@@ -174,12 +174,12 @@ class AuthController {
           });
       }
 
-      const accountId = result.data.user?.accountId;
-      if (email) {
-        await otpService.sendOtp({ accountId, target: email, type: "EMAIL" });
-      } else if (phone) {
-        await otpService.sendOtp({ accountId, target: phone, type: "PHONE" });
-      }
+      // const accountId = result.data.user?.accountId;
+      // if (email) {
+      //   await otpService.sendOtp({ accountId, target: email, type: "EMAIL" });
+      // } else if (phone) {
+      //   await otpService.sendOtp({ accountId, target: phone, type: "PHONE" });
+      // }
       this._setAuthCookie(res, result);
       return result.send(res);
     } catch (error) {
