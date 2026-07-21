@@ -18,13 +18,13 @@
   --inverse-on-surface: #eaf1ff;
   --outline: #6c7a72;
   --outline-variant: #bbcac1;
-  --surface-tint: #006c4e;
-  --primary: #006c4e;
+  --surface-tint: #0d9488;
+  --primary: #0d9488;
   --on-primary: #ffffff;
-  --primary-container: #09bc8a;
+  --primary-container: #14b8a6;
   --on-primary-container: #004430;
   --inverse-primary: #4adea9;
-  --secondary: #006c4e;
+  --secondary: #0d9488;
   --on-secondary: #ffffff;
   --secondary-container: #6bfbc4;
   --on-secondary-container: #007353;
@@ -390,7 +390,7 @@ body {
 }
 
 .bg-butterfly-gradient {
-  background: linear-gradient(160deg, #4F9DFF 0%, #F7A8C4 55%, #37B7A5 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #0f2b48 40%, #0d9488 100%);
 }
 
 .dot-grid {
