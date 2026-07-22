@@ -11,7 +11,7 @@ class RelationshipsService {
       throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
     }
 
-    const caregiverAccount = await Account.findOne({ email: caregiverEmail, role: 'CAREGIVER' });
+    const caregiverAccount = await Account.findOne({ email: caregiverEmail, role: 'FAMILY_CAREGIVER' });
     if (!caregiverAccount) {
       throw new AppError('Caregiver account not found', 404, 'CAREGIVER_NOT_FOUND');
     }
@@ -54,7 +54,7 @@ class RelationshipsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       query.patientId = patient._id;
-    } else if (role === 'CAREGIVER') {
+    } else if (role === 'FAMILY_CAREGIVER') {
       const caregiver = await Caregiver.findOne({ accountId });
       if (!caregiver) {
         throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');

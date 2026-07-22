@@ -1,0 +1,11 @@
+const express = require('express');
+const router = express.Router();
+const c = require('../controllers/devices.controller');
+const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
+const validate = require('../../../shared/middleware/validation.middleware');
+const { registerDeviceSchema } = require('../validators/devices.validator');
+router.use(authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER'));
+router.post('/', validate(registerDeviceSchema), c.register);
+router.delete('/', c.unregister);
+router.get('/', c.list);
+module.exports = router;

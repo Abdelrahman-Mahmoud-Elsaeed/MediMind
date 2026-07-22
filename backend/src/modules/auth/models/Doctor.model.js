@@ -101,6 +101,6 @@ DoctorSchema.pre("save", function (next) {
     this.whatsappOptInDate = this.whatsappOptIn ? new Date() : null;
 });
 
-DoctorSchema.index({ location: "2dsphere" });
+
 
 module.exports = mongoose.model("Doctor", DoctorSchema);
