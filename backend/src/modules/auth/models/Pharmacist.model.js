@@ -85,6 +85,6 @@ PharmacistSchema.pre("save", function (next) {
     this.whatsappOptInDate = this.whatsappOptIn ? new Date() : null;
 });
 
-PharmacistSchema.index({ location: "2dsphere" });
+
 
 module.exports = mongoose.model("Pharmacist", PharmacistSchema);

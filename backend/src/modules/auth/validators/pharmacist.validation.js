@@ -6,10 +6,19 @@ const {
   normalizePhoneCode,
 } = require("./patient.validation");
 
-// --- Credentials Sub-Schema ---
-
-const credentialsSchema = z
+const registerPharmacistSchema = z
   .object({
+    email: z
+      .string()
+      .trim()
+      .email("Invalid email format")
+      .toLowerCase()
+      .optional(),
+
+    phone: z.string().trim().min(5, "Phone number is too short").optional(),
+
+    nationalNumber: nationalNumberSchema,
+
     password: z
       .string()
       .min(8, "Password must be at least 8 characters long")
@@ -17,39 +26,7 @@ const credentialsSchema = z
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       ),
-    email: z
-      .string()
-      .trim()
-      .email("Invalid email format")
-      .toLowerCase()
-      .optional(),
-    phone: z.string().trim().min(5, "Phone number is too short").optional(),
-  })
-  .refine(
-    (data) => (data.email && !data.phone) || (!data.email && data.phone),
-    {
-      message: "Credentials must contain either an email or a phone number, but not both.",
-      path: ["email"],
-    }
-  );
-
-// --- Pharmacist Registration Schema ---
-
-const registerPharmacistSchema = z
-  .object({
-    credentials: credentialsSchema,
     role: z.literal("PHARMACIST"),
-
-    // Optional root-level contact fields
-    email: z
-      .string()
-      .trim()
-      .email("Invalid email format")
-      .toLowerCase()
-      .optional(),
-    phone: z.string().trim().min(5, "Phone number is too short").optional(),
-
-    nationalNumber: nationalNumberSchema,
 
     firstName: z
       .string()
@@ -103,6 +80,11 @@ const registerPharmacistSchema = z
     coordinates: z.array(z.number()).length(2).optional(),
   })
 
+  .refine((data) => data.email || data.phone, {
+    message: "Either email or phone number must be provided",
+    path: ["email"],
+  })
+
   .refine((data) => data.licenseNumber || data.syndicateId, {
     message: "Either licenseNumber or syndicateId must be provided",
     path: ["licenseNumber"],
@@ -111,7 +93,7 @@ const registerPharmacistSchema = z
   .refine(validatePhoneMatch, {
     message:
       "The phone number value does not match the nationalNumber code and number object details.",
-    path: ["credentials", "phone"],
+    path: ["phone"],
   })
   .transform(normalizePhoneCode)
   .transform((data) => {

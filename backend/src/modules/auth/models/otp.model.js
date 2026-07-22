@@ -1,21 +1,18 @@
-
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const OtpVerificationSchema = new Schema({
-  accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true },
-  channel: { 
-    type: String, 
-    enum: ["phone", "email"], 
-    required: true 
-  },
-  code: { type: String, required: true },
-  attempts: { type: Number, default: 0 },
-  expiresAt: { type: Date, required: true },
+  accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true, index: true },
+  channel: { type: String, enum: ["sms", "email"], required: true },
+  destination: { type: String, required: true },
+  codeHash: { type: String, required: true },
+  attempts: { type: Number, default: 0, max: 5 },
+  expiresAt: { type: Date, required: true, index: { expires: 0 } },
+  consumedAt: { type: Date, default: null },
 }, { timestamps: true });
 
-// Auto-delete expired OTPs
-OtpVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-OtpVerificationSchema.index({ accountId: 1, channel: 1 });
+OtpVerificationSchema.index({ accountId: 1, consumedAt: 1 });
 
-module.exports = mongoose.model('OtpVerification', OtpVerificationSchema);
+// Export with both names for compatibility
+const OtpModel = mongoose.model('OtpVerification', OtpVerificationSchema);
+module.exports = OtpModel;

@@ -4,103 +4,44 @@ const authController = require("../controllers/auth.controller");
 const adminController = require("../controllers/admin.controller");
 const otpController = require("../controllers/otp.controller");
 const validateByRole = require("../../../shared/middleware/validateByRole.middleware");
-const {
-  authenticate,
-  authorize,
-} = require("../../../shared/middleware/auth.middleware");
+const { authenticate, authorize } = require("../../../shared/middleware/auth.middleware");
 const validate = require("../../../shared/middleware/validation.middleware");
-const { authRateLimiter } = require("../../../shared/middleware/rateLimit.middleware");
-
-// Validation Schemas
 const { loginSchema } = require("../validators/auth.validation");
-const {
-  sendOtpSchema,
-  verifyOtpSchema,
-} = require("../validators/otp.validation");
+const { sendOtpSchema, verifyOtpSchema } = require("../validators/otp.validation");
 
-const {
-  registerProviderSchema: doctorSchema,
-} = require("../validators/doctor.validation");
-const {
-  registerPharmacistSchema,
-} = require("../validators/pharmacist.validation");
-const {
-  registerProfessionalCaregiverSchema,
-} = require("../validators/professionalCaregiver.validation");
-const {
-  registerSchema: patientSchema,
-} = require("../validators/patient.validation");
-const {
-  registerFamilyCaregiverSchema,
-} = require("../validators/familyCaregiver.validation");
+const { registerProviderSchema: doctorSchema } = require("../validators/doctor.validation");
+const { registerPharmacistSchema } = require("../validators/pharmacist.validation");
+const { registerProfessionalCaregiverSchema } = require("../validators/professionalCaregiver.validation");
+const { registerEmailSchema: patientEmailSchema, registerPhoneSchema: patientPhoneSchema } = require("../validators/patient.validation");
+const { registerEmailSchema: familyEmailSchema, registerPhoneSchema: familyPhoneSchema } = require("../validators/familyCaregiver.validation");
+const { registerProfessionalSchema, registerProviderSchema: adminRegisterProviderSchema, updateAccountStatusSchema } = require("../validators/admin.validation");
 
-const {
-  registerProfessionalSchema,
-  registerProviderSchema: adminRegisterProviderSchema,
-  updateAccountStatusSchema,
-} = require("../validators/admin.validation");
+const emailSchemas = { PATIENT: patientEmailSchema, FAMILY_CAREGIVER: familyEmailSchema };
+const phoneSchemas = { PATIENT: patientPhoneSchema, FAMILY_CAREGIVER: familyPhoneSchema };
+const providerSchemas = { DOCTOR: doctorSchema, PHARMACIST: registerPharmacistSchema, PROFESSIONAL_CAREGIVER: registerProfessionalCaregiverSchema };
 
-// Map all self-registration schemas by role
-const registerSchemas = {
-  PATIENT: patientSchema,
-  FAMILY_CAREGIVER: registerFamilyCaregiverSchema,
-  DOCTOR: doctorSchema,
-  PHARMACIST: registerPharmacistSchema,
-  PROFESSIONAL_CAREGIVER: registerProfessionalCaregiverSchema,
-};
+// Public routes
+router.post("/login", validate(loginSchema), authController.login);
+router.post("/token/refresh", authController.refreshSession);
 
-// --- Public Auth Routes (Rate Limited) ---
-router.post("/login", authRateLimiter, validate(loginSchema), authController.login);
-router.post("/token/refresh", authRateLimiter, authController.refreshSession);
+// OTP routes (require authentication — user must be logged in to send/verify OTP)
+router.post("/otp/send", authenticate, validate(sendOtpSchema), otpController.sendOtp);
+router.post("/otp/verify", authenticate, validate(verifyOtpSchema), otpController.verifyOtp);
 
-// --- Self-Registration Route (Rate Limited) ---
-router.post(
-  "/register",
-  authRateLimiter,
-  validateByRole(registerSchemas),
-  authController.register,
-);
-
-// --- OTP Routes (requires auth + rate limited) ---
-router.post(
-  "/otp/send",
-  authRateLimiter,
-  authenticate,
-  validate(sendOtpSchema),
-  otpController.sendOtp,
-);
-router.post(
-  "/otp/verify",
-  authRateLimiter,
-  authenticate,
-  validate(verifyOtpSchema),
-  otpController.verifyOtp,
-);
-
-// --- Authenticated User Routes ---
+// Authenticated routes
 router.post("/logout", authenticate, authController.logout);
-router.get("/verify-token", authenticate, authController.verifyToken);
 
-// --- Admin-Only Routes ---
+// Self-registration routes
+router.post("/register/email", validateByRole(emailSchemas), authController.registerEmail);
+router.post("/register/phone", validateByRole(phoneSchemas), authController.registerPhone);
+router.post("/register/provider", validateByRole(providerSchemas), authController.registerProvider);
+
+// Admin-only routes (5 endpoints)
 router.use("/admin", authenticate, authorize("ADMIN"));
-router.post(
-  "/admin/register/professional",
-  authRateLimiter,
-  validate(registerProfessionalSchema),
-  adminController.registerProfessional,
-);
-router.post(
-  "/admin/register/provider",
-  authRateLimiter,
-  validate(adminRegisterProviderSchema),
-  adminController.registerProvider,
-);
+router.post("/admin/register/professional", validate(registerProfessionalSchema), adminController.registerProfessional);
+router.post("/admin/register/provider", validate(adminRegisterProviderSchema), adminController.registerProvider);
 router.patch("/admin/verify/doctor/:id", adminController.verifyDoctor);
 router.patch("/admin/verify/pharmacist/:id", adminController.verifyPharmacist);
-router.patch(
-  "/admin/accounts/:id/status",
-  validate(updateAccountStatusSchema),
-  adminController.updateAccountStatus,
-);
+router.patch("/admin/accounts/:id/status", validate(updateAccountStatusSchema), adminController.updateAccountStatus);
 
 module.exports = router;

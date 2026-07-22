@@ -1,5 +1,2 @@
 const authRoutes = require('./routes/auth.route');
-
-module.exports = {
-  routes: authRoutes
-};
+module.exports = { routes: authRoutes };

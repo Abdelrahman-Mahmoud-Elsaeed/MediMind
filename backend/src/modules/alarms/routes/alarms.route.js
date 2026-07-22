@@ -1,0 +1,12 @@
+const express = require('express');
+const router = express.Router();
+const c = require('../controllers/alarms.controller');
+const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
+router.use(authenticate);
+router.post('/:alarmEventId/snooze', authorize('PATIENT', 'FAMILY_CAREGIVER'), c.snooze);
+router.post('/:alarmEventId/dismiss', authorize('PATIENT', 'FAMILY_CAREGIVER'), c.dismiss);
+router.post('/:alarmEventId/taken', authorize('PATIENT', 'FAMILY_CAREGIVER'), c.confirmTaken);
+router.post('/:alarmEventId/acknowledge', authorize('PATIENT', 'FAMILY_CAREGIVER'), c.acknowledge);
+router.get('/active', authorize('PATIENT', 'FAMILY_CAREGIVER'), c.getActive);
+router.get('/dose/:doseEventId', authorize('PATIENT', 'FAMILY_CAREGIVER', 'DOCTOR', 'PHARMACIST'), c.getByDose);
+module.exports = router;
