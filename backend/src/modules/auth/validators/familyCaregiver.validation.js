@@ -63,7 +63,7 @@ const registerFamilyCaregiverSchema = z
       "sibling",
       "friend",
       "other",
-    ]),
+    ]).optional().default("other"),
 
     // --- Optional Root-Level Overrides ---
     email: z

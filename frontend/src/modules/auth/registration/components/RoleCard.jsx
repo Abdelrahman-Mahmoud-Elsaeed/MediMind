@@ -1,8 +1,6 @@
 import React from "react";
-import { useRTL } from "../hooks/useRTL";
 
 export function RoleCard({ roleKey, icon, title, isSelected, onClick }) {
-  const { isRtl } = useRTL();
 
   return (
     <button
@@ -21,7 +19,7 @@ export function RoleCard({ roleKey, icon, title, isSelected, onClick }) {
       </span>
       {isSelected && (
         <div
-          className={`absolute top-3 ${isRtl ? "left-3" : "right-3"} w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center`}
+          className="absolute top-3 end-3 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center"
         >
           <span className="material-symbols-outlined text-[14px] font-bold">check</span>
         </div>

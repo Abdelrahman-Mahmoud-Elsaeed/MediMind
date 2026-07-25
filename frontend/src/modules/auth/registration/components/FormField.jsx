@@ -15,6 +15,7 @@ export function FormField({
   required = false,
   dir,
   disabled = false,
+  showAsterisk = false,
   children,
 }) {
   const { isRtl } = useRTL();
@@ -45,18 +46,21 @@ export function FormField({
     }
   };
 
+  const resolvedDir = dir || (isRtl ? "rtl" : "ltr");
+  const alignmentClass = resolvedDir === "ltr" && isRtl ? "text-right" : "";
+
   if (type === "select") {
     return (
       <div className="w-full">
         <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
           {label}
+          {showAsterisk && <span className="text-error ms-1"> *</span>}
         </label>
         <div className="relative">
           {icon && (
             <span
-              className={`material-symbols-outlined absolute ${
-                isRtl ? "right-4" : "left-4"
-              } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
+              className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
+                } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
             >
               {icon}
             </span>
@@ -67,23 +71,15 @@ export function FormField({
             onChange={onChange}
             onBlur={onBlur}
             disabled={disabled}
-            dir={dir || (isRtl ? "rtl" : "ltr")}
-            className={`w-full h-[58px] ${
-              icon
-                ? isRtl
-                  ? "pr-[48px] pl-[36px]"
-                  : "pl-[48px] pr-[36px]"
-                : isRtl
-                  ? "pr-4 pl-[36px]"
-                  : "pl-4 pr-[36px]"
-            } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none transition-all rounded-[16px] shadow-sm appearance-none cursor-pointer disabled:opacity-50 disabled:bg-surface-container-low`}
+            dir={resolvedDir}
+            className={`w-full h-[58px] ${icon ? "ps-[48px] pe-[48px]" : "ps-4 pe-[36px]"
+              } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none transition-all rounded-[16px] shadow-sm appearance-none cursor-pointer disabled:opacity-50 disabled:bg-surface-container-low`}
           >
             {children}
           </select>
           <span
-            className={`material-symbols-outlined absolute ${
-              isRtl ? "left-3" : "right-3"
-            } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px] z-10`}
+            className={`material-symbols-outlined absolute ${isRtl ? "start-3" : "end-3"
+              } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px] z-10`}
           >
             unfold_more
           </span>
@@ -99,6 +95,7 @@ export function FormField({
     <div className="w-full">
       <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
         {label}
+        {showAsterisk && <span className="text-error ms-1"> *</span>}
       </label>
       <div
         onClick={handleContainerClick}
@@ -106,9 +103,8 @@ export function FormField({
       >
         {icon && (
           <span
-            className={`material-symbols-outlined absolute ${
-              isRtl ? "right-4" : "left-4"
-            } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
+            className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
+              } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
           >
             {icon}
           </span>
@@ -123,16 +119,10 @@ export function FormField({
           onBlur={onBlur}
           disabled={disabled}
           placeholder={placeholder}
-          dir={dir || (isRtl ? "rtl" : "ltr")}
-          className={`w-full h-[58px] ${
-            icon
-              ? isRtl
-                ? "pr-[48px] pl-4"
-                : "pl-[48px] pr-4"
-              : "px-4"
-          } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none ${placeholderContrastClass} transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low ${
-            type === "date" ? "[&::-webkit-calendar-picker-indicator]:opacity-0 cursor-pointer" : ""
-          }`}
+          dir={resolvedDir}
+          className={`w-full h-[58px] ${icon ? "ps-[48px] pe-[48px]" : "px-4"
+            } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none ${placeholderContrastClass} transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low ${alignmentClass} ${type === "date" ? "[&::-webkit-calendar-picker-indicator]:opacity-0 cursor-pointer" : ""
+            }`}
           onClick={(e) => {
             e.stopPropagation();
             if (type === "date") {

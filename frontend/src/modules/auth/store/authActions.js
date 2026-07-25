@@ -39,22 +39,23 @@ export const checkAuthThunk = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     const existingToken = authService.getAccessToken();
-    if (existingToken) {
-      try {
-        const user = await authService.getMe();
-        return { accessToken: existingToken, user };
-      } catch (err) {
-        // Token in storage is invalid/expired, try refresh token
-      }
+    if (!existingToken) {
+      return rejectWithValue('No access token found');
     }
 
     try {
-      const refreshResult = await authService.refreshToken();
-      const accessToken = refreshResult?.accessToken || authService.getAccessToken();
       const user = await authService.getMe();
-      return { accessToken, user };
-    } catch (error) {
-      return rejectWithValue(error.message);
+      return { accessToken: existingToken, user };
+    } catch (err) {
+      // Token in storage is invalid/expired, try refresh token
+      try {
+        const refreshResult = await authService.refreshToken();
+        const accessToken = refreshResult?.accessToken || authService.getAccessToken();
+        const user = await authService.getMe();
+        return { accessToken, user };
+      } catch (error) {
+        return rejectWithValue(error.message);
+      }
     }
   }
 );

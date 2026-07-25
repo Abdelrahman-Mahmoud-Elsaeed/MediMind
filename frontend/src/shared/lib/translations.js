@@ -1,8 +1,5 @@
 export const translations = {
   en: {
-    common: {
-      optional: "Optional",
-    },
     auth: {
       login: {
         title: "Welcome Back",
@@ -20,6 +17,13 @@ export const translations = {
         signingInButton: "Signing In...",
         noAccount: "Don't have an account?",
         signUpLink: "Sign up here",
+        secureLabel: "Secure 256-bit SSL Encryption",
+        brandingTitle: "Your Health Journey Begins Here.",
+        brandingDescription: "Join 2 million+ users transforming their lives through better health management and connection.",
+        brandingF1: "Medication Tracking",
+        brandingF2: "Caregiver Connection",
+        brandingF3: "Health Insights",
+        brandingF4: "Secure & Private",
       },
       register: {
         step1Title: "Create Account",
@@ -107,10 +111,22 @@ export const translations = {
         relation_sibling: "Sibling",
         relation_friend: "Friend",
         relation_other: "Other",
+        relations: {
+          son: "Son",
+          daughter: "Daughter",
+          spouse: "Spouse",
+          parent: "Parent",
+          sibling: "Sibling",
+          friend: "Friend",
+          other: "Other"
+        },
+        caregiverAlertsTitle: "Alert Settings",
+        alertInstantMissed: "Instant alerts for missed doses",
+        alertWeeklyReport: "Weekly adherence report",
         secureEncryption: "Secure 256-bit SSL Encryption",
       },
       validation: {
-        emailOrPhoneRequired: "Email address or phone number is required.",
+        emailOrPhoneRequired: "Email or phone number is required.",
         emailRequired: "Email address is required.",
         invalidEmail: "Please enter a valid email address.",
         passwordRequired: "Password is required.",
@@ -118,10 +134,15 @@ export const translations = {
         passwordRequirements: "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
         firstNameRequired: "First name is required.",
         firstNameMin: "First name must be at least 2 characters.",
+        firstNameMax: "First name must be at most 50 characters.",
         lastNameRequired: "Last name is required.",
         lastNameMin: "Last name must be at least 2 characters.",
+        lastNameMax: "Last name must be at most 50 characters.",
         phoneRequired: "Phone number is required.",
-        invalidPhone: "Invalid Egyptian phone number. Must start with 010, 011, 012, or 015 and be 11 digits.",
+        phoneMin: "Phone number is too short (at least 5 digits).",
+        invalidPhone: "Please enter a valid phone number.",
+        invalidPhoneForCountry: "Please enter a valid phone number for the selected country.",
+        unsupportedCountry: "Selected country is not supported for phone validation.",
         dobRequired: "Date of birth is required.",
         relationshipRequired: "Relationship is required.",
         patientCodeRequired: "Patient code is required.",
@@ -253,12 +274,129 @@ export const translations = {
         recentRecords: "Recent Records",
         secureVault: "Secure Vault Documents"
       }
+    },
+    landing: {
+      nav: {
+        features: "Features",
+        caregivers: "Caregivers",
+        plantJourney: "Plant Journey",
+        faq: "FAQ",
+        signIn: "Sign In",
+        getStarted: "Get Started",
+        signOut: "Sign Out",
+        goDashboard: "Go to Dashboard",
+        goJourney: "Begin your journey"
+      },
+      hero: {
+        badge: "Healing & Connection",
+        title1: "Stay Healthy.",
+        title2: "Stay Connected.",
+        title3: "Feel Cared For.",
+        description: "A warm, calming companion for your health journey. Never miss a dose, connect with trusted caregivers, and watch yourself grow — one day at a time.",
+        stat1Value: "94%",
+        stat1Label: "Medication adherence",
+        stat2Value: "12,000+",
+        stat2Label: "Patients feeling better",
+        todayMeds: "Today's Meds",
+        todayDate: "Monday, Oct 24",
+        nextDose: "Next: 2h 45m",
+        taken: "Taken",
+        pending: "Pending"
+      },
+      features: {
+        title: "Caring for you, simplified",
+        subtitle: "Experience a healthcare platform designed with warmth, empathy, and joy at its heart.",
+        f1Title: "Gentle Reminders",
+        f1Desc: "Soft chimes and friendly nudges to help you stay on track without stress.",
+        f2Title: "Growing Together",
+        f2Desc: "Watch your digital plant bloom as you consistently take your medications.",
+        f3Title: "Trusted Caregivers",
+        f3Desc: "Professional support from caregivers who truly understand your unique needs.",
+        f4Title: "Health Insights",
+        f4Desc: "Clear, insightful reports that track your progress and celebrate your wins."
+      },
+      checklist: {
+        title: "Master your routine with joy",
+        description: "No more confusing schedules. MediMind turns your daily health routine into a rewarding ritual that feels like genuine self-care.",
+        i1: "Personalized medication inventory",
+        i2: "Family notification system for missed doses",
+        i3: "Low-stock refill alerts for your pharmacy",
+        todayTitle: "Today's Medications",
+        upcoming: "Upcoming",
+        markTaken: "Mark as Taken"
+      },
+      caregivers: {
+        title: "You're never alone",
+        description: "Choose from our network of certified, compassionate caregivers ready to support you.",
+        viewAll: "View all caregivers",
+        select: "Select",
+        hr: "/hr",
+        c1Bio: "Passionate about elderly care with 8 years of clinical experience in cardiac health.",
+        c2Bio: "Specialized in medication management and physical therapy assistance for seniors.",
+        c3Bio: "Bi-lingual caregiver focused on diabetic health and nutrition planning for families."
+      },
+      plant: {
+        title: "Watch yourself bloom",
+        description: "Consistency is key. Every dose you take helps your digital plant grow from a tiny seed into a blooming companion.",
+        day0: "Day 0",
+        day0Desc: "The Journey Begins",
+        day7: "Day 7",
+        day7Desc: "First Sprouts",
+        day30: "Day 30",
+        day30Desc: "Growing Strong",
+        day60: "Day 60",
+        day60Desc: "Branching Out",
+        day90: "Day 90+",
+        day90Desc: "Full Bloom",
+        active: "ACTIVE"
+      },
+      testimonials: {
+        title: "Stories from our community",
+        t1Text: "\"MediMind gave me my independence back. The plant journey is so motivating, and I haven't missed a dose in 3 months.\"",
+        t1Author: "Margaret Wilson",
+        t1Age: "72 Years Old, Hypertension",
+        t2Text: "\"As a son living across the country, notifications when my mother takes her meds are a lifesaver. Peace of mind is priceless.\"",
+        t2Author: "Robert Chen",
+        t2Age: "Family Caregiver",
+        t3Text: "\"Finding Sarah through the marketplace was a blessing. She's not just a caregiver anymore, she's part of the family.\"",
+        t3Author: "Dorothy Hayes",
+        t3Age: "85 Years Old, Type 2 Diabetes"
+      },
+      faq: {
+        title: "Common Questions",
+        q1Title: "Is MediMind really free for patients?",
+        q1Answer: "Yes! Our core medication tracking and plant journey features are 100% free for patients forever. We believe health management should be accessible to everyone.",
+        q2Title: "How are caregivers vetted?",
+        q2Answer: "Every caregiver on our platform undergoes a rigorous 4-step verification process, including background checks, certification verification, and personal interviews.",
+        q3Title: "Can my doctor see my progress?",
+        q3Answer: "Absolutely. You can choose to share your adherence reports directly with your healthcare provider via secure link or export through the app.",
+        q4Title: "What happens if I miss a dose?",
+        q4Answer: "The app will send gentle reminders. If the dose isn't marked as taken within your set grace period, your designated family members or caregivers will receive a notification."
+      },
+      cta: {
+        title: "Begin your healing journey today",
+        description: "Join thousands of patients who have found a warmer, more joyful way to manage their health.",
+        startFree: "Start for free now",
+        goApp: "Go to App Dashboard"
+      },
+      footer: {
+        desc: "Empowering health through connection and intelligent adherence technology. Built with love for patients everywhere.",
+        patientCare: "Patient Care",
+        startTracking: "Start Tracking",
+        safety: "Safety Protocols",
+        company: "Company",
+        companyName: "Company",
+        mission: "Our Mission",
+        privacy: "Privacy Policy",
+        terms: "Terms of Service",
+        support: "Contact Support",
+        platform: "Platform",
+        healthSystem: "MediMind Health System",
+        rights: "© 2026 MediMind Health System. All rights reserved. Your health, our priority."
+      }
     }
   },
   ar: {
-    common: {
-      optional: "اختياري",
-    },
     auth: {
       login: {
         title: "مرحباً بك مجدداً",
@@ -276,6 +414,13 @@ export const translations = {
         signingInButton: "جاري تسجيل الدخول...",
         noAccount: "ليس لديك حساب؟",
         signUpLink: "إنشاء حساب جديد",
+        secureLabel: "تشفير SSL آمن بـ 256 بت",
+        brandingTitle: "رحلتك الصحية تبدأ من هنا.",
+        brandingDescription: "انضم إلى أكثر من 2 مليون مستخدم يحسّنون حياتهم من خلال إدارة صحية أفضل وتواصل فعّال.",
+        brandingF1: "متابعة الأدوية",
+        brandingF2: "التواصل مع مقدمي الرعاية",
+        brandingF3: "رؤى صحية",
+        brandingF4: "آمن وخاص",
       },
       register: {
         step1Title: "إنشاء حساب جديد",
@@ -363,10 +508,22 @@ export const translations = {
         relation_sibling: "أخ/أخت",
         relation_friend: "صديق",
         relation_other: "غير ذلك",
+        relations: {
+          son: "ابن",
+          daughter: "ابنة",
+          spouse: "زوج/زوجة",
+          parent: "والد/والدة",
+          sibling: "أخ/أخت",
+          friend: "صديق",
+          other: "غير ذلك"
+        },
+        caregiverAlertsTitle: "إعدادات التنبيهات",
+        alertInstantMissed: "تنبيهات فورية للجرعات الفائتة",
+        alertWeeklyReport: "تقرير أسبوعي عن الالتزام",
         secureEncryption: "تشفير SSL آمن 256بت",
       },
       validation: {
-        emailOrPhoneRequired: "البريد الإلكتروني أو رقم الهاتف مطلوب.",
+        emailOrPhoneRequired: "رقم الهاتف أو البريد مطلوب.",
         emailRequired: "البريد الإلكتروني مطلوب.",
         invalidEmail: "يرجى إدخال بريد إلكتروني صالح.",
         passwordRequired: "كلمة المرور مطلوبة.",
@@ -374,10 +531,15 @@ export const translations = {
         passwordRequirements: "يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل.",
         firstNameRequired: "الاسم الأول مطلوب.",
         firstNameMin: "يجب أن يكون الاسم الأول حرفين على الأقل.",
+        firstNameMax: "يجب ألا يتجاوز الاسم الأول 50 حرفاً.",
         lastNameRequired: "اسم العائلة مطلوب.",
         lastNameMin: "يجب أن يكون اسم العائلة حرفين على الأقل.",
+        lastNameMax: "يجب ألا يتجاوز اسم العائلة 50 حرفاً.",
         phoneRequired: "رقم الهاتف مطلوب.",
-        invalidPhone: "رقم هاتف مصري غير صالح. يجب أن يبدأ بـ 010 أو 011 أو 012 أو 015 ويتكون من 11 رقمًا.",
+        phoneMin: "رقم الهاتف قصير جداً (على الأقل 5 أرقام).",
+        invalidPhone: "يرجى إدخال رقم هاتف صالح.",
+        invalidPhoneForCountry: "يرجى إدخال رقم هاتف صالح للدولة المحددة.",
+        unsupportedCountry: "الدولة المحددة غير مدعومة للتحقق من الهاتف.",
         dobRequired: "تاريخ الميلاد مطلوب.",
         relationshipRequired: "صلة القرابة مطلوبة.",
         patientCodeRequired: "رمز المريض مطلوب.",
@@ -508,6 +670,126 @@ export const translations = {
         submitRecord: "إضافة الحالة للملف الشخصي",
         recentRecords: "المستندات الأخيرة",
         secureVault: "مستندات الخزنة الآمنة"
+      }
+    },
+    landing: {
+      nav: {
+        features: "المميزات",
+        caregivers: "مقدمو الرعاية",
+        plantJourney: "رحلة النبتة",
+        faq: "الأسئلة الشائعة",
+        signIn: "تسجيل الدخول",
+        getStarted: "ابدأ الآن",
+        signOut: "تسجيل الخروج",
+        goDashboard: "الانتقال إلى لوحة التحكم",
+        goJourney: "ابدأ رحلتك العلاجية"
+      },
+      hero: {
+        badge: "الاستشفاء والتواصل",
+        title1: "حافظ على صحتك.",
+        title2: "ابقَ على اتصال.",
+        title3: "اشعر بالرعاية والعطف.",
+        description: "رفيق دافئ ومهدئ لرحلتك الصحية. لا تفوت أي جرعة، وتواصل مع مقدمي الرعاية الموثوق بهم، وشاهد نفسك تنمو وتتحسن - يوماً بعد يوم.",
+        stat1Value: "94%",
+        stat1Label: "الالتزام بتناول الدواء",
+        stat2Value: "12,000+",
+        stat2Label: "مرضى يشعرون بتحسن",
+        todayMeds: "أدوية اليوم",
+        todayDate: "الإثنين، 24 أكتوبر",
+        nextDose: "الجرعة التالية: بعد ساعتين و45 دقيقة",
+        taken: "تم الأخذ",
+        pending: "قيد الانتظار"
+      },
+      features: {
+        title: "رعاية مبسطة من أجلك",
+        subtitle: "اختبر منصة رعاية صحية مصممة بدفء وتعاطف وبهجة في جوهرها.",
+        f1Title: "تنبيهات لطيفة",
+        f1Desc: "نغمات ناعمة وتنبيهات ودية لمساعدتك على البقاء على المسار الصحيح دون أي قلق أو ضغوط.",
+        f2Title: "ننمو معاً",
+        f2Desc: "شاهد نبتتك الرقمية تزهر وتنمو مع التزامك المستمر بتناول أدويتك.",
+        f3Title: "مقدمو رعاية موثوقون",
+        f3Desc: "دعم احترافي من مقدمي الرعاية الذين يتفهمون احتياجاتك الفردية والفريدة.",
+        f4Title: "رؤى صحية وتفصيلية",
+        f4Desc: "تقارير واضحة ورائعة تظهر مدى تقدمك وتحتفي بإنجازاتك اليومية."
+      },
+      checklist: {
+        title: "أتقن روتينك العلاجي ببهجة",
+        description: "لا مزيد من الجداول المربكة. يحول ميدي مايند روتينك الصحي اليومي إلى طقس ممتع يبدو وكأنه رعاية ذاتية حقيقية.",
+        i1: "قائمة أدوية مخصصة ومبسطة",
+        i2: "نظام تنبيهات للعائلة عند تفويت الجرعات",
+        i3: "تنبيهات انخفاض مخزون الدواء للصيدلية",
+        todayTitle: "أدوية اليوم",
+        upcoming: "القادمة",
+        markTaken: "تأكيد الأخذ"
+      },
+      caregivers: {
+        title: "لست وحدك أبداً",
+        description: "اختر من شبكتنا الواسعة من مقدمي الرعاية المعتمدين والرحماء المستعدين لدعمك.",
+        viewAll: "عرض جميع مقدمي الرعاية",
+        select: "اختر",
+        hr: "/ساعة",
+        c1Bio: "شغوفة برعاية كبار السن ولديها 8 سنوات من الخبرة السريرية في صحة القلب.",
+        c2Bio: "متخصص في إدارة الأدوية والمساعدة في العلاج الطبيعي لكبار السن والبالغين.",
+        c3Bio: "مقدمة رعاية ثنائية اللغة تركز على صحة السكري وتخطيط التغذية للعائلات."
+      },
+      plant: {
+        title: "شاهد نفسك تزهر وتنمو",
+        description: "الاستمرارية هي سر النجاح. كل جرعة تأخذها تساعد نبتتك الرقمية على النمو من بذرة صغيرة إلى رفيقة زاهية بالورود.",
+        day0: "اليوم 0",
+        day0Desc: "تبدأ الرحلة العلاجية",
+        day7: "اليوم 7",
+        day7Desc: "أولى البراعم",
+        day30: "اليوم 30",
+        day30Desc: "تنمو بقوة",
+        day60: "اليوم 60",
+        day60Desc: "تتفرع وتكبر",
+        day90: "اليوم +90",
+        day90Desc: "تزهر بالكامل",
+        active: "نشط حالياً"
+      },
+      testimonials: {
+        title: "قصص ملهمة من مجتمعنا",
+        t1Text: "\"أعاد لي ميدي مايند استقلاليتي وثقتي بنفسي. رحلة النبتة محفزة للغاية، ولم أفتت جرعة واحدة منذ 3 أشهر.\"",
+        t1Author: "مارجريت ويلسون",
+        t1Age: "72 عاماً، تعاني من ارتفاع ضغط الدم",
+        t2Text: "\"بصفتي ابناً يعيش في مكان بعيد، فإن التنبيهات التي تصلني عندما تأخذ والدتي دواءها تنقذ حياتنا وتمنحنا راحة بال لا تقدر بثمن.\"",
+        t2Author: "روبرت تشين",
+        t2Age: "ابن ومقدم رعاية عائلي",
+        t3Text: "\"العثور على سارة من خلال دائرة مقدمي الرعاية كان نعمة كبيرة. لم تعد مجرد مقدمة رعاية، بل أصبحت فرداً من العائلة.\"",
+        t3Author: "دورثي هايز",
+        t3Age: "85 عاماً، تعاني من السكري من النوع الثاني"
+      },
+      faq: {
+        title: "الأسئلة الشائعة",
+        q1Title: "هل ميدي مايند مجاني حقاً للمرضى؟",
+        q1Answer: "نعم! ميزات تتبع الأدوية الأساسية ورحلة النبتة الرقمية مجانية 100% للمرضى دائماً. نؤمن بأن الرعاية الصحية يجب أن تكون في متناول الجميع.",
+        q2Title: "كيف يتم التحقق من مقدمي الرعاية وتدقيقهم؟",
+        q2Answer: "يخضع كل مقدم رعاية على منصتنا لعملية تحقق صارمة من 4 خطوات، تشمل الفحص الجنائي، والتحقق من الشهادات والخبرات، والمقابلات الشخصية.",
+        q3Title: "هل يمكن لطبيبي المعالج الاطلاع على مدى تقدمي؟",
+        q3Answer: "بالتأكيد. يمكنك اختيار مشاركة تقارير التزامك بالدواء مباشرة مع طبيبك عبر رابط آمن أو تصديرها من خلال التطبيق.",
+        q4Title: "ماذا يحدث إذا فاتني تناول إحدى الجرعات المحددة؟",
+        q4Answer: "سيرسل لك التطبيق تنبيهات لطيفة أولاً. وإذا لم يتم تأكيد أخذ الجرعة خلال فترة السماح المحددة، فسيصل إشعار لأفراد عائلتك أو مقدم الرعاية الخاص بك."
+      },
+      cta: {
+        title: "ابدأ رحلتك العلاجية اليوم ببهجة ورعاية",
+        description: "انضم إلى آلاف المرضى الذين وجدوا طريقة أكثر دفئاً وإشراقاً لإدارة صحتهم والالتزام بأدویتهم.",
+        startFree: "ابدأ مجاناً الآن",
+        goApp: "الانتقال للوحة التحكم"
+      },
+      footer: {
+        desc: "تمكين الصحة من خلال التواصل وتقنيات الالتزام العلاجي الذكي. صُمم بكل حب واهتمام للمرضى في كل مكان.",
+        patientCare: "رعاية المرضى",
+        startTracking: "بدء التتبع",
+        safety: "بروتوكولات الأمان",
+        company: "الشركة",
+        companyName: "الشركة",
+        mission: "رسالتنا ورؤيتنا",
+        privacy: "سياسة الخصوصية",
+        terms: "شروط الخدمة",
+        support: "اتصل بالدعم",
+        platform: "المنصة",
+        healthSystem: "نظام الرعاية الصحي ميدي مايند",
+        rights: "© 2026 نظام الرعاية الصحي ميدي مايند. جميع الحقوق محفوظة. صحتك هي أولويتنا القصوى."
       }
     }
   }

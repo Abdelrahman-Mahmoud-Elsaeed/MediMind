@@ -2,6 +2,17 @@
 @variant dark (&:where(.dark, .dark *));
 @import 'material-symbols/outlined.css';
 
+html {
+  scroll-behavior: smooth;
+}
+
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
+  display: inline-block;
+}
+
+
+
 :root {
   --background: #f8f9ff;
   --on-background: #0b1c30;

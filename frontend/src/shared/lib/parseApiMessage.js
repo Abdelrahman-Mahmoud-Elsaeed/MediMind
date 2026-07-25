@@ -9,21 +9,42 @@
  * @param {Function} t - Translation function
  * @returns {string|null}
  */
-export function parseApiMessage(rawError, locale, t) {
+export function parseApiMessage(rawError, locale = 'en', t) {
   if (!rawError) return null;
 
-  let extractedMsg = rawError;
+  let extractedMsg = null;
 
-  try {
-    const parsed = JSON.parse(rawError);
-    if (parsed && typeof parsed === 'object') {
-      extractedMsg = parsed[locale] || parsed['en'] || rawError;
+  if (typeof rawError === 'object') {
+    const data = rawError.response?.data || rawError.data || rawError;
+    if (data && typeof data === 'object') {
+      if (data.messages) {
+        extractedMsg = data.messages[locale] || data.messages['en'] || data.messages;
+      } else if (data.error?.messages) {
+        extractedMsg = data.error.messages[locale] || data.error.messages['en'];
+      } else if (data.message) {
+        extractedMsg = data.message;
+      }
     }
-  } catch {
-    // Not JSON — use rawError
+    if (!extractedMsg && rawError.message) {
+      return parseApiMessage(rawError.message, locale, t);
+    }
+  } else if (typeof rawError === 'string') {
+    extractedMsg = rawError;
+    try {
+      const parsed = JSON.parse(rawError);
+      if (parsed && typeof parsed === 'object') {
+        extractedMsg = parsed[locale] || parsed['en'] || parsed.message || rawError;
+      }
+    } catch {
+      // Not JSON — use rawError
+    }
   }
 
-  return cleanErrorMessage(extractedMsg, locale, t);
+  if (typeof extractedMsg === 'object' && extractedMsg !== null) {
+    extractedMsg = extractedMsg[locale] || extractedMsg['en'] || JSON.stringify(extractedMsg);
+  }
+
+  return cleanErrorMessage(extractedMsg || String(rawError), locale, t);
 }
 
 function cleanErrorMessage(msg, locale, t) {

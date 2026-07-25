@@ -11,19 +11,6 @@ const FamilyCaregiverSchema = new Schema(
     },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
-    relation: {
-      type: String,
-      enum: [
-        "son",
-        "daughter",
-        "spouse",
-        "parent",
-        "sibling",
-        "friend",
-        "other",
-      ],
-      required: true,
-    },
 
     address: {
       street: { type: String, trim: true },
@@ -47,10 +34,10 @@ const FamilyCaregiverSchema = new Schema(
 
     whatsappOptIn: { type: Boolean, default: false },
     whatsappOptInDate: { type: Date, default: null },
-    preferredLanguage: { 
-      type: String, 
-      enum: ["en", "ar"], 
-      default: "ar" 
+    preferredLanguage: {
+      type: String,
+      enum: ["en", "ar"],
+      default: "ar"
     },
 
     alertSettings: {

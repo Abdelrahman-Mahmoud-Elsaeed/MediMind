@@ -6,9 +6,12 @@ import { useTheme } from "next-themes";
 
 export default function AuthHeader() {
   const { locale, toggleLanguage } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="flex items-center justify-between mb-8 md:mb-10">
@@ -58,12 +61,12 @@ export default function AuthHeader() {
         {/* Dark Mode Toggle */}
         <button
           type="button"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer"
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container border border-outline-variant/30 transition-colors cursor-pointer"
           aria-label="Toggle theme"
         >
           <span className="material-symbols-outlined !text-[22px]">
-            {mounted && theme === "dark" ? "light_mode" : "dark_mode"}
+            {mounted && resolvedTheme === "dark" ? "light_mode" : "dark_mode"}
           </span>
         </button>
       </div>

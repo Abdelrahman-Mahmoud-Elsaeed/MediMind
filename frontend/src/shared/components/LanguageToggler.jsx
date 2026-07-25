@@ -3,7 +3,7 @@
 import React from "react";
 import { useTranslation } from "../lib/i18nContext";
 
-export default function LanguageToggler() {
+export const LanguageToggler = () => {
   const { locale, toggleLanguage } = useTranslation();
 
   return (
@@ -16,4 +16,7 @@ export default function LanguageToggler() {
       <span>{locale === "en" ? "العربية" : "English"}</span>
     </button>
   );
-}
+};
+
+export default LanguageToggler;
+

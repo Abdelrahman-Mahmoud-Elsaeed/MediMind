@@ -146,7 +146,6 @@ class FamilyCaregiverService {
       whatsappOptIn,
       preferredLanguage,
       consents,
-      relation,
       subscription: subscription || { plan: "free" },
       alertSettings: alertSettings || {
         instantMissed: true,

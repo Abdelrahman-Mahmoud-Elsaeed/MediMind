@@ -1,13 +1,15 @@
 const authService = require("../services/auth.service");
+const otpService = require("../services/otp.service");
 const patientService = require("../services/patient.service");
 const familyCaregiverService = require("../services/familyCaregiver.service");
 const doctorService = require("../services/doctor.service");
 const pharmacistService = require("../services/pharmacist.service");
 const professionalCaregiverService = require("../services/professionalCaregiver.service");
+const Account = require("../models/Account.model");
 const AppError = require("../../../shared/utils/AppError");
 
 class AuthController {
-  // Helper just to set the cookie and clean the payload. Does NOT send the response.
+
   _setAuthCookie = (res, result) => {
     if (result?.data && result.data.refreshToken) {
       res.cookie("refreshToken", result.data.refreshToken, {
@@ -18,7 +20,6 @@ class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // Remove it so it doesn't leak in the JSON response
       delete result.data.refreshToken;
     }
   };
@@ -85,7 +86,6 @@ class AuthController {
       const isEmailAuth = Boolean(email);
       const isPhoneAuth = Boolean(phone);
 
-      // Enforce strictly one credential type (either email or phone)
       if ((isEmailAuth && isPhoneAuth) || (!isEmailAuth && !isPhoneAuth)) {
         throw new AppError(
           "Credentials must contain either email or phone, but not both",
@@ -117,12 +117,16 @@ class AuthController {
       } else if (role === "PATIENT" || role === "FAMILY_CAREGIVER") {
         const service =
           role === "PATIENT" ? patientService : familyCaregiverService;
-
         if (isEmailAuth) {
           result = await service.registerEmail(req.body);
         } else {
           result = await service.registerPhone(req.body);
         }
+        if (result.status === "SUCCESS") {
+          this._setAuthCookie(res, result);
+        }
+
+
       } else {
         throw new AppError(
           "Invalid role for registration",
@@ -135,11 +139,38 @@ class AuthController {
         );
       }
 
-      if (result.status === "SUCCESS") {
-        this._setAuthCookie(res, result);
+      return result.send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  validateUniqueness = async (req, res, next) => {
+    try {
+      const { email, phone } = req.query;
+
+      let query = {};
+      if (email) {
+        query.email = email.trim().toLowerCase();
+      } else if (phone) {
+        query.phone = phone.trim();
+      } else {
+        throw new AppError("Email or phone query parameter is required", 400, "BAD_REQUEST", {
+          en: "Please provide either an email or a phone number to validate.",
+          ar: "يرجى تقديم بريد إلكتروني أو رقم هاتف للتحقق.",
+        });
       }
 
-      return result.send(res);
+      const existingAccount = await Account.findOne(query);
+      const isUnique = !existingAccount;
+
+      return res.status(200).json({
+        success: true,
+        status: "SUCCESS",
+        data: {
+          isUnique,
+        },
+      });
     } catch (error) {
       next(error);
     }
@@ -152,7 +183,7 @@ class AuthController {
       if (!account) {
         throw new AppError("Account not found", 404, "ACCOUNT_NOT_FOUND", {
           en: "Account not found.",
-          ar: "الحساب غير موجود."
+          ar: "الحساب غير موجود.",
         });
       }
       return res.status(200).json({

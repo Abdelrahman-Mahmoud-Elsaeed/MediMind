@@ -50,6 +50,7 @@ const registerSchemas = {
 };
 
 // --- Public Auth Routes (Rate Limited) ---
+router.get("/validate-uniqueness", authRateLimiter, authController.validateUniqueness);
 router.post("/login", authRateLimiter, validate(loginSchema), authController.login);
 router.post("/token/refresh", authRateLimiter, authController.refreshSession);
 

@@ -4,16 +4,21 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
+import { loginThunk } from "../store/authActions";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useTheme } from 'next-themes';
-import { loginSchema } from "../validation/authValidation";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { parseApiMessage } from "@/shared/lib/parseApiMessage";
+import Branding from "./Branding";
+import { FormField } from "../registration/components/FormField";
+import { PasswordInput } from "../registration/components/PasswordInput";
+import { z } from "zod";
 
 export default function LoginComponent() {
   const router = useRouter();
   const { login, loading, error, resetError, isAuthenticated, user } = useAuth();
   const { locale, dir, t, toggleLanguage } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -27,26 +32,59 @@ export default function LoginComponent() {
     }
   }, [isAuthenticated, loading, user, router]);
 
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ loginInput: "", password: "" });
 
-  const isValid = loginSchema.safeParse({ email, password }).success;
-  const isRtl = locale === 'ar';
+  const getValidationSchema = () => {
+    return z.object({
+      loginInput: z.string()
+        .min(1, t("auth.validation.emailOrPhoneRequired"))
+        .superRefine((val, ctx) => {
+          if (!val) return;
+          const isPhoneInput = /^[0-9+\s()-]+$/.test(val);
+          if (isPhoneInput) {
+            let normalized = val.trim();
+            if (normalized.startsWith("00")) {
+              normalized = `+${normalized.slice(2)}`;
+            }
+            const parsed = normalized.startsWith("+")
+              ? parsePhoneNumberFromString(normalized)
+              : parsePhoneNumberFromString(normalized, "EG");
+            const isValidPhone = parsed ? parsed.isPossible() : false;
+            if (!isValidPhone) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: t("auth.validation.invalidPhone"),
+              });
+            }
+          } else {
+            const emailSchema = z.string().email(t("auth.validation.invalidEmail"));
+            const res = emailSchema.safeParse(val);
+            if (!res.success) {
+              res.error.issues.forEach((i) => ctx.addIssue({ code: i.code, message: i.message }));
+            }
+          }
+        }),
+      password: z.string()
+        .min(1, t("auth.validation.passwordRequired"))
+        .min(8, t("auth.validation.passwordMin"))
+        .regex(/[A-Z]/, t("auth.validation.passwordRequirements"))
+        .regex(/[a-z]/, t("auth.validation.passwordRequirements"))
+        .regex(/[0-9]/, t("auth.validation.passwordRequirements")),
+    });
+  };
+
+  const isValid = getValidationSchema().safeParse({ loginInput, password }).success;
 
   const handleBlur = (field) => {
-    const result = loginSchema.safeParse({ email, password });
+    const schema = getValidationSchema();
+    const result = schema.safeParse({ loginInput, password });
     if (!result.success) {
       const issue = result.error.issues.find((i) => i.path[0] === field);
       if (issue) {
-        let msg = "";
-        if (field === "email") {
-          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
-        } else if (field === "password") {
-          msg = t("auth.validation.passwordRequired");
-        }
-        setErrors((prev) => ({ ...prev, [field]: msg }));
+        setErrors((prev) => ({ ...prev, [field]: issue.message }));
       } else {
         setErrors((prev) => ({ ...prev, [field]: "" }));
       }
@@ -58,31 +96,44 @@ export default function LoginComponent() {
   const handleLogin = async (e) => {
     e.preventDefault();
     resetError();
-    setErrors({ email: "", password: "" });
-    const result = loginSchema.safeParse({ email, password });
+    setErrors({ loginInput: "", password: "" });
+
+    const schema = getValidationSchema();
+    const result = schema.safeParse({ loginInput, password });
     if (!result.success) {
-      const newErrors = { email: "", password: "" };
+      const newErrors = { loginInput: "", password: "" };
       result.error.issues.forEach((issue) => {
         const field = issue.path[0];
-        let msg = "";
-        if (field === "email") {
-          msg = email ? t("auth.validation.invalidEmail") : t("auth.validation.emailRequired");
-        } else if (field === "password") {
-          msg = t("auth.validation.passwordRequired");
-        }
-        newErrors[field] = msg;
+        newErrors[field] = issue.message;
       });
       setErrors(newErrors);
       return;
     }
 
+    const isPhoneInput = /^[0-9+\s()-]+$/.test(loginInput.trim());
+    let normalizedInput = loginInput.trim();
+    if (isPhoneInput) {
+      if (normalizedInput.startsWith("00")) {
+        normalizedInput = `+${normalizedInput.slice(2)}`;
+      }
+      const parsed = normalizedInput.startsWith("+")
+        ? parsePhoneNumberFromString(normalizedInput)
+        : parsePhoneNumberFromString(normalizedInput, "EG");
+      if (parsed && parsed.isValid()) {
+        normalizedInput = parsed.number;
+      }
+    }
+
+    const payload = isPhoneInput
+      ? { phone: normalizedInput, password }
+      : { email: normalizedInput.toLowerCase(), password };
+
     try {
-      const resultAction = await login({ email, password });
-      const userRole = resultAction.payload?.user?.role || resultAction.payload?.role;
-      if (userRole === "PATIENT") {
-        router.push("/home");
-      } else {
-        router.push("/dashboard");
+      const resultAction = await login(payload);
+      if (loginThunk.fulfilled.match(resultAction)) {
+        const userRole = resultAction.payload?.user?.role || resultAction.payload?.role;
+        const role = userRole ? String(userRole).toUpperCase() : "PATIENT";
+        router.replace(role === "PATIENT" ? "/home" : "/dashboard");
       }
     } catch (err) {}
   };
@@ -127,11 +178,11 @@ export default function LoginComponent() {
             {/* Dark Mode Toggle */}
             <button
               type="button"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
               className="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface transition-all cursor-pointer"
             >
               <span className="material-symbols-outlined text-[20px]">
-                {mounted && theme === 'dark' ? 'light_mode' : 'dark_mode'}
+                {mounted && resolvedTheme === 'dark' ? 'light_mode' : 'dark_mode'}
               </span>
             </button>
           </div>
@@ -155,69 +206,42 @@ export default function LoginComponent() {
           )}
 
           <form className="space-y-5" onSubmit={handleLogin}>
-            {/* Email Address */}
-            <div>
-              <label className="block text-xs font-semibold text-on-surface-variant mb-1" htmlFor="email">
-                {t("auth.login.emailLabel")}
-              </label>
-              <div className="relative">
-                <span className={`material-symbols-outlined absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none`}>
-                  mail
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  className={`butterfly-input w-full font-body-md text-body-md text-on-surface placeholder:text-outline-variant transition-all py-4 ${isRtl ? 'pr-12 pl-4' : 'pl-12 pr-4'}`}
-                  placeholder={t("auth.login.emailPlaceholder")}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onBlur={() => handleBlur("email")}
-                  dir="ltr"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-error text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
+            <FormField
+              id="loginInput"
+              type="text"
+              label={t("auth.login.emailOrPhoneLabel")}
+              placeholder={t("auth.login.emailOrPhonePlaceholder")}
+              value={loginInput}
+              onChange={(e) => setLoginInput(e.target.value)}
+              onBlur={() => handleBlur("loginInput")}
+              error={errors.loginInput}
+              touched={!!errors.loginInput}
+              icon={/^[0-9+\s()-]+$/.test(loginInput.trim()) ? "phone" : "mail"}
+              dir={dir}
+              required
+            />
 
-            {/* Password */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-semibold text-on-surface-variant" htmlFor="password">
-                  {t("auth.login.passwordLabel")}
-                </label>
-                <a href="/forgot-password" className="text-xs text-primary font-semibold hover:underline">
-                  {t("auth.login.forgotPassword")}
-                </a>
-              </div>
-              <div className="relative">
-                <span className={`material-symbols-outlined absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none`}>
-                  lock
-                </span>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  className={`butterfly-input w-full font-body-md text-body-md text-on-surface placeholder:text-outline-variant transition-all py-4 ${isRtl ? 'pr-12 pl-12' : 'pl-12 pr-12'}`}
-                  placeholder={t("auth.login.passwordPlaceholder")}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onBlur={() => handleBlur("password")}
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface cursor-pointer`}
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility' : 'visibility_off'}
+            <PasswordInput
+              id="password"
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-['Inter'] text-sm md:text-base font-semibold text-on-surface">
+                    {t("auth.login.passwordLabel")}
                   </span>
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-error text-xs mt-1">{errors.password}</p>
-              )}
-            </div>
+                  <a href="/forgot-password" className="text-xs text-primary font-semibold hover:underline">
+                    {t("auth.login.forgotPassword")}
+                  </a>
+                </div>
+              }
+              placeholder={t("auth.login.passwordPlaceholder")}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur("password")}
+              error={errors.password}
+              touched={!!errors.password}
+              showPassword={showPassword}
+              onTogglePassword={() => setShowPassword(!showPassword)}
+            />
 
             {/* Submit */}
             <button
@@ -227,7 +251,7 @@ export default function LoginComponent() {
             >
               <span>{loading ? t("auth.login.signingInButton") : t("auth.login.signInButton")}</span>
               {!loading && (
-                <span className={`material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform ${isRtl ? 'rotate-180' : ''}`}>
+                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform rtl:rotate-180">
                   arrow_forward
                 </span>
               )}
@@ -251,44 +275,18 @@ export default function LoginComponent() {
       </div>
 
       {/* Right Side (Visual Panel) — shown on lg+ */}
-      <div className="hidden lg:flex w-full relative bg-butterfly-gradient overflow-hidden flex-col justify-center items-center px-12 py-12 select-none">
-        <div className="absolute inset-0 dot-grid opacity-30"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-
-        <svg className="absolute top-1/4 left-1/4 animate-float opacity-50 w-12 h-12" fill="white" viewBox="0 0 24 24">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z" />
-        </svg>
-        <svg className="absolute top-1/3 right-1/4 animate-float-delayed opacity-30 w-8 h-8" fill="white" style={{ transform: "rotate(45deg)" }} viewBox="0 0 24 24">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z" />
-        </svg>
-        <svg className="absolute bottom-1/4 left-1/3 animate-float opacity-40 w-10 h-10" fill="white" style={{ transform: "rotate(-15deg)" }} viewBox="0 0 24 24">
-          <path d="M12,15.5C10.5,16 9,15 8.5,13.5C8,12 8,10.5 9,9.5C10,8.5 11.5,8.5 12,9.5C12.5,8.5 14,8.5 15,9.5C16,10.5 16,12 15.5,13.5C15,15 13.5,16 12,15.5M12,13.5C12.5,14 13.5,14 14,13C14.5,12 14,11 13.5,10.5C13,10 12.5,10 12,11C11.5,10 11,10 10.5,10.5C10,11 9.5,12 10,13C10.5,14 11.5,14 12,13.5M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z" />
-        </svg>
-
-        <div className="relative z-10 max-w-lg text-center flex flex-col items-center" dir="ltr">
-          <div className="w-32 h-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-6 shadow-lg border border-white/30 animate-pulse-slow">
-            <span className="material-symbols-outlined text-[64px] text-white">diversity_1</span>
-          </div>
-          <h2 className="font-headline-lg text-headline-lg text-white mb-2 drop-shadow-md">
-            Your Health Journey Begins Here.
-          </h2>
-          <p className="font-body-lg text-body-lg text-white/90 mb-8 drop-shadow-sm leading-relaxed">
-            Join 2 million+ users transforming their lives through better health management and connection.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {[
-              { icon: "medication", label: "Medication Tracking" },
-              { icon: "group", label: "Caregiver Connection" },
-              { icon: "insights", label: "Health Insights" },
-              { icon: "shield", label: "Secure & Private" },
-            ].map(({ icon, label }) => (
-              <div key={label} className="flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white font-label-sm text-label-sm">
-                <span className="material-symbols-outlined text-[16px] mr-1">{icon}</span>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="hidden lg:flex w-full select-none">
+        <Branding
+          title={t("auth.login.brandingTitle")}
+          description={t("auth.login.brandingDescription")}
+          features={[
+            { icon: "medication", text: t("auth.login.brandingF1") },
+            { icon: "group", text: t("auth.login.brandingF2") },
+            { icon: "insights", text: t("auth.login.brandingF3") },
+            { icon: "shield", text: t("auth.login.brandingF4") },
+          ]}
+          variant="login"
+        />
       </div>
     </div>
   );

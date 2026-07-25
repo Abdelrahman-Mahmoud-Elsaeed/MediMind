@@ -20,21 +20,28 @@ const DoseEventSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['PENDING', 'TAKEN', 'MISSED', 'SKIPPED'],
+    enum: ['PENDING', 'TAKEN', 'MISSED', 'LATE', 'SKIPPED'],
     default: 'PENDING',
-    required: true,
     index: true
   },
   takenAt: {
     type: Date,
     default: null
   },
+  source: {
+    type: String,
+    enum: ["manual", "whatsapp", "caregiver", "system_auto"],
+    default: "manual"
+  },
   escalationState: {
     type: String,
     enum: ['NONE', 'PUSH_SENT', 'SMS_SENT', 'CAREGIVER_NOTIFIED'],
-    default: 'NONE',
-    required: true
+    default: 'NONE'
   }
 }, { timestamps: true });
+
+DoseEventSchema.index({ patientId: 1, scheduledFor: -1 });
+DoseEventSchema.index({ patientId: 1, medicationId: 1 });
+DoseEventSchema.index({ status: 1, scheduledFor: 1 });
 
 module.exports = mongoose.model('DoseEvent', DoseEventSchema);

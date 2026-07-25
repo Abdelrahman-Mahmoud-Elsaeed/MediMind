@@ -1,8 +1,38 @@
-/**
- * Pure functions for validating registration steps matching EXACT backend Zod validation schemas.
- */
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
-export function validateStep1(formData, t) {
+function isValidPhoneForCountry(phoneStr, countryCode = "EG") {
+  if (!phoneStr) return false;
+  let normalized = phoneStr.trim();
+  if (normalized.startsWith("00")) {
+    normalized = `+${normalized.slice(2)}`;
+  }
+  try {
+    const parsed = normalized.startsWith("+")
+      ? parsePhoneNumberFromString(normalized)
+      : parsePhoneNumberFromString(normalized, countryCode);
+    
+    if (!parsed) return false;
+    
+    // If phone starts with '+' but country doesn't match selected, it's invalid for the selected country
+    if (normalized.startsWith("+") && parsed.country !== countryCode) {
+      return false;
+    }
+    
+    // Enforce mobile-only for Egypt (EG)
+    if (parsed.country === "EG" || countryCode === "EG") {
+      const isEgMobile = parsed.nationalNumber.startsWith("1") && parsed.nationalNumber.length === 10;
+      if (!isEgMobile) {
+        return false;
+      }
+    }
+    
+    return parsed.isValid();
+  } catch (err) {
+    return false;
+  }
+}
+
+export function validateStep1(formData, t, countryCode = "EG") {
   const errors = {};
   let valid = true;
 
@@ -14,9 +44,8 @@ export function validateStep1(formData, t) {
   } else {
     const isPhone = /^[0-9+\s()-]+$/.test(loginVal);
     if (isPhone) {
-      const digitsOnly = loginVal.replace(/\D/g, "");
-      if (digitsOnly.length < 5) {
-        errors.loginInput = t("auth.validation.phoneMin") || "Phone number is too short (at least 5 digits)";
+      if (!isValidPhoneForCountry(loginVal, countryCode)) {
+        errors.loginInput = t("auth.validation.invalidPhoneForCountry") || "Please enter a valid phone number for the selected country.";
         valid = false;
       }
     } else {
@@ -45,7 +74,7 @@ export function validateStep1(formData, t) {
   return { valid, errors };
 }
 
-export function validateStep2(formData, isPhoneInput, t) {
+export function validateStep2(formData, isPhoneInput, t, countryCode = "EG") {
   const errors = {};
   let valid = true;
 
@@ -82,24 +111,14 @@ export function validateStep2(formData, isPhoneInput, t) {
   } else {
     const phoneVal = formData.phone ? formData.phone.trim() : "";
     if (phoneVal) {
-      const digitsOnly = phoneVal.replace(/\D/g, "");
-      if (digitsOnly.length < 5) {
-        errors.phone = t("auth.validation.phoneMin") || "Phone number is too short (at least 5 digits)";
+      if (!isValidPhoneForCountry(phoneVal, countryCode)) {
+        errors.phone = t("auth.validation.invalidPhoneForCountry") || "Please enter a valid phone number for the selected country.";
         valid = false;
       }
     }
   }
 
-  if (formData.role === "caregiver") {
-    if (!formData.relation) {
-      errors.relation = t("auth.validation.relationshipRequired") || "Relationship is required";
-      valid = false;
-    }
-    if (!formData.patientCode || !formData.patientCode.trim()) {
-      errors.patientCode = t("auth.validation.patientCodeRequired") || "Patient code is required";
-      valid = false;
-    }
-  } else {
+  if (formData.role !== "caregiver") {
     if (!formData.dateOfBirth) {
       errors.dateOfBirth = t("auth.validation.dobRequired") || "Date of birth is required";
       valid = false;
@@ -109,7 +128,7 @@ export function validateStep2(formData, isPhoneInput, t) {
   return { valid, errors };
 }
 
-export function validateStep3(formData, t) {
+export function validateStep3(formData, t, countryCode = "EG") {
   const errors = {};
   let valid = true;
 
@@ -125,9 +144,8 @@ export function validateStep3(formData, t) {
       errors.emergencyContactPhone = t("auth.validation.contactPhoneRequired") || "Emergency contact phone is required";
       valid = false;
     } else {
-      const digitsOnly = emPhoneVal.replace(/\D/g, "");
-      if (digitsOnly.length < 5) {
-        errors.emergencyContactPhone = t("auth.validation.phoneMin") || "Phone number is too short (at least 5 digits)";
+      if (!isValidPhoneForCountry(emPhoneVal, countryCode)) {
+        errors.emergencyContactPhone = t("auth.validation.invalidPhoneForCountry") || "Please enter a valid phone number for the selected country.";
         valid = false;
       }
     }
@@ -136,9 +154,9 @@ export function validateStep3(formData, t) {
   return { valid, errors };
 }
 
-export function validateStep(step, formData, isPhoneInput, t) {
-  if (step === 1) return validateStep1(formData, t);
-  if (step === 2) return validateStep2(formData, isPhoneInput, t);
-  if (step === 3) return validateStep3(formData, t);
+export function validateStep(step, formData, isPhoneInput, t, countryCode = "EG") {
+  if (step === 1) return validateStep1(formData, t, countryCode);
+  if (step === 2) return validateStep2(formData, isPhoneInput, t, countryCode);
+  if (step === 3) return validateStep3(formData, t, countryCode);
   return { valid: true, errors: {} };
 }

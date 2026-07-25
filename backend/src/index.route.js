@@ -7,6 +7,9 @@ const { routes: conditionsRoutes } = require('./modules/conditions');
 const { routes: medicationsRoutes } = require('./modules/medications');
 const { routes: relationshipsRoutes } = require('./modules/relationships');
 const { routes: dosesRoutes } = require('./modules/doses');
+const { routes: notesRoutes } = require('./modules/notes');
+const { routes: paymentsRoutes } = require('./modules/payments');
+const { routes: contentRoutes } = require('./modules/content');
 
 const router = express.Router();
 
@@ -24,5 +27,8 @@ router.use('/conditions', conditionsRoutes);
 router.use('/medications', medicationsRoutes);
 router.use('/relationships', relationshipsRoutes);
 router.use('/doses', dosesRoutes);
+router.use('/notes', notesRoutes);
+router.use('/payments', paymentsRoutes);
+router.use('/content', contentRoutes);
 
 module.exports = router;

@@ -12,7 +12,6 @@ import {
 } from "./components";
 import { useRegistration } from "./hooks/useRegistration";
 import { usePasswordVisibility } from "./hooks/usePasswordVisibility";
-import { useCountrySelector } from "./hooks/useCountrySelector";
 import { getCountryCallingCode, flags } from "./constants/countries";
 import { useAuth } from "../hooks/useAuth";
 
@@ -35,6 +34,7 @@ export default function RegistrationContainer() {
     handleNext,
     handleBack,
     dir,
+    countrySelectorProps,
   } = useRegistration();
 
   useEffect(() => {
@@ -45,10 +45,6 @@ export default function RegistrationContainer() {
   }, [isAuthenticated, loading, user, router]);
 
   const { showPassword, togglePasswordVisibility } = usePasswordVisibility();
-
-  const countrySelectorProps = useCountrySelector(
-    isPhoneInput ? formData.loginInput : formData.phone
-  );
 
   if (!loading && isAuthenticated) {
     return null;

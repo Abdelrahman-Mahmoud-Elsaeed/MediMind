@@ -10,13 +10,16 @@ const MedicationSchema = new mongoose.Schema({
   conditionId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MedicalCondition',
-    required: true,
     index: true
   },
   addedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Account',
     required: true
+  },
+  pharmacistId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pharmacist'
   },
   name: {
     type: String,

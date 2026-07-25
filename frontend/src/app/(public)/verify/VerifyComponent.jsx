@@ -4,11 +4,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { apiClient } from "@/shared/lib";
+import { useTranslation } from "@/shared/lib/i18nContext";
 import { parseApiMessage } from "@/shared/lib/parseApiMessage";
-
-export default function VerifyEmailPage() {
+import AuthHeader from "@/modules/auth/components/AuthHeader";
+import BrandingSidebar from "@/modules/auth/components/BrandingSidebar";
+export default function VerifyComponent() {
   const router = useRouter();
   const { user, isAuthenticated, loading, logout } = useAuth();
+  const { locale, t } = useTranslation();
   
   const [mounted, setMounted] = useState(false);
   const [localUser, setLocalUser] = useState(null);
@@ -24,6 +27,13 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Lock route: if not authenticated, redirect to root '/'
+  useEffect(() => {
+    if (mounted && !loading && !isAuthenticated) {
+      router.replace("/");
+    }
+  }, [mounted, loading, isAuthenticated, router]);
 
   // Fetch the latest full account details directly from backend to avoid any stale Redux state
   useEffect(() => {
@@ -46,12 +56,14 @@ export default function VerifyEmailPage() {
 
   // Auto trigger first OTP send when user details are fully ready
   const activeUser = localUser || user;
-  
+  const hasSentInitialOtp = useRef(false);
+
   useEffect(() => {
-    if (mounted && isAuthenticated && activeUser && (activeUser.email || activeUser.phone)) {
+    if (activeUser && (activeUser.email || activeUser.phone) && !hasSentInitialOtp.current) {
+      hasSentInitialOtp.current = true;
       sendOtpCode();
     }
-  }, [mounted, isAuthenticated, activeUser?.email, activeUser?.phone]);
+  }, [activeUser]);
 
   // Countdown timer
   useEffect(() => {
@@ -83,7 +95,7 @@ export default function VerifyEmailPage() {
       setTimer(59);
       setIsResendDisabled(true);
     } catch (err) {
-      const msg = parseApiMessage(err.response?.data?.error?.message || err.message);
+      const msg = parseApiMessage(err, locale, t);
       setError(msg || "Failed to send verification code.");
     }
   };
@@ -109,8 +121,8 @@ export default function VerifyEmailPage() {
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").trim();
-    if (pasteData.length === 6 && /^\d+$/.test(pasteData)) {
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").trim();
+    if (pasteData.length === 6) {
       const pasteArray = pasteData.split("");
       setOtp(pasteArray);
       inputRefs.current[5].focus();
@@ -135,7 +147,7 @@ export default function VerifyEmailPage() {
       // Update session and redirect
       window.location.href = activeUser.role === "PATIENT" ? "/home" : "/dashboard";
     } catch (err) {
-      const msg = parseApiMessage(err.response?.data?.messages || err.response?.data?.error?.message || err.message);
+      const msg = parseApiMessage(err, locale, t);
       setError(msg || "Invalid code. Please try again.");
       setIsSubmitting(false);
     }
@@ -152,10 +164,15 @@ export default function VerifyEmailPage() {
   const targetLabel = activeUser?.email || activeUser?.phone || "your address";
 
   return (
-    <div className="bg-background text-on-background min-h-screen flex flex-col font-['Inter'] overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-surface-container-lowest border border-outline-variant/40 rounded-[24px] p-8 md:p-10 shadow-lg relative overflow-hidden">
-          
+    <div
+      dir={locale === "ar" ? "rtl" : "ltr"}
+      className="bg-background text-on-surface min-h-screen grid grid-cols-1 lg:grid-cols-2 antialiased overflow-hidden selection:bg-primary-container selection:text-on-primary-container"
+    >
+      {/* Left Side (Form) */}
+      <div className="flex flex-col h-full overflow-y-auto px-6 lg:px-12 py-8 bg-surface-container-lowest justify-between">
+        <AuthHeader />
+
+        <div className="max-w-md w-full mx-auto my-auto flex flex-col justify-center py-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary-container/10 text-primary-container rounded-full flex items-center justify-center mx-auto mb-4 border border-primary-container/20">
               <span className="material-symbols-outlined text-[32px]">lock</span>
@@ -179,7 +196,7 @@ export default function VerifyEmailPage() {
           )}
 
           <form onSubmit={handleVerify} className="space-y-6">
-            <div className="flex justify-between gap-2.5 md:gap-3" onPaste={handlePaste}>
+            <div className="flex justify-between gap-2.5 md:gap-3" onPaste={handlePaste} dir="ltr">
               {otp.map((digit, idx) => (
                 <input
                   key={idx}
@@ -217,25 +234,28 @@ export default function VerifyEmailPage() {
               </p>
             </div>
           </form>
-
-          <div className="mt-8 pt-6 border-t border-outline-variant/30 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-semibold text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              <span>Logout</span>
-            </button>
-            
-            <div className="flex items-center gap-1 grayscale opacity-50 text-[11px] font-medium text-on-surface-variant">
-              <span className="material-symbols-outlined text-[16px]">verified_user</span>
-              <span>Secure Health Data Protocol</span>
-            </div>
-          </div>
-          
         </div>
-      </main>
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-outline-variant/30 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={logout}
+            className="text-sm font-semibold text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span>Logout</span>
+          </button>
+          
+          <div className="flex items-center gap-1 grayscale opacity-50 text-[11px] font-medium text-on-surface-variant">
+            <span className="material-symbols-outlined text-[16px]">verified_user</span>
+            <span>Secure Health Data Protocol</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side (Visual/Branding) */}
+      <BrandingSidebar />
     </div>
   );
 }

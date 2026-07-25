@@ -16,13 +16,11 @@ export function RegistrationStepIndicator({ currentStep }) {
   return (
     <div className="flex items-center justify-between mb-8 md:mb-10 relative" aria-label="Registration Progress">
       {/* Background connector line connecting circle centers (16.66% to 83.33%) */}
-      <div className="absolute top-4 left-[16.66%] right-[16.66%] h-[2px] bg-surface-variant -translate-y-1/2" />
+      <div className="absolute top-4 start-[16.66%] end-[16.66%] h-[2px] bg-surface-variant -translate-y-1/2" />
 
       {/* Active progress connector line with explicit left-auto/right-auto to avoid CSS conflicts */}
       <div
-        className={`absolute top-4 ${
-          isRtl ? "right-[16.66%] left-auto" : "left-[16.66%] right-auto"
-        } h-[2px] bg-primary -translate-y-1/2 transition-all duration-300`}
+        className="absolute top-4 start-[16.66%] end-auto h-[2px] bg-primary -translate-y-1/2 transition-all duration-300"
         style={{ width: progressWidth }}
       />
 

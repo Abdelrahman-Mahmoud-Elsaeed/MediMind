@@ -33,9 +33,7 @@ export function StepNavigation({ currentStep, onBack, isFormValid, loading }) {
                 : t("auth.register.continueButton")}
           </span>
           <span
-            className={`material-symbols-outlined text-[20px] transition-transform ${
-              isRtl ? "-rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"
-            }`}
+            className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
           >
             arrow_forward
           </span>
