@@ -15,6 +15,7 @@ export function PhoneInput({
   label,
   required = true,
   disabled = false,
+  showAsterisk = false,
 }) {
   const { isRtl, t } = useRTL();
 
@@ -34,12 +35,12 @@ export function PhoneInput({
     <div className="w-full">
       <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
         {fieldLabel}
+        {showAsterisk && <span className="text-error ms-1"> *</span>}
       </label>
       <div className="relative flex items-center">
         <span
-          className={`material-symbols-outlined absolute ${
-            isRtl ? "right-4" : "left-4"
-          } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none z-10 text-[22px]`}
+          className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
+            } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none z-10 text-[22px]`}
         >
           {isPhoneInput ? "call" : "mail"}
         </span>
@@ -53,16 +54,9 @@ export function PhoneInput({
           onBlur={onBlur}
           disabled={disabled}
           placeholder={fieldPlaceholder}
-          dir={isPhoneInput ? "ltr" : isRtl ? "rtl" : "ltr"}
-          className={`w-full h-[58px] font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none placeholder:text-on-surface-variant/60 dark:placeholder:text-on-surface-variant/70 transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low ${
-            isPhoneInput
-              ? isRtl
-                ? "pr-[48px] pl-[145px]"
-                : "pl-[48px] pr-[145px]"
-              : isRtl
-                ? "pr-[48px] pl-4"
-                : "pl-[48px] pr-4"
-          }`}
+          dir={isRtl ? "rtl" : "ltr"}
+          className={`w-full h-[58px] font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none placeholder:text-on-surface-variant/60 dark:placeholder:text-on-surface-variant/70 transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low ${isPhoneInput ? "ps-[48px] pe-[145px]" : "ps-[48px] pe-[48px]"
+            }`}
         />
 
         {isPhoneInput && <CountrySelector {...countrySelectorProps} />}

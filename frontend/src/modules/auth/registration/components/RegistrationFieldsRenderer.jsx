@@ -30,11 +30,12 @@ export function RegistrationFieldsRenderer({
             id="loginInput"
             value={formData.loginInput}
             onChange={handleChange}
-            onBlur={handleBlur}
+            onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)}
             error={errors.loginInput}
             touched={touchedFields.loginInput}
             isPhoneInput={isPhoneInput}
             countrySelectorProps={countrySelectorProps}
+            showAsterisk={true}
           />
 
           <PasswordInput
@@ -46,6 +47,7 @@ export function RegistrationFieldsRenderer({
             touched={touchedFields.password}
             showPassword={showPassword}
             onTogglePassword={onTogglePassword}
+            showAsterisk={true}
           />
 
           <div className="pt-2">
@@ -87,6 +89,7 @@ export function RegistrationFieldsRenderer({
               placeholder={t("auth.register.firstNamePlaceholder")}
               icon="badge"
               required
+              showAsterisk={true}
             />
             <FormField
               id="lastName"
@@ -99,6 +102,7 @@ export function RegistrationFieldsRenderer({
               placeholder={t("auth.register.lastNamePlaceholder")}
               icon="badge"
               required
+              showAsterisk={true}
             />
           </div>
 
@@ -121,7 +125,7 @@ export function RegistrationFieldsRenderer({
               id="phone"
               value={formData.phone}
               onChange={handleChange}
-              onBlur={handleBlur}
+              onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)}
               error={errors.phone}
               touched={touchedFields.phone}
               isPhoneInput={true}
@@ -132,40 +136,7 @@ export function RegistrationFieldsRenderer({
             />
           )}
 
-          {formData.role === "caregiver" ? (
-            <>
-              <FormField
-                id="relation"
-                type="select"
-                label={t("auth.register.relationshipLabel")}
-                value={formData.relation}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.relation}
-                touched={touchedFields.relation}
-                icon="family_history"
-              >
-                {CAREGIVER_RELATIONS.map((rel) => (
-                  <option key={rel} value={rel}>
-                    {t(`auth.register.relations.${rel}`) || rel}
-                  </option>
-                ))}
-              </FormField>
-
-              <FormField
-                id="patientCode"
-                label={t("auth.register.patientCodeLabel")}
-                value={formData.patientCode}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.patientCode}
-                touched={touchedFields.patientCode}
-                placeholder={t("auth.register.patientCodePlaceholder")}
-                icon="key"
-                required
-              />
-            </>
-          ) : (
+          {formData.role === "caregiver" ? null : (
             <>
               <FormField
                 id="dateOfBirth"
@@ -178,6 +149,7 @@ export function RegistrationFieldsRenderer({
                 touched={touchedFields.dateOfBirth}
                 icon="calendar_today"
                 required
+                showAsterisk={true}
               />
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -273,13 +245,14 @@ export function RegistrationFieldsRenderer({
                 placeholder={t("auth.register.emergencyContactNamePlaceholder")}
                 icon="person"
                 required
+                showAsterisk={true}
               />
 
               <PhoneInput
                 id="emergencyContactPhone"
                 value={formData.emergencyContactPhone}
                 onChange={handleChange}
-                onBlur={handleBlur}
+                onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)}
                 error={errors.emergencyContactPhone}
                 touched={touchedFields.emergencyContactPhone}
                 isPhoneInput={true}
@@ -287,6 +260,7 @@ export function RegistrationFieldsRenderer({
                 label={t("auth.register.emergencyContactPhoneLabel")}
                 placeholder={t("auth.register.emergencyContactPhonePlaceholder")}
                 required
+                showAsterisk={true}
               />
             </>
           ) : (

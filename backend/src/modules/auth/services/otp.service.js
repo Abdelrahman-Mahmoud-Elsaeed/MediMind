@@ -65,20 +65,20 @@ class OtpService {
         attempts: 0,
         expiresAt,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
-    if (type === "PHONE") {
-      await this._sendSMS(resolvedTarget, otp);
-    } else if (type === "EMAIL") {
-      await this._sendEmail(resolvedTarget, otp);
-    } else {
-      throw new AppError("Unsupported transport verification channel type", 400, "INVALID_TYPE", {
-        en: "Unsupported channel type specified.",
-        ar: "نوع القناة المحدد غير مدعوم."
-      });
-    }
-
+    // if (type === "PHONE") {
+    //   await this._sendSMS("PHONE", otp);
+    // } else if (type === "EMAIL") {
+    //   await this._sendEmail("EMAIL", otp);
+    // } else {
+    //   throw new AppError("Unsupported transport verification channel type", 400, "INVALID_TYPE", {
+    //     en: "Unsupported channel type specified.",
+    //     ar: "نوع القناة المحدد غير مدعوم."
+    //   });
+    // }
+    console.log(otp)
     // 5. Encapsulate execution using ServiceResponse structure
     return new ServiceResponse({
       success: true,
@@ -149,7 +149,7 @@ class OtpService {
     if (type === "EMAIL") updatePayload.isEmailVerified = true;
     if (type === "PHONE") updatePayload.isPhoneVerified = true;
 
-    const updatedAccount = await Account.findByIdAndUpdate(accountId, updatePayload, { new: true });
+    const updatedAccount = await Account.findByIdAndUpdate(accountId, updatePayload, { returnDocument: 'after' });
 
     if (!updatedAccount) {
       throw new AppError("Associated account profile was not found", 404, "ACCOUNT_NOT_FOUND", {

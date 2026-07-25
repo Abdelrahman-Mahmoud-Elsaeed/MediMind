@@ -36,14 +36,22 @@ const generateRefreshToken = (payload) => {
   return { token, tokenId };
 };
 
-/**
- * Verify a JWT token
- * @param {string} token - JWT token to verify
- * @returns {Object} Decoded token payload
- */
 const verifyToken = (token) => {
   try {
     return jwt.verify(token, JWT_ACCESS_SECRET);
+  } catch (error) {
+    throw new Error('Invalid or expired token');
+  }
+};
+
+/**
+ * Verify a JWT refresh token
+ * @param {string} token - JWT refresh token to verify
+ * @returns {Object} Decoded token payload
+ */
+const verifyRefreshToken = (token) => {
+  try {
+    return jwt.verify(token, JWT_REFRESH_SECRET);
   } catch (error) {
     throw new Error('Invalid or expired token');
   }
@@ -62,5 +70,6 @@ module.exports = {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
+  verifyRefreshToken,
   decodeToken
 };

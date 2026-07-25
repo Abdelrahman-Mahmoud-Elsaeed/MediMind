@@ -24,9 +24,7 @@ export function CountrySelector({
   return (
     <div
       ref={dropdownRef}
-      className={`absolute ${
-        isRtl ? "left-2 border-r pl-1" : "right-2 border-l pr-1"
-      } top-1/2 -translate-y-1/2 border-outline-variant/40 px-2 flex items-center z-20 bg-surface-container-lowest h-[40px]`}
+      className="absolute end-2 top-1/2 -translate-y-1/2 border-s border-outline-variant/40 ps-2 flex items-center z-20 bg-surface-container-lowest h-[40px]"
     >
       <button
         ref={triggerRef}
@@ -55,7 +53,7 @@ export function CountrySelector({
           role="listbox"
           tabIndex={0}
           onKeyDown={handleDropdownKeyDown}
-          className={`absolute ${isRtl ? "left-0" : "right-0"} top-[46px] w-48 max-h-56 overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-[12px] shadow-lg z-50 py-1 focus:outline-none focus:ring-1 focus:ring-primary/30`}
+          className="absolute end-0 top-[46px] w-48 max-h-56 overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-[12px] shadow-lg z-50 py-1 focus:outline-none focus:ring-1 focus:ring-primary/30"
           dir="ltr"
         >
           {countries.map((c, index) => {

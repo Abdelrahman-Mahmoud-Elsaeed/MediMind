@@ -3,19 +3,25 @@ const { logger } = require("../utils/logger");
 const errorMiddleware = (err, req, res, next) => {
   logger.error(err, `Exception intercepted on [${req.method}] ${req.url}`);
 
-  const statusCode = err.statusCode || 500;
-  const errorCode = err.code || "INTERNAL_SERVER_ERROR";
-  const message = err.message || "An unexpected operational failure occurred.";
-  const messages = err.messages || { en: message, ar: message };
+  const isAppError = err.statusCode && err.code;
+  const statusCode = isAppError ? err.statusCode : 500;
+  const errorCode = isAppError ? err.code : "INTERNAL_SERVER_ERROR";
+  
+  let messages;
+  if (isAppError && err.messages) {
+    messages = err.messages;
+  } else {
+    messages = {
+      en: isAppError ? err.message : "An unexpected operational failure occurred.",
+      ar: "حدث خطأ غير متوقع في النظام."
+    };
+  }
 
   res.status(statusCode).json({
     success: false,
-    error: {
-      code: errorCode,
-      message: message,
-      messages: messages,
-      ...(err.details && { details: err.details }),
-    },
+    code: errorCode,
+    messages: messages,
+    ...(err.details && { details: err.details })
   });
 };
 

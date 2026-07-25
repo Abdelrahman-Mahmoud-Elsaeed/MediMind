@@ -4,10 +4,11 @@ const { logger } = require('../../../shared/utils/logger');
 class RelationshipsController {
   async initiate(req, res, next) {
     try {
-      const { caregiverEmail, permissions } = req.body;
+      const { caregiverEmail, relation, permissions } = req.body;
       const relationship = await relationshipsService.initiateRelationship(
         req.accountId,
         caregiverEmail,
+        relation,
         permissions
       );
       res.status(201).json({

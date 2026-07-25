@@ -16,6 +16,10 @@ const MedicalConditionSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  diagnosedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Doctor'
+  },
   diagnosedDate: {
     type: Date
   },

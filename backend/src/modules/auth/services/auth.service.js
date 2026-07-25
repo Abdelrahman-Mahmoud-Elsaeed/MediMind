@@ -10,6 +10,7 @@ const AppError = require("../../../shared/utils/AppError");
 const bcrypt = require("bcrypt");
 const {
   verifyToken,
+  verifyRefreshToken,
   generateAccessToken,
   generateRefreshToken,
 } = require("../../../shared/utils/jwt.util");
@@ -26,7 +27,7 @@ const MODEL_MAP = {
 
 class AuthService {
   async refreshSession(rawRefreshToken) {
-    const decoded = verifyToken(rawRefreshToken);
+    const decoded = verifyRefreshToken(rawRefreshToken);
     const account = await Account.findById(decoded.accountId);
 
     if (!account || !account.isActive || !MODEL_MAP[account.role]) {

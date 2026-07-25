@@ -14,8 +14,12 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "MediMind",
-  description: "Medication management platform",
+  title: {
+    template: '%s | MediMind',
+    default: 'MediMind | Medication Management',
+  },
+  description: "Your digital companion for medication adherence and trusted caregiver connections.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
 };
 
 export default async function RootLayout({ children }) {
@@ -25,7 +29,7 @@ export default async function RootLayout({ children }) {
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
+    <html lang={locale} dir={dir} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
         <Providers locale={locale} >
           {children}

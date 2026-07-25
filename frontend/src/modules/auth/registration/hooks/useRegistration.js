@@ -3,8 +3,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { useRTL } from "./useRTL";
 import { validateStep } from "../utils/validation";
-import { detectPhoneInput, formatRegistrationPayload } from "../utils/helpers";
+import { detectPhoneInput, formatRegistrationPayload, extractNationalNumber } from "../utils/helpers";
 import { parseApiMessage } from "@/shared/lib/parseApiMessage";
+import apiClient from "@/shared/lib/apiClient";
+import { useCountrySelector } from "./useCountrySelector";
 
 export function useRegistration() {
   const router = useRouter();
@@ -46,10 +48,15 @@ export function useRegistration() {
 
   const [touchedFields, setTouchedFields] = useState({});
   const [errors, setErrors] = useState({});
+  const [asyncErrors, setAsyncErrors] = useState({});
 
   const isPhoneInput = useMemo(
     () => detectPhoneInput(formData.loginInput),
     [formData.loginInput]
+  );
+
+  const countrySelectorProps = useCountrySelector(
+    isPhoneInput ? formData.loginInput : formData.phone
   );
 
   // Run validation dynamically on data changes
@@ -58,10 +65,11 @@ export function useRegistration() {
       currentStep,
       formData,
       isPhoneInput,
-      t
+      t,
+      countrySelectorProps.country
     );
     setErrors(validationErrors);
-  }, [currentStep, formData, isPhoneInput, t]);
+  }, [currentStep, formData, isPhoneInput, t, countrySelectorProps.country]);
 
   useEffect(() => {
     runValidation();
@@ -69,6 +77,9 @@ export function useRegistration() {
 
   const handleChange = useCallback((e) => {
     const { id, value, type, checked } = e.target;
+
+    // Clear async errors as soon as user types/modifies the field
+    setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
 
     if (id.startsWith("alertSettings.")) {
       const settingKey = id.split(".")[1];
@@ -84,10 +95,58 @@ export function useRegistration() {
     }
   }, []);
 
-  const handleBlur = useCallback((e) => {
-    const { id } = e.target;
+  const handleBlur = useCallback(async (e, callingCode = "20") => {
+    const { id, value } = e.target;
     setTouchedFields((prev) => ({ ...prev, [id]: true }));
-  }, []);
+
+    const trimmedVal = value ? value.trim() : "";
+    if (!trimmedVal) return;
+
+    if (id === "loginInput" || id === "email" || id === "phone") {
+      // First check if the field has local validation errors
+      const { errors: localErrors } = validateStep(currentStep, { ...formData, [id]: value }, isPhoneInput, t);
+      if (localErrors[id]) {
+        return; // Don't check backend if local format validation fails
+      }
+
+      try {
+        let queryParam = "";
+        if (id === "loginInput") {
+          const isPhone = /^[0-9+\s()-]+$/.test(trimmedVal);
+          if (isPhone) {
+            const nationalNum = extractNationalNumber(trimmedVal, callingCode);
+            const formattedPhone = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmedVal;
+            queryParam = `phone=${encodeURIComponent(formattedPhone)}`;
+          } else {
+            queryParam = `email=${encodeURIComponent(trimmedVal)}`;
+          }
+        } else if (id === "email") {
+          queryParam = `email=${encodeURIComponent(trimmedVal)}`;
+        } else if (id === "phone") {
+          const nationalNum = extractNationalNumber(trimmedVal, callingCode);
+          const formattedPhone = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmedVal;
+          queryParam = `phone=${encodeURIComponent(formattedPhone)}`;
+        }
+
+        const response = await apiClient.get(`/auth/validate-uniqueness?${queryParam}`);
+        if (response.data && response.data.success && response.data.data) {
+          const { isUnique } = response.data.data;
+          if (!isUnique) {
+            setAsyncErrors((prev) => ({
+              ...prev,
+              [id]: id === "email" || (!isPhoneInput && id === "loginInput")
+                ? t("auth.error.EMAIL_EXISTS") || "Email is already registered"
+                : t("auth.error.PHONE_EXISTS") || "Phone number is already registered"
+            }));
+          } else {
+            setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
+          }
+        }
+      } catch (err) {
+        console.error("Error validating uniqueness:", err);
+      }
+    }
+  }, [currentStep, formData, isPhoneInput, t]);
 
   const handleRoleSelect = useCallback((selectedRole) => {
     setFormData((prev) => ({ ...prev, role: selectedRole }));
@@ -99,13 +158,7 @@ export function useRegistration() {
     try {
       const resultAction = await register(payload);
       if (resultAction.payload && !resultAction.error) {
-        const user = resultAction.payload.user || resultAction.payload;
-        const role = user?.role || payload.role;
-        if (String(role).toUpperCase() === "PATIENT") {
-          router.push("/home");
-        } else {
-          router.push("/dashboard");
-        }
+        router.push("/verify");
       }
     } catch (err) {
       console.error("API registration error:", err);
@@ -156,21 +209,32 @@ export function useRegistration() {
   }, [currentStep, resetError]);
 
   const isFormValid = useMemo(() => {
-    const { valid } = validateStep(currentStep, formData, isPhoneInput, t);
-    return valid;
-  }, [currentStep, formData, isPhoneInput, t]);
+    const { valid } = validateStep(currentStep, formData, isPhoneInput, t, countrySelectorProps.country);
+    const hasAsyncErrors = Object.values(asyncErrors).some((err) => !!err);
+    return valid && !hasAsyncErrors;
+  }, [currentStep, formData, isPhoneInput, t, asyncErrors, countrySelectorProps.country]);
 
   const displayError = useMemo(
     () => parseApiMessage(error, locale, t),
     [error, locale, t]
   );
 
+  const allErrors = useMemo(() => {
+    const merged = { ...errors };
+    Object.keys(asyncErrors).forEach((key) => {
+      if (asyncErrors[key]) {
+        merged[key] = asyncErrors[key];
+      }
+    });
+    return merged;
+  }, [errors, asyncErrors]);
+
   return {
     currentStep,
     setCurrentStep,
     formData,
     setFormData,
-    errors,
+    errors: allErrors,
     touchedFields,
     isPhoneInput,
     displayError,
@@ -184,5 +248,6 @@ export function useRegistration() {
     isRtl,
     dir,
     t,
+    countrySelectorProps,
   };
 }

@@ -39,7 +39,7 @@ class OtpController {
     try {
       const { type, code } = req.body;
       const accountId = req.accountId;
-
+      console.log(code);
       const result = await otpService.verifyOtp({
         accountId: accountId,
         type,

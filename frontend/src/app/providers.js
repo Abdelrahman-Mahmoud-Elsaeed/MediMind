@@ -22,7 +22,7 @@ function AuthInitializer({ children }) {
   const dispatch = useDispatch();
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -30,35 +30,30 @@ function AuthInitializer({ children }) {
     const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
     const hasToken = typeof window !== 'undefined' && localStorage.getItem('accessToken');
 
-    // Do not fire token refresh on public unauthenticated pages
     if (!isPublicRoute || hasToken) {
       dispatch(checkAuthThunk());
     }
   }, [dispatch, pathname]);
 
-  // Lock Guard Redirection for Unverified Accounts
   useEffect(() => {
     if (loading) return;
 
-    const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
-    const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
+    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+    const isPublicRoute = publicRoutes.some((route) => pathname === route || (route !== '/' && pathname?.startsWith(`${route}/`)));
 
     if (isAuthenticated && user) {
       const isVerified = user.isEmailVerified || user.isPhoneVerified || user.isVerified;
-      
+
       if (!isVerified) {
-        // Unverified users are locked out of home and can only access verify-email
-        if (pathname !== '/verify-email') {
-          router.replace('/verify-email');
+        if (pathname !== '/verify') {
+          router.replace('/verify');
         }
       } else {
-        // Verified users cannot access verify-email, send them to app home/dashboard
-        if (pathname === '/verify-email') {
+        if (pathname === '/verify') {
           router.replace(user.role === 'PATIENT' ? '/home' : '/dashboard');
         }
       }
-    } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify-email') {
-      // Unauthenticated users are redirected to login page
+    } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify') {
       router.replace('/login');
     }
   }, [isAuthenticated, user, loading, pathname, router]);

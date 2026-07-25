@@ -6,24 +6,15 @@ export const authService = {
       let bodyData = {};
       if (typeof loginPayload === "object" && loginPayload !== null) {
         if (loginPayload.credentials) {
-          bodyData = loginPayload;
+          bodyData = { ...loginPayload.credentials };
         } else {
-          const { email, phone, password } = loginPayload;
-          bodyData = {
-            credentials: {
-              ...(email ? { email } : {}),
-              ...(phone ? { phone } : {}),
-              password: password || passwordParam,
-            },
-          };
+          bodyData = { ...loginPayload };
         }
       } else {
         const isEmail = String(loginPayload).includes("@");
         bodyData = {
-          credentials: {
-            [isEmail ? "email" : "phone"]: loginPayload,
-            password: passwordParam,
-          },
+          [isEmail ? "email" : "phone"]: loginPayload,
+          password: passwordParam,
         };
       }
 

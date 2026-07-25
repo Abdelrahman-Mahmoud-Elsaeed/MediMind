@@ -11,8 +11,22 @@ const nationalNumberSchema = z.object({
 
   number: z
     .string()
-    .trim()
-    .regex(/^\d{7,14}$/, "Phone number must contain between 7 and 14 digits"),
+    .trim(),
+}).refine(data => {
+  const cleanCode = data.code.replace(/^(\+|00)/, "");
+  const parsed = parsePhoneNumberFromString(`+${cleanCode}${data.number}`);
+  if (!parsed || !parsed.isValid()) return false;
+
+  // Enforce Egypt mobile-only
+  if (parsed.country === "EG" || cleanCode === "20") {
+    const isEgMobile = parsed.nationalNumber.startsWith("1") && parsed.nationalNumber.length === 10;
+    if (!isEgMobile) return false;
+  }
+
+  return true;
+}, {
+  message: "Invalid phone number for the selected country code.",
+  path: ["number"]
 });
 
 const validatePhoneMatch = (data) => {
@@ -33,6 +47,12 @@ const validatePhoneMatch = (data) => {
     return false;
   }
 
+  // Enforce Egypt mobile-only for structuredPhone
+  if (structuredPhone.country === "EG" || cleanCode === "20") {
+    const isEgMobile = structuredPhone.nationalNumber.startsWith("1") && structuredPhone.nationalNumber.length === 10;
+    if (!isEgMobile) return false;
+  }
+
   // Normalize flat phone
   let normalizedPhone = phoneValue.trim();
 
@@ -46,6 +66,12 @@ const validatePhoneMatch = (data) => {
 
   if (!parsedPhone || !parsedPhone.isValid()) {
     return false;
+  }
+
+  // Enforce Egypt mobile-only for parsedPhone
+  if (parsedPhone.country === "EG" || cleanCode === "20") {
+    const isEgMobile = parsedPhone.nationalNumber.startsWith("1") && parsedPhone.nationalNumber.length === 10;
+    if (!isEgMobile) return false;
   }
 
   return (

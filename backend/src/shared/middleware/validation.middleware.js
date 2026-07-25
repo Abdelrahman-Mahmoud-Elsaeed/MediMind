@@ -1,4 +1,5 @@
 const { ZodError } = require("zod");
+const AppError = require("../utils/AppError");
 
 const validate = (schema) => (req, res, next) => {
   try {
@@ -12,19 +13,17 @@ const validate = (schema) => (req, res, next) => {
       }));
 
       const dynamicDetailsString = details.map(d => `${d.field}: ${d.message}`).join(", ");
-
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: `Validation failed: ${dynamicDetailsString}`,
-          messages: {
-            en: `Validation failed on: ${dynamicDetailsString}`,
-            ar: `فشل التحقق من البيانات في الأقسام التالية: ${dynamicDetailsString}`
-          },
-          details
+      const appErr = new AppError(
+        `Validation failed: ${dynamicDetailsString}`,
+        400,
+        "VALIDATION_ERROR",
+        {
+          en: "Validation failed. Please verify your inputs.",
+          ar: "فشل التحقق من صحة البيانات. يرجى التحقق من الحقول المدخلة."
         }
-      });
+      );
+      appErr.details = details;
+      return next(appErr);
     }
     next(error);
   }
