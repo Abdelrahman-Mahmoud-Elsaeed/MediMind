@@ -21,11 +21,12 @@ export default function LandingPage() {
   const card1Href = mounted && isAuthenticated ? "/caregivers" : "/register";
   const card2Href = mounted && isAuthenticated ? "/caregivers" : "/register";
   const card3Href = mounted && isAuthenticated ? "/caregivers" : "/register";
+  const caregiversViewAllHref = mounted && isAuthenticated ? "/caregivers" : "/register";
   const ctaBtnHref = mounted && isAuthenticated ? "/home" : "/register";
   const ctaBtnText = mounted && isAuthenticated ? t('landing.cta.goApp') : t('landing.cta.startFree');
 
   return (
-    <div className="bg-[#f8f9ff] text-[#0b1c30] dark:bg-slate-950 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300">
+    <div className="bg-[#f8f9ff] text-[#0b1c30] dark:bg-slate-950 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300" suppressHydrationWarning>
       {/* Navigation Header */}
       <LandingHeader />
 
@@ -268,7 +269,7 @@ export default function LandingPage() {
                   {t('landing.caregivers.description')}
                 </p>
               </div>
-              <Link href={isAuthenticated ? "/caregivers" : "/register"} className="text-teal-600 dark:text-teal-400 font-bold flex items-center gap-2 hover:gap-3 transition-all">
+              <Link href={caregiversViewAllHref} className="text-teal-600 dark:text-teal-400 font-bold flex items-center gap-2 hover:gap-3 transition-all">
                 <span>{t('landing.caregivers.viewAll')}</span>
                 <span className="material-symbols-outlined rtl:rotate-180">arrow_forward</span>
               </Link>
