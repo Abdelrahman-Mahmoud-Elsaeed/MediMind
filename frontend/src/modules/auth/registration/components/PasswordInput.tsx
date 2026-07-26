@@ -1,6 +1,22 @@
 import React from "react";
 import { useRTL } from "../hooks/useRTL";
 
+interface PasswordInputProps {
+  id?: string;
+  value?: any;
+  onChange?: (e: any) => void;
+  onBlur?: (e: any) => void;
+  error?: string;
+  touched?: boolean;
+  showPassword?: boolean;
+  onTogglePassword?: (e: any) => void;
+  placeholder?: string;
+  label?: React.ReactNode;
+  required?: boolean;
+  disabled?: boolean;
+  showAsterisk?: boolean;
+}
+
 export function PasswordInput({
   id = "password",
   value,
@@ -15,7 +31,7 @@ export function PasswordInput({
   required = true,
   disabled = false,
   showAsterisk = false,
-}) {
+}: PasswordInputProps) {
   const { isRtl, t } = useRTL();
 
 

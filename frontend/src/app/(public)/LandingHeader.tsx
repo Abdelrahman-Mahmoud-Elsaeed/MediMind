@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes';
 
 export default function LandingHeader() {
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { locale, toggleLanguage, t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
@@ -20,10 +20,10 @@ export default function LandingHeader() {
   }, []);
 
   const handleLogout = () => {
-    dispatch(logoutThunk());
+    (dispatch as any)(logoutThunk());
   };
 
-  const handleSmoothScroll = (e, targetId) => {
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
     const element = document.getElementById(targetId);

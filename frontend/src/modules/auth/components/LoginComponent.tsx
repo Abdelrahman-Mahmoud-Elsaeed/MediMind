@@ -63,7 +63,7 @@ export default function LoginComponent() {
             const emailSchema = z.string().email(t("auth.validation.invalidEmail"));
             const res = emailSchema.safeParse(val);
             if (!res.success) {
-              res.error.issues.forEach((i) => ctx.addIssue({ code: i.code, message: i.message }));
+              res.error.issues.forEach((i) => ctx.addIssue({ code: z.ZodIssueCode.custom, message: i.message }));
             }
           }
         }),

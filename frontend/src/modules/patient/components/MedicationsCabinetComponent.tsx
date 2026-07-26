@@ -191,7 +191,7 @@ export default function MedicationsCabinetComponent() {
       {/* Floating Action Button (FAB) */}
       <Link
         href="/medications/add"
-        className="fixed bottom-24 right-6 z-40 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-transform"
+        className={`fixed bottom-24 ${locale === 'ar' ? 'left-6' : 'right-6'} z-40 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-transform`}
       >
         <span className="material-symbols-outlined text-3xl">add</span>
       </Link>

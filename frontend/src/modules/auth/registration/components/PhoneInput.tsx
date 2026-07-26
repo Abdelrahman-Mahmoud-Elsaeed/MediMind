@@ -2,6 +2,22 @@ import React from "react";
 import { useRTL } from "../hooks/useRTL";
 import { CountrySelector } from "./CountrySelector";
 
+interface PhoneInputProps {
+  id?: string;
+  value?: any;
+  onChange?: (e: any) => void;
+  onBlur?: (e: any) => void;
+  error?: string;
+  touched?: boolean;
+  isPhoneInput?: boolean;
+  countrySelectorProps?: any;
+  placeholder?: string;
+  label?: React.ReactNode;
+  required?: boolean;
+  disabled?: boolean;
+  showAsterisk?: boolean;
+}
+
 export function PhoneInput({
   id = "loginInput",
   value,
@@ -16,7 +32,7 @@ export function PhoneInput({
   required = true,
   disabled = false,
   showAsterisk = false,
-}) {
+}: PhoneInputProps) {
   const { isRtl, t } = useRTL();
 
   const fieldLabel = label || t("auth.register.emailOrPhoneLabel");

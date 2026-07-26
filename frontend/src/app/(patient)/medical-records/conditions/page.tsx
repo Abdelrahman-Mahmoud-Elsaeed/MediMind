@@ -82,7 +82,7 @@ export default function PatientConditionsPage() {
                 <div>
                   <label className="block text-xs font-bold text-on-surface-variant mb-1.5">Doctor Remarks</label>
                   <textarea
-                    rows="3"
+                    rows={3}
                     className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-on-surface placeholder:text-on-surface-variant/40 resize-none"
                     placeholder="Observations..."
                   ></textarea>

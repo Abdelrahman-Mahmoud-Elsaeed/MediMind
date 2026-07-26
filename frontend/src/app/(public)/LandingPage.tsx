@@ -7,7 +7,7 @@ import LandingHeader from './LandingHeader';
 import { useTranslation } from '@/shared/lib/i18nContext';
 
 export default function LandingPage() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state: any) => state.auth);
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 

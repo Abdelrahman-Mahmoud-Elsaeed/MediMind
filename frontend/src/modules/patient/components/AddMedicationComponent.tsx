@@ -134,7 +134,7 @@ export default function AddMedicationComponent() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setScanResult(null)} className="flex-1 py-4 border border-outline-variant text-on-surface font-label-md rounded-2xl hover:bg-surface-variant/20 transition-all">
+              <button onClick={triggerScan} className="flex-1 py-4 border border-outline-variant text-on-surface font-label-md rounded-2xl hover:bg-surface-variant/20 transition-all">
                 {t("patient.add.retake")}
               </button>
               <button onClick={cancelScan} className="flex-1 py-4 bg-tertiary text-on-tertiary font-label-md rounded-2xl shadow-lg hover:brightness-110 transition-all">
