@@ -41,7 +41,7 @@ export default function LandingHeader() {
   const userRolePath = user?.role === 'PATIENT' ? '/home' : user?.role ? '/dashboard' : '/home';
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm" suppressHydrationWarning>
       <div className="flex justify-between items-center px-4 sm:px-8 md:px-12 h-20 max-w-[1440px] mx-auto">
         <Link href="/" className="text-2xl font-extrabold text-teal-700 dark:text-teal-400 flex items-center gap-2">
           <span className="material-symbols-outlined text-teal-600 dark:text-teal-400 text-3xl" style={{ fontVariationSettings: '"FILL" 1' }}>
