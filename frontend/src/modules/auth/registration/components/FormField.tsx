@@ -1,6 +1,24 @@
 import React, { useRef } from "react";
 import { useRTL } from "../hooks/useRTL";
 
+interface FormFieldProps {
+  id: string;
+  label: React.ReactNode;
+  type?: string;
+  value?: any;
+  onChange?: (e: any) => void;
+  onBlur?: (e: any) => void;
+  error?: string;
+  touched?: boolean;
+  placeholder?: string;
+  icon?: string;
+  required?: boolean;
+  dir?: 'ltr' | 'rtl' | string;
+  disabled?: boolean;
+  showAsterisk?: boolean;
+  children?: React.ReactNode;
+}
+
 export function FormField({
   id,
   label,
@@ -17,7 +35,7 @@ export function FormField({
   disabled = false,
   showAsterisk = false,
   children,
-}) {
+}: FormFieldProps) {
   const { isRtl } = useRTL();
   const inputRef = useRef(null);
 
@@ -127,7 +145,7 @@ export function FormField({
             e.stopPropagation();
             if (type === "date") {
               try {
-                e.target.showPicker?.();
+                (e.target as any).showPicker?.();
               } catch (err) {
                 // fall back to default focus/click
               }

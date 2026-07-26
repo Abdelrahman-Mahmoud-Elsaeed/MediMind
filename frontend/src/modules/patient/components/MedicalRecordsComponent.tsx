@@ -137,7 +137,7 @@ export default function MedicalRecordsComponent() {
                     onChange={(e) => setNotes(e.target.value)}
                     className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
                     placeholder="Observations from your specialist..."
-                    rows="3"
+                    rows={3}
                   ></textarea>
                 </div>
 
