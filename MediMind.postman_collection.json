@@ -1,0 +1,1260 @@
+{
+  "info": {
+    "name": "MediMind API Collection",
+    "description": "Complete Postman Collection for all MediMind REST API Endpoints v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_access_token_here",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication & Authorization",
+      "item": [
+        {
+          "name": "Validate Uniqueness (Email/Phone)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/validate-uniqueness?email=patient@example.com",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "validate-uniqueness"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "patient@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Session Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/token/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "token",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"PATIENT\",\n  \"firstName\": \"Ahmed\",\n  \"lastName\": \"Ali\",\n  \"credentials\": {\n    \"email\": \"patient@example.com\",\n    \"password\": \"Password123\"\n  },\n  \"nationalNumber\": {\n    \"code\": \"+20\",\n    \"number\": \"1001234567\"\n  },\n  \"phone\": \"+201001234567\",\n  \"dateOfBirth\": \"1995-05-15T00:00:00.000Z\",\n  \"gender\": \"male\",\n  \"bloodType\": \"A+\",\n  \"height\": 175,\n  \"weight\": 70,\n  \"whatsappOptIn\": true,\n  \"preferredLanguage\": \"ar\",\n  \"consents\": {\n    \"familyCaregiver\": true,\n    \"professionalCaregiver\": false,\n    \"doctor\": true,\n    \"pharmacy\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Family Caregiver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"FAMILY_CAREGIVER\",\n  \"firstName\": \"Sara\",\n  \"lastName\": \"Ali\",\n  \"credentials\": {\n    \"email\": \"caregiver@example.com\",\n    \"password\": \"Password123\"\n  },\n  \"nationalNumber\": {\n    \"code\": \"+20\",\n    \"number\": \"1012345678\"\n  },\n  \"phone\": \"+201012345678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"EMAIL\",\n  \"target\": \"patient@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/otp/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "otp",
+                "send"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"EMAIL\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/otp/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "otp",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-token"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin - Register Professional Caregiver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pro.caregiver@example.com\",\n  \"password\": \"Password123\",\n  \"nationalNumber\": {\n    \"code\": \"+20\",\n    \"number\": \"1023456789\"\n  },\n  \"phone\": \"+201023456789\",\n  \"firstName\": \"Mona\",\n  \"lastName\": \"Hassan\",\n  \"licenseNumber\": \"LIC-998877\",\n  \"specialization\": \"Elderly Care & Diabetes\",\n  \"hourlyRate\": 150\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/register/professional",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "register",
+                "professional"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin - Register Provider (Doctor / Pharmacist)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"DOCTOR\",\n  \"email\": \"dr.smith@example.com\",\n  \"password\": \"Password123\",\n  \"nationalNumber\": {\n    \"code\": \"+20\",\n    \"number\": \"1034567890\"\n  },\n  \"phone\": \"+201034567890\",\n  \"firstName\": \"Mahmoud\",\n  \"lastName\": \"Elsayed\",\n  \"specialty\": \"Cardiology\",\n  \"syndicateId\": \"SYN-12345\",\n  \"clinicName\": \"MediMind Care Clinic\",\n  \"clinicAddress\": {\n    \"governorate\": \"Cairo\",\n    \"city\": \"Nasr City\",\n    \"street\": \"Abbas El Akkad St\",\n    \"additionalDirections\": \"Building 12, 3rd floor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/register/provider",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "register",
+                "provider"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin - Verify Doctor",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/verify/doctor/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "verify",
+                "doctor",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "DOCTOR_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin - Verify Pharmacist",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/verify/pharmacist/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "verify",
+                "pharmacist",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PHARMACIST_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin - Update Account Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true,\n  \"reason\": \"Account verified successfully\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/accounts/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "accounts",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ACCOUNT_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 User Profiles",
+      "item": [
+        {
+          "name": "Get Patient Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/patient/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "patient",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Patient Profile (Me)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bloodType\": \"O+\",\n  \"emergencyContact\": {\n    \"name\": \"Mohamed Ali\",\n    \"phone\": \"+201001234567\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/patient/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "patient",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Caregiver Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/caregiver/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "caregiver",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Caregiver Profile (Me)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+201012345678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/caregiver/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "caregiver",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🩺 Medical Conditions",
+      "item": [
+        {
+          "name": "List Conditions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conditions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conditions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Condition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diseaseName\": \"Type 2 Diabetes\",\n  \"isChronic\": true,\n  \"diagnosedDate\": \"2023-01-10T00:00:00.000Z\",\n  \"notes\": \"Managed with diet and daily insulin medication.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conditions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conditions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Condition",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conditions/:conditionId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conditions",
+                ":conditionId"
+              ],
+              "variable": [
+                {
+                  "key": "conditionId",
+                  "value": "CONDITION_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Condition",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isChronic\": true,\n  \"notes\": \"Updated condition details and doctor recommendations.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conditions/:conditionId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conditions",
+                ":conditionId"
+              ],
+              "variable": [
+                {
+                  "key": "conditionId",
+                  "value": "CONDITION_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Condition",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conditions/:conditionId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conditions",
+                ":conditionId"
+              ],
+              "variable": [
+                {
+                  "key": "conditionId",
+                  "value": "CONDITION_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💊 Medications & Refills",
+      "item": [
+        {
+          "name": "List Medications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Medication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conditionId\": \"CONDITION_ID_HERE\",\n  \"name\": \"Metformin 500mg\",\n  \"imageURL\": \"https://example.com/medication.jpg\",\n  \"formType\": \"TABLET\",\n  \"isChronic\": true,\n  \"inventory\": {\n    \"initialQuantity\": 60,\n    \"currentQuantity\": 45,\n    \"doseAmount\": 1,\n    \"refillThreshold\": 10\n  },\n  \"instructions\": {\n    \"relationToMeals\": \"AFTER_MEALS\",\n    \"notes\": \"Take with food to prevent upset stomach.\"\n  },\n  \"schedule\": {\n    \"frequency\": \"DAILY\",\n    \"dosesPerDay\": 2,\n    \"firstDoseTime\": \"08:00\",\n    \"startDate\": \"2026-01-01T00:00:00.000Z\"\n  },\n  \"expirationDate\": \"2027-12-31T00:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Scan Medication Image / Barcode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageBase64\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medications/scan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                "scan"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Medication",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medications/:medicationId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                ":medicationId"
+              ],
+              "variable": [
+                {
+                  "key": "medicationId",
+                  "value": "MEDICATION_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Medication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inventory\": {\n    \"currentQuantity\": 50,\n    \"refillThreshold\": 5\n  },\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medications/:medicationId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                ":medicationId"
+              ],
+              "variable": [
+                {
+                  "key": "medicationId",
+                  "value": "MEDICATION_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Medication",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medications/:medicationId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                ":medicationId"
+              ],
+              "variable": [
+                {
+                  "key": "medicationId",
+                  "value": "MEDICATION_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Refill Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicationId\": \"MEDICATION_ID_HERE\",\n  \"targetPharmacyId\": \"PHARMACY_USER_ID_HERE\",\n  \"quantityRequested\": 30,\n  \"fulfillmentType\": \"DELIVERY\",\n  \"deliveryAddress\": {\n    \"street\": \"90th Street\",\n    \"city\": \"New Cairo\",\n    \"zipCode\": \"11835\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medications/refills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                "refills"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Refill Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medications/refills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                "refills"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Refill Order Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderStatus\": \"APPROVED\",\n  \"pharmacistNotes\": \"Order accepted. Ready for delivery tomorrow.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medications/refills/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medications",
+                "refills",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "REFILL_ORDER_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⏰ Dose Schedule & Tracking",
+      "item": [
+        {
+          "name": "Get Doses Schedule",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doses?date=2026-07-25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doses"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-07-25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Dose Event",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doses/:doseEventId/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doses",
+                ":doseEventId",
+                "confirm"
+              ],
+              "variable": [
+                {
+                  "key": "doseEventId",
+                  "value": "DOSE_EVENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Skip Dose Event",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doses/:doseEventId/skip",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doses",
+                ":doseEventId",
+                "skip"
+              ],
+              "variable": [
+                {
+                  "key": "doseEventId",
+                  "value": "DOSE_EVENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Medical Notes",
+      "item": [
+        {
+          "name": "List Notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"PATIENT_USER_ID_HERE\",\n  \"targetRole\": \"DOCTOR\",\n  \"sharedWithId\": \"DOCTOR_USER_ID_HERE\",\n  \"title\": \"Blood Sugar Spikes in Morning\",\n  \"content\": \"Noticed elevated morning glucose readings over the past 3 days.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Note",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "NOTE_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤝 Relationships & Caregivers",
+      "item": [
+        {
+          "name": "Initiate Caregiver Relationship",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caregiverEmail\": \"caregiver@example.com\",\n  \"relation\": \"SON\",\n  \"permissions\": {\n    \"canAddMedication\": true,\n    \"canEditMedication\": true,\n    \"canDeleteMedication\": false,\n    \"canViewMedicalRecords\": true,\n    \"canEditMedicalRecords\": false,\n    \"canManageAppointments\": true,\n    \"canReceiveNotifications\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/relationships",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relationships"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Relationships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/relationships",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relationships"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Relationship Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACCEPTED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/relationships/:relationshipId/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relationships",
+                ":relationshipId",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "relationshipId",
+                  "value": "RELATIONSHIP_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revoke Relationship",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/relationships/:relationshipId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relationships",
+                ":relationshipId"
+              ],
+              "variable": [
+                {
+                  "key": "relationshipId",
+                  "value": "RELATIONSHIP_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerRole\": \"PATIENT\",\n  \"amount\": 250,\n  \"currency\": \"EGP\",\n  \"paymentMethod\": \"CARD\",\n  \"paymentType\": \"REFILL_ORDER_PAYMENT\",\n  \"referenceId\": \"REFILL_ORDER_ID_HERE\",\n  \"referenceModel\": \"RefillOrder\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Payment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                ":id",
+                "complete"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PAYMENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Content & Health Guidance",
+      "item": [
+        {
+          "name": "Get Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/content/blogs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "blogs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Health Advice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/content/advice",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "advice"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Blog",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetDisease\": \"Type 2 Diabetes\",\n  \"title\": \"Understanding Insulin Resistance\",\n  \"coverImageURL\": \"https://example.com/cover.jpg\",\n  \"content\": \"Comprehensive article about diet, lifestyle, and managing insulin sensitivity.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/content/blogs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "blogs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Health Advice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetDisease\": \"Hypertension\",\n  \"dos\": [\n    \"Monitor blood pressure daily\",\n    \"Follow a low-sodium diet\",\n    \"Exercise 30 minutes daily\"\n  ],\n  \"donts\": [\n    \"Do not consume excess salt\",\n    \"Do not skip prescribed medication doses\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/content/advice",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "advice"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ System Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
