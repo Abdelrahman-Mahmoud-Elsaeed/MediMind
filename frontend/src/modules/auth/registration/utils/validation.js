@@ -122,6 +122,22 @@ export function validateStep2(formData, isPhoneInput, t, countryCode = "EG") {
     if (!formData.dateOfBirth) {
       errors.dateOfBirth = t("auth.validation.dobRequired") || "Date of birth is required";
       valid = false;
+    } else {
+      const selectedDob = new Date(formData.dateOfBirth);
+      const now = new Date();
+      const twelveYearsAgo = new Date(now);
+      twelveYearsAgo.setFullYear(twelveYearsAgo.getFullYear() - 12);
+
+      if (isNaN(selectedDob.getTime())) {
+        errors.dateOfBirth = t("auth.validation.invalidDob") || "Invalid date of birth";
+        valid = false;
+      } else if (selectedDob > now) {
+        errors.dateOfBirth = t("auth.validation.dobFutureNotAllowed") || "Date of birth cannot be in the future.";
+        valid = false;
+      } else if (selectedDob > twelveYearsAgo) {
+        errors.dateOfBirth = t("auth.validation.dobMinAge") || "User must be at least 12 years old.";
+        valid = false;
+      }
     }
   }
 

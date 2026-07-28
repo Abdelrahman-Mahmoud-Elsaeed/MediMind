@@ -112,7 +112,13 @@ export function FormField({
     );
   }
 
-  const todayMax = type === "date" ? new Date().toISOString().split('T')[0] : undefined;
+  const getTwelveYearsAgoMax = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 12);
+    return d.toISOString().split('T')[0];
+  };
+
+  const maxDate = type === "date" ? getTwelveYearsAgoMax() : undefined;
 
   return (
     <div className="w-full text-start">
@@ -120,7 +126,7 @@ export function FormField({
         id={id}
         type={type}
         required={required}
-        max={todayMax}
+        max={maxDate}
         value={value}
         onChange={onChange}
         onBlur={onBlur}

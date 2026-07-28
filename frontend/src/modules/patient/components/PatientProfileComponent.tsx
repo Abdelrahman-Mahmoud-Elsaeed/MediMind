@@ -238,6 +238,11 @@ export default function PatientProfileComponent() {
                 <input
                   type="date"
                   value={dob}
+                  max={(() => {
+                    const d = new Date();
+                    d.setFullYear(d.getFullYear() - 12);
+                    return d.toISOString().split('T')[0];
+                  })()}
                   onChange={(e) => setDob(e.target.value)}
                   className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-2.5 outline-none text-on-surface focus:ring-2 focus:ring-primary"
                 />
