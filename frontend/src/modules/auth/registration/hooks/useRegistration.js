@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { useRTL } from "./useRTL";
@@ -10,7 +10,7 @@ import { useCountrySelector } from "./useCountrySelector";
 
 export function useRegistration() {
   const router = useRouter();
-  const { error, loading, registrationData, setRegistrationData, resetError, register } = useAuth();
+  const { error, loading, registrationData, setRegistrationData, resetError, clearRegistrationData, register } = useAuth();
   const { locale, isRtl, dir, t } = useRTL();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -46,9 +46,29 @@ export function useRegistration() {
     },
   });
 
+  // touchedFields: tracks fields the user has explicitly interacted with OR that were autofilled
   const [touchedFields, setTouchedFields] = useState({});
-  const [errors, setErrors] = useState({});
+  // validationErrors: full set of errors from last validateStep run (used to check form validity)
+  const [validationErrors, setValidationErrors] = useState({});
+  // asyncErrors: uniqueness errors from backend
   const [asyncErrors, setAsyncErrors] = useState({});
+
+  // Reset all auth errors, registration data, and form states on mount & unmount
+  useEffect(() => {
+    resetError();
+    if (typeof clearRegistrationData === "function") {
+      clearRegistrationData();
+    }
+    setTouchedFields({});
+    setValidationErrors({});
+    setAsyncErrors({});
+    return () => {
+      resetError();
+      if (typeof clearRegistrationData === "function") {
+        clearRegistrationData();
+      }
+    };
+  }, [resetError, clearRegistrationData]);
 
   const isPhoneInput = useMemo(
     () => detectPhoneInput(formData.loginInput),
@@ -59,26 +79,159 @@ export function useRegistration() {
     isPhoneInput ? formData.loginInput : formData.phone
   );
 
-  // Run validation dynamically on data changes
-  const runValidation = useCallback(() => {
-    const { errors: validationErrors } = validateStep(
+  const callingCode = countrySelectorProps?.callingCode || "20";
+
+  // Keep a ref to formData for use inside interval/event handlers without stale closures
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
+  // ─── Autofill Sync ──────────────────────────────────────────────────────────
+  // Detect browser autofill by polling the DOM and via webkit animationstart events.
+  // Only update fields that were silently populated (i.e. value differs from React state).
+  // Mark those fields as touched so their errors become visible.
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncAutofill = () => {
+      if (typeof document === "undefined" || !isMounted) return;
+      const formEl = document.querySelector("form");
+      if (!formEl) return;
+
+      const inputs = formEl.querySelectorAll("input, select");
+      const updates = {};
+      const newTouched = {};
+
+      inputs.forEach((el) => {
+        const input = el;
+        if (!input.id) return;
+        const domVal = input.value;
+        const stateVal = formDataRef.current[input.id];
+        // Only treat as autofill if DOM has a value but React state is empty/different
+        if (domVal && domVal !== stateVal) {
+          updates[input.id] = domVal;
+          newTouched[input.id] = true;
+        }
+      });
+
+      if (Object.keys(updates).length > 0) {
+        setFormData((prev) => ({ ...prev, ...updates }));
+        setTouchedFields((prev) => ({ ...prev, ...newTouched }));
+      }
+    };
+
+    const timer = setInterval(syncAutofill, 400);
+
+    const handleAnimationStart = (e) => {
+      if (e.animationName?.includes("autofill") || e.animationName?.includes("AutoFill")) {
+        syncAutofill();
+      }
+    };
+    document.addEventListener("animationstart", handleAnimationStart, true);
+
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+      document.removeEventListener("animationstart", handleAnimationStart, true);
+    };
+  }, []); // run once per mount — formDataRef keeps it current
+
+  // ─── Validation ─────────────────────────────────────────────────────────────
+  // Always run full validation to keep validationErrors up to date (used for isFormValid).
+  // This does NOT drive visible error display — that is gated by touchedFields.
+  useEffect(() => {
+    const { errors: errs } = validateStep(
       currentStep,
       formData,
       isPhoneInput,
       t,
       countrySelectorProps.country
     );
-    setErrors(validationErrors);
-  }, [currentStep, formData, isPhoneInput, t, countrySelectorProps.country]);
+    setValidationErrors(errs);
+  }, [formData, currentStep, isPhoneInput, t, countrySelectorProps.country]);
 
+  // ─── Async Uniqueness Check ──────────────────────────────────────────────────
+  // Runs whenever loginInput / email / phone change. Debounced 500ms.
+  // Only fires when the field is non-empty AND locally valid.
   useEffect(() => {
-    runValidation();
-  }, [formData, runValidation]);
+    const fieldsToCheck = [
+      { id: "loginInput", val: formData.loginInput },
+      { id: "email", val: formData.email },
+      { id: "phone", val: formData.phone },
+    ];
+
+    const timer = setTimeout(() => {
+      fieldsToCheck.forEach(async ({ id, val }) => {
+        const trimmed = val ? val.trim() : "";
+
+        if (!trimmed) {
+          setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
+          return;
+        }
+
+        // Skip backend check if local format is already invalid
+        const { errors: localErrs } = validateStep(
+          currentStep,
+          formData,
+          isPhoneInput,
+          t,
+          countrySelectorProps.country
+        );
+        if (localErrs[id]) {
+          setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
+          return;
+        }
+
+        try {
+          let queryParam = "";
+          if (id === "loginInput") {
+            const isPhone = /^[0-9+\s()-]+$/.test(trimmed);
+            if (isPhone) {
+              const nationalNum = extractNationalNumber(trimmed, callingCode);
+              const formatted = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmed;
+              queryParam = `phone=${encodeURIComponent(formatted)}`;
+            } else {
+              queryParam = `email=${encodeURIComponent(trimmed)}`;
+            }
+          } else if (id === "email") {
+            queryParam = `email=${encodeURIComponent(trimmed)}`;
+          } else if (id === "phone") {
+            const nationalNum = extractNationalNumber(trimmed, callingCode);
+            const formatted = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmed;
+            queryParam = `phone=${encodeURIComponent(formatted)}`;
+          }
+
+          if (!queryParam) return;
+
+          const response = await apiClient.get(`/auth/validate-uniqueness?${queryParam}`);
+          if (response.data?.success && response.data?.data) {
+            const { isUnique } = response.data.data;
+            if (!isUnique) {
+              const isEmailErr = id === "email" || (!isPhoneInput && id === "loginInput");
+              const msg = isEmailErr
+                ? t("auth.error.EMAIL_EXISTS") || "This email address is already registered."
+                : t("auth.error.PHONE_EXISTS") || "This phone number is already registered.";
+              setAsyncErrors((prev) => ({ ...prev, [id]: msg }));
+              // Mark field as touched so the error is displayed immediately
+              setTouchedFields((prev) => ({ ...prev, [id]: true }));
+            } else {
+              setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
+            }
+          }
+        } catch (err) {
+          console.error("Uniqueness check error:", err);
+        }
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.loginInput, formData.email, formData.phone, currentStep, isPhoneInput, t, countrySelectorProps.country, callingCode]);
+
+  // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChange = useCallback((e) => {
     const { id, value, type, checked } = e.target;
 
-    // Clear async errors as soon as user types/modifies the field
+    // Clear async uniqueness error while editing
     setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
 
     if (id.startsWith("alertSettings.")) {
@@ -93,67 +246,20 @@ export function useRegistration() {
         [id]: type === "checkbox" ? checked : value,
       }));
     }
+    // Do NOT mark as touched here — that happens on blur only
   }, []);
 
-  const handleBlur = useCallback(async (e, callingCode = "20") => {
-    const { id, value } = e.target;
+  const handleBlur = useCallback((e) => {
+    const { id } = e.target;
     setTouchedFields((prev) => ({ ...prev, [id]: true }));
-
-    const trimmedVal = value ? value.trim() : "";
-    if (!trimmedVal) return;
-
-    if (id === "loginInput" || id === "email" || id === "phone") {
-      // First check if the field has local validation errors
-      const { errors: localErrors } = validateStep(currentStep, { ...formData, [id]: value }, isPhoneInput, t);
-      if (localErrors[id]) {
-        return; // Don't check backend if local format validation fails
-      }
-
-      try {
-        let queryParam = "";
-        if (id === "loginInput") {
-          const isPhone = /^[0-9+\s()-]+$/.test(trimmedVal);
-          if (isPhone) {
-            const nationalNum = extractNationalNumber(trimmedVal, callingCode);
-            const formattedPhone = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmedVal;
-            queryParam = `phone=${encodeURIComponent(formattedPhone)}`;
-          } else {
-            queryParam = `email=${encodeURIComponent(trimmedVal)}`;
-          }
-        } else if (id === "email") {
-          queryParam = `email=${encodeURIComponent(trimmedVal)}`;
-        } else if (id === "phone") {
-          const nationalNum = extractNationalNumber(trimmedVal, callingCode);
-          const formattedPhone = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmedVal;
-          queryParam = `phone=${encodeURIComponent(formattedPhone)}`;
-        }
-
-        const response = await apiClient.get(`/auth/validate-uniqueness?${queryParam}`);
-        if (response.data && response.data.success && response.data.data) {
-          const { isUnique } = response.data.data;
-          if (!isUnique) {
-            setAsyncErrors((prev) => ({
-              ...prev,
-              [id]: id === "email" || (!isPhoneInput && id === "loginInput")
-                ? t("auth.error.EMAIL_EXISTS") || "Email is already registered"
-                : t("auth.error.PHONE_EXISTS") || "Phone number is already registered"
-            }));
-          } else {
-            setAsyncErrors((prev) => ({ ...prev, [id]: "" }));
-          }
-        }
-      } catch (err) {
-        console.error("Error validating uniqueness:", err);
-      }
-    }
-  }, [currentStep, formData, isPhoneInput, t]);
+  }, []);
 
   const handleRoleSelect = useCallback((selectedRole) => {
     setFormData((prev) => ({ ...prev, role: selectedRole }));
   }, []);
 
-  const handleFinalSubmit = useCallback(async (callingCode) => {
-    const payload = formatRegistrationPayload(formData, registrationData, isPhoneInput, locale, callingCode);
+  const handleFinalSubmit = useCallback(async (code) => {
+    const payload = formatRegistrationPayload(formData, registrationData, isPhoneInput, locale, code);
     setRegistrationData(payload);
     try {
       const resultAction = await register(payload);
@@ -166,51 +272,54 @@ export function useRegistration() {
   }, [formData, registrationData, isPhoneInput, locale, setRegistrationData, register, router]);
 
   const handleNext = useCallback(
-    (e, callingCode) => {
+    (e, code) => {
       e?.preventDefault();
       resetError();
 
-      const { valid, errors: validationErrors } = validateStep(
+      const { valid, errors: errs } = validateStep(
         currentStep,
         formData,
         isPhoneInput,
-        t
+        t,
+        countrySelectorProps.country
       );
 
       if (!valid) {
+        // On submit attempt, reveal all errors by marking all errored fields as touched
         const allTouched = {};
-        Object.keys(validationErrors).forEach((key) => {
-          allTouched[key] = true;
-        });
-        setTouchedFields(allTouched);
-        setErrors(validationErrors);
+        Object.keys(errs).forEach((key) => { allTouched[key] = true; });
+        setTouchedFields((prev) => ({ ...prev, ...allTouched }));
+        setValidationErrors(errs);
         return;
       }
 
-      setErrors({});
+      setValidationErrors({});
       setTouchedFields({});
 
       if (currentStep < 3) {
         setCurrentStep((prev) => prev + 1);
       } else {
-        handleFinalSubmit(callingCode);
+        handleFinalSubmit(code);
       }
     },
-    [currentStep, formData, isPhoneInput, resetError, t, handleFinalSubmit]
+    [currentStep, formData, isPhoneInput, resetError, t, countrySelectorProps.country, handleFinalSubmit]
   );
 
   const handleBack = useCallback(() => {
     resetError();
-    setErrors({});
+    setValidationErrors({});
     setTouchedFields({});
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
     }
   }, [currentStep, resetError]);
 
+  // ─── Derived State ───────────────────────────────────────────────────────────
+
+  // Form is valid for submit button purposes (not gated by touched)
   const isFormValid = useMemo(() => {
     const { valid } = validateStep(currentStep, formData, isPhoneInput, t, countrySelectorProps.country);
-    const hasAsyncErrors = Object.values(asyncErrors).some((err) => !!err);
+    const hasAsyncErrors = Object.values(asyncErrors).some(Boolean);
     return valid && !hasAsyncErrors;
   }, [currentStep, formData, isPhoneInput, t, asyncErrors, countrySelectorProps.country]);
 
@@ -219,22 +328,34 @@ export function useRegistration() {
     [error, locale, t]
   );
 
-  const allErrors = useMemo(() => {
-    const merged = { ...errors };
+  // visibleErrors: errors that should actually be shown in the UI.
+  // A field's error is visible only if it has been touched (blurred / autofilled / submit attempted).
+  const visibleErrors = useMemo(() => {
+    const merged = {};
+
+    // Merge local validation errors
+    Object.keys(validationErrors).forEach((key) => {
+      if (touchedFields[key] && validationErrors[key]) {
+        merged[key] = validationErrors[key];
+      }
+    });
+
+    // Async uniqueness errors always show once set (they already set touched)
     Object.keys(asyncErrors).forEach((key) => {
       if (asyncErrors[key]) {
         merged[key] = asyncErrors[key];
       }
     });
+
     return merged;
-  }, [errors, asyncErrors]);
+  }, [validationErrors, asyncErrors, touchedFields]);
 
   return {
     currentStep,
     setCurrentStep,
     formData,
     setFormData,
-    errors: allErrors,
+    errors: visibleErrors,
     touchedFields,
     isPhoneInput,
     displayError,

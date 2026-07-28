@@ -47,7 +47,7 @@ export function LanguageProvider({ children, initialLocale = "en" }) {
     setLocale((prev) => (prev === "en" ? "ar" : "en"));
   };
 
-  const t = (path) => {
+  const t = (path, params = {}) => {
     const keys = path.split(".");
     let value = translations[locale];
     for (const key of keys) {
@@ -56,6 +56,11 @@ export function LanguageProvider({ children, initialLocale = "en" }) {
       } else {
         return path;
       }
+    }
+    if (typeof value === "string" && params && typeof params === "object") {
+      Object.keys(params).forEach((paramKey) => {
+        value = value.replace(new RegExp(`{{\\s*${paramKey}\\s*}}`, "g"), params[paramKey]);
+      });
     }
     return value;
   };

@@ -14,9 +14,10 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { ThemeProvider } from 'next-themes';
 import { store } from '../store';
 import { LanguageProvider } from '../shared/lib/i18nContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { checkAuthThunk } from '../modules/auth/store/authActions';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function AuthInitializer({ children }) {
   const dispatch = useDispatch();
@@ -38,7 +39,7 @@ function AuthInitializer({ children }) {
   useEffect(() => {
     if (loading) return;
 
-    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications'];
     const isPublicRoute = publicRoutes.some((route) => pathname === route || (route !== '/' && pathname?.startsWith(`${route}/`)));
 
     if (isAuthenticated && user) {
@@ -62,15 +63,30 @@ function AuthInitializer({ children }) {
 }
 
 export function Providers({ children, locale }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      })
+  );
+
   return (
     <Provider store={store}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <LanguageProvider initialLocale={locale}>
-          <AuthInitializer>
-            {children}
-          </AuthInitializer>
-        </LanguageProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <LanguageProvider initialLocale={locale}>
+            <AuthInitializer>
+              {children}
+            </AuthInitializer>
+          </LanguageProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </Provider>
   );
 }
