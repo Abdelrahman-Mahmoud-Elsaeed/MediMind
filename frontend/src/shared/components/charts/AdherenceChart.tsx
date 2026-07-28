@@ -25,16 +25,16 @@ export const AdherenceChart: React.FC = () => {
         <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
           <defs>
             <linearGradient id="waveGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#16B364" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#16B364" stopOpacity={0.0} />
+              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
             </linearGradient>
           </defs>
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0f172a',
+              backgroundColor: 'var(--inverse-surface)',
               border: 'none',
               borderRadius: '12px',
-              color: '#ffffff',
+              color: 'var(--inverse-on-surface)',
               fontSize: '12px',
               fontWeight: 'bold',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
@@ -45,12 +45,12 @@ export const AdherenceChart: React.FC = () => {
           <Area
             type="monotone"
             dataKey="value"
-            stroke="#16B364"
+            stroke="var(--primary)"
             strokeWidth={3}
             fillOpacity={1}
             fill="url(#waveGradient)"
-            dot={{ r: 4, fill: '#16B364', strokeWidth: 2, stroke: '#ffffff' }}
-            activeDot={{ r: 6, fill: '#006C4E', stroke: '#ffffff', strokeWidth: 2 }}
+            dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--surface)' }}
+            activeDot={{ r: 6, fill: 'var(--primary-container)', stroke: 'var(--surface)', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

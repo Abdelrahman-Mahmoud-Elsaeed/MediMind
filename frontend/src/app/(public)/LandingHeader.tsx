@@ -6,6 +6,7 @@ import { logoutThunk } from '@/modules/auth/store/authActions';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useTheme } from 'next-themes';
+import { LanguageToggler } from '@/shared/components/LanguageToggler';
 
 export default function LandingHeader() {
   const dispatch = useDispatch();
@@ -87,30 +88,7 @@ export default function LandingHeader() {
           {/* Language & Theme Controls */}
           <div className="flex items-center gap-4">
             {/* Language Toggle Pill */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 transition-all">
-              <button
-                type="button"
-                onClick={() => locale !== "en" && toggleLanguage()}
-                className={`flex items-center justify-center px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold transition-all cursor-pointer ${
-                  locale === "en"
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-100"
-                }`}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => locale !== "ar" && toggleLanguage()}
-                className={`flex items-center justify-center px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold transition-all cursor-pointer ${
-                  locale === "ar"
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-100"
-                }`}
-              >
-                AR
-              </button>
-            </div>
+            <LanguageToggler />
 
             {/* Dark Mode Toggle */}
             <button
@@ -231,30 +209,7 @@ export default function LandingHeader() {
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Language / اللغة</span>
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 transition-all">
-              <button
-                type="button"
-                onClick={() => locale !== "en" && toggleLanguage()}
-                className={`flex items-center justify-center px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold transition-all cursor-pointer ${
-                  locale === "en"
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-100"
-                }`}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => locale !== "ar" && toggleLanguage()}
-                className={`flex items-center justify-center px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold transition-all cursor-pointer ${
-                  locale === "ar"
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-100"
-                }`}
-              >
-                AR
-              </button>
-            </div>
+            <LanguageToggler />
           </div>
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">

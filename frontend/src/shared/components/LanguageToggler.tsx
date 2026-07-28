@@ -1,22 +1,36 @@
 "use client";
 
 import React from "react";
-import { useTranslation } from "../lib/i18nContext";
+import { useTranslation } from "@/shared/lib/i18nContext";
 
-export const LanguageToggler = () => {
+interface LanguageTogglerProps {
+  className?: string;
+  variant?: "pill" | "button" | "simple";
+}
+
+export const LanguageToggler: React.FC<LanguageTogglerProps> = ({
+  className,
+  variant = "pill",
+}) => {
   const { locale, toggleLanguage } = useTranslation();
+
+  const isEn = locale === "en";
+
+  const defaultClasses =
+    "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high text-xs font-bold transition-all cursor-pointer select-none";
 
   return (
     <button
+      type="button"
       onClick={toggleLanguage}
-      aria-label={locale === "en" ? "Switch to Arabic" : "التغيير إلى الإنجليزية"}
-      className="fixed top-6 end-6 md:top-8 end-8 z-50 flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface-container/60 border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all shadow-md backdrop-blur-md font-label-md text-label-md cursor-pointer select-none"
+      aria-label={isEn ? "Switch to Arabic" : "التغيير إلى الإنجليزية"}
+      title={isEn ? "Switch to Arabic" : "التغيير إلى الإنجليزية"}
+      className={className || defaultClasses}
     >
-      <span className="material-symbols-outlined text-[18px]">language</span>
-      <span>{locale === "en" ? "العربية" : "English"}</span>
+      <span className="material-symbols-outlined text-[18px] text-primary">language</span>
+      <span>{isEn ? "العربية" : "English"}</span>
     </button>
   );
 };
 
 export default LanguageToggler;
-

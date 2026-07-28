@@ -1,10 +1,14 @@
 import React from "react";
 import { useRTL } from "../hooks/useRTL";
 
-export function RegistrationStepIndicator({ currentStep }) {
-  const { isRtl, t } = useRTL();
+interface RegistrationStepIndicatorProps {
+  currentStep: number;
+}
 
-  const getStepLabel = (stepNum) => {
+export function RegistrationStepIndicator({ currentStep }: RegistrationStepIndicatorProps) {
+  const { t } = useRTL();
+
+  const getStepLabel = (stepNum: number) => {
     if (stepNum === 1) return t("auth.register.step1Label") || "Account";
     if (stepNum === 2) return t("auth.register.step2Label") || "Profile";
     if (stepNum === 3) return t("auth.register.step3Label") || "Medical";
@@ -18,7 +22,7 @@ export function RegistrationStepIndicator({ currentStep }) {
       {/* Background connector line connecting circle centers (16.66% to 83.33%) */}
       <div className="absolute top-4 start-[16.66%] end-[16.66%] h-[2px] bg-surface-variant -translate-y-1/2" />
 
-      {/* Active progress connector line with explicit left-auto/right-auto to avoid CSS conflicts */}
+      {/* Active progress connector line */}
       <div
         className="absolute top-4 start-[16.66%] end-auto h-[2px] bg-primary -translate-y-1/2 transition-all duration-300"
         style={{ width: progressWidth }}
@@ -33,7 +37,7 @@ export function RegistrationStepIndicator({ currentStep }) {
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mb-1 ring-4 ring-surface-container-lowest transition-all ${
                 isCompleted || isActive
-                  ? "bg-primary text-on-primary shadow-sm"
+                  ? "bg-primary text-on-primary shadow-2xs"
                   : "bg-surface-container text-on-surface-variant border border-outline-variant/30"
               }`}
             >

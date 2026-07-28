@@ -6,7 +6,7 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   indicatorClassName?: string;
 }
 
-const ProgressBar = React.forwardRef<HTMLDivElement, ProgressProps>(
+const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
   ({ className, value = 0, indicatorClassName, ...props }, ref) => (
     <div
       ref={ref}
@@ -26,6 +26,6 @@ const ProgressBar = React.forwardRef<HTMLDivElement, ProgressProps>(
     </div>
   )
 );
-ProgressBar.displayName = 'ProgressBar';
+Progress.displayName = 'Progress';
 
-export { ProgressBar };
+export { Progress };

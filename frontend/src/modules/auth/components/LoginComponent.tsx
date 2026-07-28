@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
@@ -12,12 +12,14 @@ import { parseApiMessage } from "@/shared/lib/parseApiMessage";
 import Branding from "./Branding";
 import { FormField } from "../registration/components/FormField";
 import { PasswordInput } from "../registration/components/PasswordInput";
+import { AppButton } from "@/shared/components/ui/AppButton";
+import { LanguageToggler } from "@/shared/components/LanguageToggler";
 import { z } from "zod";
 
 export default function LoginComponent() {
   const router = useRouter();
-  const { login, loading, error, resetError, isAuthenticated, user } = useAuth();
-  const { locale, dir, t, toggleLanguage } = useTranslation();
+  const { login, loading, error, resetError, clearRegistrationData, isAuthenticated, user } = useAuth();
+  const { locale, dir, t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -35,7 +37,75 @@ export default function LoginComponent() {
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({ loginInput: "", password: "" });
+  // All possible validation errors (not filtered by touched)
+  const [validationErrors, setValidationErrors] = useState<{ loginInput: string; password: string }>({ loginInput: "", password: "" });
+  // Which fields have been touched (blurred, autofilled, or submit attempted)
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  // Reset redux auth errors and component form states on mount & unmount
+  useEffect(() => {
+    resetError();
+    if (typeof clearRegistrationData === "function") {
+      clearRegistrationData();
+    }
+    setLoginInput("");
+    setPassword("");
+    setValidationErrors({ loginInput: "", password: "" });
+    setTouchedFields({});
+    return () => {
+      resetError();
+      if (typeof clearRegistrationData === "function") {
+        clearRegistrationData();
+      }
+    };
+  }, [resetError, clearRegistrationData]);
+
+  // Refs to avoid stale closures in interval
+  const loginInputRef = useRef(loginInput);
+  const passwordRef = useRef(password);
+  loginInputRef.current = loginInput;
+  passwordRef.current = password;
+
+  // Continuous DOM Autofill Scanner for Login Form
+  // Marks autofilled fields as touched so errors show immediately
+  useEffect(() => {
+    let isMounted = true;
+    const syncAutofill = () => {
+      if (typeof document === "undefined" || !isMounted) return;
+      const loginEl = document.getElementById("loginInput") as HTMLInputElement | null;
+      const passEl = document.getElementById("password") as HTMLInputElement | null;
+
+      const updates: { loginInput?: string; password?: string } = {};
+      const newTouched: Record<string, boolean> = {};
+
+      if (loginEl && loginEl.value && loginEl.value !== loginInputRef.current) {
+        updates.loginInput = loginEl.value;
+        newTouched.loginInput = true;
+      }
+      if (passEl && passEl.value && passEl.value !== passwordRef.current) {
+        updates.password = passEl.value;
+        newTouched.password = true;
+      }
+
+      if (updates.loginInput !== undefined) setLoginInput(updates.loginInput);
+      if (updates.password !== undefined) setPassword(updates.password);
+      if (Object.keys(newTouched).length > 0) setTouchedFields((prev) => ({ ...prev, ...newTouched }));
+    };
+
+    const timer = setInterval(syncAutofill, 400);
+    const handleAnimationStart = (e: AnimationEvent) => {
+      if (e.animationName?.includes("autofill") || e.animationName?.includes("AutoFill")) {
+        syncAutofill();
+      }
+    };
+
+    document.addEventListener("animationstart", handleAnimationStart, true);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+      document.removeEventListener("animationstart", handleAnimationStart, true);
+    };
+  }, []); // runs once; refs keep values current
 
   const getValidationSchema = () => {
     return z.object({
@@ -76,37 +146,49 @@ export default function LoginComponent() {
     });
   };
 
-  const isValid = getValidationSchema().safeParse({ loginInput, password }).success;
-
-  const handleBlur = (field) => {
+  // Re-run validation whenever form values change (full errors, not display-filtered)
+  useEffect(() => {
     const schema = getValidationSchema();
     const result = schema.safeParse({ loginInput, password });
     if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path[0] === field);
-      if (issue) {
-        setErrors((prev) => ({ ...prev, [field]: issue.message }));
-      } else {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
+      const errs: { loginInput: string; password: string } = { loginInput: "", password: "" };
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (!errs[field]) errs[field] = issue.message;
+      });
+      setValidationErrors(errs);
     } else {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setValidationErrors({ loginInput: "", password: "" });
     }
+  }, [loginInput, password]);
+
+  const isValid = getValidationSchema().safeParse({ loginInput, password }).success;
+
+  // visibleErrors: only show errors for touched fields
+  const errors = {
+    loginInput: touchedFields.loginInput ? validationErrors.loginInput : "",
+    password: touchedFields.password ? validationErrors.password : "",
+  };
+
+  const handleBlur = (field: string) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     resetError();
-    setErrors({ loginInput: "", password: "" });
 
     const schema = getValidationSchema();
     const result = schema.safeParse({ loginInput, password });
     if (!result.success) {
-      const newErrors = { loginInput: "", password: "" };
+      const newErrors: { loginInput: string; password: string } = { loginInput: "", password: "" };
       result.error.issues.forEach((issue) => {
-        const field = issue.path[0];
-        newErrors[field] = issue.message;
+        const field = issue.path[0] as string;
+        if (!newErrors[field]) newErrors[field] = issue.message;
       });
-      setErrors(newErrors);
+      setValidationErrors(newErrors);
+      // Reveal all errored fields
+      setTouchedFields({ loginInput: true, password: true });
       return;
     }
 
@@ -158,33 +240,20 @@ export default function LoginComponent() {
 
           <div className="flex items-center gap-3">
             {/* Language Toggle Pill */}
-            <div className="flex items-center gap-1 bg-surface-container border border-outline-variant/30 rounded-full p-0.5 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => locale !== 'en' && toggleLanguage()}
-                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${locale === 'en' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => locale !== 'ar' && toggleLanguage()}
-                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${locale === 'ar' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-              >
-                AR
-              </button>
-            </div>
+            <LanguageToggler />
 
             {/* Dark Mode Toggle */}
-            <button
+            <AppButton
               type="button"
+              variant="outline"
+              size="icon"
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface transition-all cursor-pointer"
+              aria-label="Toggle theme"
             >
               <span className="material-symbols-outlined text-[20px]">
                 {mounted && resolvedTheme === 'dark' ? 'light_mode' : 'dark_mode'}
               </span>
-            </button>
+            </AppButton>
           </div>
         </header>
 
@@ -244,18 +313,23 @@ export default function LoginComponent() {
             />
 
             {/* Submit */}
-            <button
+            <AppButton
               disabled={!isValid || loading}
+              isLoading={loading}
               type="submit"
-              className="w-full bg-primary text-on-primary rounded-full py-4 font-semibold text-sm hover:bg-primary/90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex items-center justify-center gap-2 group"
+              variant="default"
+              size="lg"
+              className="w-full h-[58px] rounded-full text-base font-semibold mt-4 group"
+              rightIcon={
+                !loading && (
+                  <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform rtl:rotate-180">
+                    arrow_forward
+                  </span>
+                )
+              }
             >
-              <span>{loading ? t("auth.login.signingInButton") : t("auth.login.signInButton")}</span>
-              {!loading && (
-                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform rtl:rotate-180">
-                  arrow_forward
-                </span>
-              )}
-            </button>
+              {loading ? t("auth.login.signingInButton") : t("auth.login.signInButton")}
+            </AppButton>
 
             {/* Sign Up Link */}
             <p className="text-center text-sm text-on-surface-variant pt-2">

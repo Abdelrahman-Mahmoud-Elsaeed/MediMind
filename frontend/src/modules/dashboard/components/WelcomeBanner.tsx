@@ -19,7 +19,7 @@ export const WelcomeBanner: React.FC = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="relative w-full min-h-[150px] sm:h-[180px] rounded-[24px] overflow-hidden bg-gradient-to-r from-[#031d1b] via-[#083c38] to-[#042421] p-6 sm:p-8 md:p-10 flex flex-col justify-center text-white shadow-xl mb-6 sm:mb-8 border border-emerald-900/40"
+      className="relative w-full min-h-[150px] sm:h-[180px] rounded-[24px] overflow-hidden bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 p-6 sm:p-8 md:p-10 flex flex-col justify-center text-white shadow-xl mb-6 sm:mb-8 border border-primary-container/20"
     >
       {/* Wave / Radial Geometric Background Artwork */}
       <div className="absolute inset-0 pointer-events-none opacity-30">

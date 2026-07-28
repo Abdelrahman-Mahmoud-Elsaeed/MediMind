@@ -7,149 +7,12 @@ import { useTranslation } from "@/shared/lib/i18nContext";
 import { usePatientDashboard } from "../hooks/usePatientDashboard";
 import { useTheme } from "next-themes";
 
-// ==========================================
-// SUB-COMPONENT: SIDEBAR (Aside)
-// ==========================================
-function Sidebar({ userName, userAvatarLetter, locale, toggleLanguage, t }) {
-  return (
-    <aside className="w-64 flex-shrink-0 hidden lg:flex flex-col border-r border-outline-variant bg-surface backdrop-blur-md bg-surface/50 transition-all">
-      <div className="p-8">
-        <h1 className="text-xl font-bold text-primary mb-1">MediMind</h1>
-        <p className="text-xs text-on-surface-variant font-medium">Healthcare Dashboard</p>
-      </div>
-      
-      <nav className="flex-1 px-4 space-y-2 mt-4">
-        <Link href="/home" className="flex items-center gap-3 px-4 py-3 bg-surface-container-lowest shadow-md text-primary rounded-xl font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-          <span>{t("patient.nav.home")}</span>
-        </Link>
-        <Link href="/medications" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-lowest/50 rounded-xl font-medium transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-          <span>{t("patient.nav.meds")}</span>
-        </Link>
-        <Link href="/adherence" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-lowest/50 rounded-xl font-medium transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-          <span>{t("patient.nav.adherence")}</span>
-        </Link>
-        <Link href="/caregivers" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-lowest/50 rounded-xl font-medium transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-          <span>{t("patient.nav.care")}</span>
-        </Link>
-        <Link href="/profile" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-lowest/50 rounded-xl font-medium transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-          <span>{t("patient.nav.profile")}</span>
-        </Link>
-      </nav>
+import { MainLayout } from "@/shared/components/layout/MainLayout";
+import { AppButton } from "@/shared/components/ui/AppButton";
+import { AppBadge } from "@/shared/components/ui/AppBadge";
+import { AppProgressBar } from "@/shared/components/ui/AppProgressBar";
+import { TimelineItem, TimelineItemData } from "@/modules/dashboard/components/TimelineItem";
 
-      {/* Sidebar Footer */}
-      <div className="p-6 border-t border-outline-variant/30 space-y-6">
-        {/* Language Toggle */}
-        <div className="flex items-center bg-primary-container/10 rounded-full p-1 w-max mx-auto border border-outline-variant/35">
-          <button
-            onClick={() => locale !== "en" && toggleLanguage()}
-            className={`px-6 py-1.5 rounded-full text-sm font-bold transition-colors cursor-pointer ${
-              locale === "en" ? "bg-primary text-on-primary shadow-sm" : "text-primary opacity-60 hover:opacity-100 bg-transparent"
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => locale !== "ar" && toggleLanguage()}
-            className={`px-6 py-1.5 rounded-full text-sm font-bold transition-colors cursor-pointer ${
-              locale === "ar" ? "bg-primary text-on-primary shadow-sm" : "text-primary opacity-60 hover:opacity-100 bg-transparent"
-            }`}
-          >
-            AR
-          </button>
-        </div>
-
-        {/* User Block */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest shadow-sm bg-primary-container/20 text-primary font-bold flex items-center justify-center">
-            {userAvatarLetter}
-          </div>
-          <div>
-            <h4 className="font-bold text-sm text-on-surface leading-tight">{userName}</h4>
-            <p className="text-xs text-on-surface-variant font-medium">{t("patient.nav.profile")}</p>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-// ==========================================
-// SUB-COMPONENT: DESKTOP HEADER
-// ==========================================
-function DesktopHeader({ resolvedTheme, setTheme, mounted }) {
-  return (
-    <header className="hidden lg:flex h-20 px-10 items-center justify-end gap-6 shrink-0 border-b border-outline-variant/30 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-      <button
-        type="button"
-        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-        className="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
-        aria-label="Toggle theme"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
-      </button>
-      <Link href="/notifications" className="text-on-surface-variant hover:text-on-surface transition-colors relative">
-        <span className="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border border-surface-container-lowest"></span>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
-      </Link>
-    </header>
-  );
-}
-
-// ==========================================
-// SUB-COMPONENT: MOBILE HEADER
-// ==========================================
-function MobileHeader({ locale, toggleLanguage, resolvedTheme, setTheme, mounted }) {
-  return (
-    <header className="lg:hidden fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex justify-between items-center px-6 h-16 border-b border-outline-variant/10">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-on-primary font-black shadow-sm">
-          M
-        </div>
-        <h1 className="font-black text-lg text-primary tracking-tight">MediMind</h1>
-      </div>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={toggleLanguage}
-          className="text-xs font-bold px-3 py-1.5 rounded-full bg-primary-container/10 border border-primary/20 text-primary transition-all duration-200"
-        >
-          {locale === "en" ? "العربية" : "EN"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container border border-outline-variant/20 transition-colors cursor-pointer"
-          aria-label="Toggle theme"
-        >
-          <span className="material-symbols-outlined !text-[20px]">
-            {mounted && resolvedTheme === "dark" ? "light_mode" : "dark_mode"}
-          </span>
-        </button>
-        <Link href="/notifications" className="w-9 h-9 flex items-center justify-center text-on-surface-variant hover:bg-surface-container rounded-full border border-outline-variant/20 transition-colors">
-          <span className="material-symbols-outlined !text-[20px]">notifications</span>
-        </Link>
-      </div>
-    </header>
-  );
-}
 
 // ==========================================
 // SUB-COMPONENT: WELCOME BANNER
@@ -179,226 +42,186 @@ function WelcomeBanner({ userName, currentDateFormatted }) {
 }
 
 // ==========================================
-// SUB-COMPONENT: ACTIVE TIMELINE
+// SUB-COMPONENT: ACTIVE TIMELINE (Matching Image 1)
 // ==========================================
 function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, locale, t }) {
   const isRtl = locale === "ar";
-  
-  // Choose absolute line placement classes depending on current document language direction (LTR/RTL)
-  const timelineLineClass = isRtl
-    ? "absolute right-6 translate-x-1/2 top-2 h-[45%] w-[3px] bg-gradient-to-b from-primary/10 via-primary/50 to-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
-    : "absolute left-6 -translate-x-1/2 top-2 h-[45%] w-[3px] bg-gradient-to-b from-primary/10 via-primary/50 to-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]";
 
-  const timelineFadeLineClass = isRtl
-    ? "absolute right-6 translate-x-1/2 top-[45%] bottom-4 w-[1px] bg-primary/20"
-    : "absolute left-6 -translate-x-1/2 top-[45%] bottom-4 w-[1px] bg-primary/20";
+  const sampleDoses = doses.length > 0 ? doses : [
+    {
+      doseEventId: 'd1',
+      medicationName: isRtl ? 'ليزينوبريل' : 'Lisinopril',
+      scheduledFor: new Date().setHours(8, 0, 0, 0),
+      status: 'TAKEN',
+      timeSlotName: t('patient.home.morningDose'),
+      subtext: isRtl ? 'ليزينوبريل • تم التناول الساعة 07:45 ص' : 'Lisinopril • Taken at 07:45 AM',
+      formattedTime: '08:00 AM'
+    },
+    {
+      doseEventId: 'd2',
+      medicationName: isRtl ? 'أتورفاستاتين 10مجم' : 'Atorvastatin 10mg',
+      scheduledFor: new Date().setHours(13, 0, 0, 0),
+      status: 'DUE',
+      timeSlotName: t('patient.home.lunchtimeDose'),
+      subtext: isRtl ? 'أتورفاستاتين 10مجم • قرص واحد' : 'Atorvastatin 10mg • 1 Tablet',
+      formattedTime: '01:00 PM'
+    },
+    {
+      doseEventId: 'd3',
+      medicationName: isRtl ? 'سيدوفاج/ميتفورمين 500مجم' : 'Metformin 500mg',
+      scheduledFor: new Date().setHours(20, 0, 0, 0),
+      status: 'UPCOMING',
+      timeSlotName: t('patient.home.eveningDose'),
+      subtext: isRtl ? 'سيدوفاج 500مجم • قادمة' : 'Metformin 500mg • Upcoming',
+      formattedTime: '08:00 PM'
+    }
+  ];
 
-  // Speech bubble arrow classes based on alignment direction
-  const activeArrowClass = isRtl
-    ? "absolute top-[50px] -right-[8px] w-0 h-0 border-y-[8px] border-y-transparent border-l-[8px] border-l-surface-container-lowest"
-    : "absolute top-[50px] -left-[8px] w-0 h-0 border-y-[8px] border-y-transparent border-r-[8px] border-r-surface-container-lowest";
+  const formattedHeaderDate = new Date().toLocaleDateString(isRtl ? 'ar-EG' : 'en-US', {
+    month: 'short',
+    day: 'numeric'
+  });
 
   return (
-    <section className="p-6 bg-surface-container-lowest rounded-[2rem] shadow-[0_20px_50px_rgba(4,47,31,0.02)] border border-outline-variant/30 text-on-surface">
-      <h2 className="text-2xl font-bold mb-8 text-on-surface">Active Timeline</h2>
+    <section className="p-6 sm:p-8 bg-surface-container-lowest dark:bg-surface-container-low rounded-[2rem] border border-outline-variant/30 text-on-surface shadow-xs">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-on-surface tracking-tight">
+          {t('patient.home.activeTimeline')}
+        </h2>
+        <span className="text-xs font-semibold text-on-surface-variant font-mono">
+          {t('patient.home.todayDate', { date: formattedHeaderDate })}
+        </span>
+      </div>
 
-      <div className="relative">
-        {doses.length > 0 && (
-          <>
-            <div className={timelineLineClass}></div>
-            <div className={timelineFadeLineClass}></div>
-          </>
-        )}
+      {/* Timeline Items Container */}
+      <div className="space-y-0">
+        {sampleDoses.map((dose, idx) => {
+          const isTaken = dose.status === 'TAKEN' || dose.status === 'completed';
+          const isDue = dose.status === 'DUE' || (nextDose && nextDose.doseEventId === dose.doseEventId) || dose.status === 'due';
+          const status: TimelineItemData['status'] = isTaken ? 'completed' : isDue ? 'due' : 'upcoming';
+          const timeStr = dose.formattedTime || new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        {doses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-10">
-            <span className="material-symbols-outlined text-4xl text-primary/45 mb-3">clinical_notes</span>
-            <h4 className="font-bold text-on-surface text-sm">{t("patient.home.allCaughtUp")}</h4>
-            <p className="text-xs text-on-surface-variant mt-1">{t("patient.home.noPendingDoses")}</p>
-          </div>
-        ) : (
-          doses.map((dose, idx) => {
-            const isTaken = dose.status === "TAKEN";
-            const isNext = nextDose && nextDose.doseEventId === dose.doseEventId;
-            const isSkipped = dose.status === "SKIPPED";
-            const timeStr = new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const itemData: TimelineItemData = {
+            id: dose.doseEventId || String(idx),
+            timeSlot: dose.timeSlotName || dose.medicationName,
+            medication: dose.subtext || (isTaken ? `${dose.medicationName} • Taken` : `${dose.medicationName} • 1 Tablet`),
+            time: timeStr,
+            status,
+            doseEventId: dose.doseEventId,
+            timeSlotName: dose.timeSlotName,
+            subtext: dose.subtext,
+            formattedTime: timeStr,
+          };
 
-            if (isTaken) {
-              return (
-                <div key={dose.doseEventId || idx} className="flex gap-4 mb-8 items-center">
-                  <div className="w-12 flex justify-center items-center shrink-0">
-                    <div className="w-3 h-3 rounded-full bg-primary/20 z-10"></div>
-                  </div>
-                  <div className="flex-1 flex items-center justify-between bg-primary-container/5 backdrop-blur-md border border-outline-variant/20 rounded-2xl px-5 py-4 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-surface-container rounded-xl flex items-center justify-center text-primary/60 shadow-sm border border-outline-variant/15">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{timeStr}</p>
-                        <h4 className="text-base font-bold text-on-surface/85">{dose.medicationName}</h4>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            } else if (isNext) {
-              return (
-                <div key={dose.doseEventId || idx} className="flex gap-4 mb-8 items-start">
-                  <div className="w-12 flex justify-center items-center shrink-0 mt-12">
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute w-8 h-8 rounded-full bg-primary/30 animate-pulse"></div>
-                      <div className="w-5 h-5 rounded-full border-[3px] border-surface bg-primary shadow-md z-10"></div>
-                    </div>
-                  </div>
-
-                  <div className="relative bg-surface-container-lowest rounded-[2rem] p-6 flex-1 shadow-md border border-outline-variant/40">
-                    <div className={activeArrowClass}></div>
-                    <div className="flex items-center gap-1.5 mb-2 text-primary font-semibold text-sm">
-                      <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="font-bold">{timeStr}</span>
-                    </div>
-
-                    <h3 className="text-xl lg:text-2xl font-extrabold text-on-surface mb-1 leading-tight">
-                      {dose.medicationName}
-                    </h3>
-                    <p className="text-on-surface-variant text-sm mb-6">
-                      Take 1 pill with food
-                    </p>
-
-                    <div className="flex gap-4 items-center">
-                      <button
-                        onClick={() => confirmDose(dose.doseEventId)}
-                        className="bg-primary hover:brightness-115 text-on-primary px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-sm text-sm cursor-pointer"
-                      >
-                        Take Dose Now
-                      </button>
-                      <button
-                        onClick={() => skipDose(dose.doseEventId)}
-                        className="text-primary/60 font-bold hover:text-primary transition-all text-sm px-2 cursor-pointer"
-                      >
-                        Skip Dose
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            } else {
-              return (
-                <div key={dose.doseEventId || idx} className="flex gap-4 items-center pb-4 last:pb-0">
-                  <div className="w-12 flex justify-center items-center shrink-0">
-                    <div className="w-3 h-3 rounded-full border-2 border-outline-variant/50 bg-transparent z-10"></div>
-                  </div>
-                  <div className="flex-1 flex items-center justify-between px-2 opacity-65">
-                    <div>
-                      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
-                        {isSkipped ? "Skipped" : "Upcoming"}
-                      </p>
-                      <p className="text-sm font-bold text-on-surface/70">{timeStr}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-          })
-        )}
+          return (
+            <TimelineItem
+              key={dose.doseEventId || idx}
+              item={itemData}
+              isFirst={idx === 0}
+              isLast={idx === sampleDoses.length - 1}
+              onMarkAsTaken={(id) => confirmDose?.(id)}
+              onSnooze={(id) => skipDose?.(id)}
+            />
+          );
+        })}
       </div>
     </section>
   );
 }
 
 // ==========================================
-// SUB-COMPONENT: MEDICATIONS CABINET
+// SUB-COMPONENT: MEDICATIONS CABINET (List View Matching Image 2)
 // ==========================================
 function CabinetQuickView({ medications, t }) {
+  const defaultList = [
+    { id: '1', name: 'Metformin', currentStock: 24, totalStock: 30, formType: 'TABLET' },
+    { id: '2', name: 'Lisinopril 5mg', currentStock: 18, totalStock: 30, formType: 'TABLET' },
+    { id: '3', name: 'Lisinopril 15mg', currentStock: 4, totalStock: 30, formType: 'CAPSULE' },
+    { id: '4', name: 'Metformin 500mg', currentStock: 12, totalStock: 30, formType: 'TABLET' },
+  ];
+
+  const items = medications && medications.length > 0 ? medications.slice(0, 4) : defaultList;
+
   return (
-    <section className="mt-8">
-      <div className="flex items-end justify-between mb-6 border-b border-outline-variant/30 pb-4">
-        <h2 className="text-2xl font-bold text-on-surface">Medications Cabinet</h2>
-        <Link href="/medications" className="text-sm font-semibold text-primary hover:underline">
-          View All
+    <section className="mt-8 p-6 sm:p-8 bg-surface-container-lowest dark:bg-surface-container-low rounded-[2rem] border border-outline-variant/30 text-on-surface shadow-xs">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-on-surface tracking-tight">
+          {t('patient.home.cabinetQuickView')}
+        </h2>
+        <Link href="/medications" className="text-sm font-bold text-primary hover:underline transition-colors">
+          {t('patient.home.viewAll')}
         </Link>
       </div>
 
-      <div className="flex flex-col">
-        {medications.length > 0 ? (
-          medications.slice(0, 4).map((med, idx) => {
-            const stockLeft = ((idx + 2) * 5) % 30 || 24;
-            const percentage = Math.round((stockLeft / 30) * 100);
+      {/* Clean List-Based Layout (Matching Image 2) */}
+      <div className="space-y-3.5">
+        {items.map((med: any) => {
+          const current = Number(med.currentStock ?? med.currentQuantity ?? 20);
+          const total = Number(med.totalStock ?? med.initialQuantity ?? 30);
+          const percentage = Math.min(100, Math.max(0, Math.round((current / total) * 100)));
+          const isCritical = current <= 6 || percentage <= 20;
 
-            // Determine stock level styling based on limits (Emerald -> Blue -> Amber -> Red)
-            let levelColor = "text-primary";
-            let barColor = "bg-primary";
-            let bgColor = "bg-primary-container/10";
-            let statusText = "Optimal Stock";
-
-            if (stockLeft <= 6) {
-              levelColor = "text-error";
-              barColor = "bg-error";
-              bgColor = "bg-error-container/20";
-              statusText = "Refill Needed";
-            } else if (stockLeft <= 12) {
-              levelColor = "text-amber-600 dark:text-amber-400";
-              barColor = "bg-amber-500";
-              bgColor = "bg-amber-500/10";
-              statusText = `Refill in ${Math.round(stockLeft / 2)} days`;
-            } else if (stockLeft <= 20) {
-              levelColor = "text-blue-600 dark:text-blue-400";
-              barColor = "bg-blue-500";
-              bgColor = "bg-blue-500/10";
-              statusText = "Healthy Stock";
-            }
-
-            return (
-              <div
-                key={med.medicationId}
-                className="group flex items-center gap-6 py-5 border-b border-outline-variant/20 hover:bg-surface-container-low px-4 -mx-4 rounded-2xl transition-all duration-200"
-              >
-                {/* Icon Container with level background */}
-                <div className={`w-12 h-12 rounded-2xl ${bgColor} ${levelColor} flex items-center justify-center flex-shrink-0`}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          return (
+            <div
+              key={med.id || med.medicationId}
+              className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl transition-all duration-200 hover:shadow-md hover:border-primary/40 cursor-pointer"
+            >
+              {/* Icon Container */}
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${isCritical
+                    ? 'bg-error-container/30 text-error'
+                    : 'bg-primary-container/20 text-primary'
+                    }`}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                   </svg>
                 </div>
 
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                  <div>
-                    <h4 className="font-bold text-lg text-on-surface">{med.name}</h4>
-                    <p className="text-sm text-on-surface-variant capitalize">{String(med.formType).toLowerCase()} • {med.schedule?.frequency}</p>
-                  </div>
-                  <div className="hidden md:block">
-                    <p className={`text-sm font-bold ${levelColor}`}>{stockLeft} doses remaining</p>
-                    <p className={`text-xs font-semibold ${levelColor}`}>{statusText}</p>
-                  </div>
-                  <div className="flex items-center justify-end md:justify-start w-full">
-                    <div className="w-full max-w-[120px] bg-surface-container rounded-full h-1.5 overflow-hidden">
-                      <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${percentage}%` }}></div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="opacity-0 group-hover:opacity-100 p-2 text-on-surface-variant hover:text-on-surface transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                {/* Medication Title */}
+                <h4 className="font-bold text-on-surface text-base sm:text-lg min-w-[140px]">
+                  {med.name}
+                </h4>
               </div>
-            );
-          })
-        ) : (
-          <div className="bg-surface-container/30 border border-outline-variant/10 rounded-2xl p-8 text-center">
-            <p className="text-sm text-on-surface-variant font-medium">{t("patient.home.noMedications")}</p>
-            <div className="mt-4">
-              <Link href="/medications/add" className="inline-block px-5 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold hover:brightness-110 transition-all">
-                {t("patient.home.addMedication")}
-              </Link>
+
+              {/* Progress Bar Track Stretching Across */}
+              <div className="flex-1 flex items-center gap-4 w-full">
+                <div className="flex-1">
+                  <AppProgressBar value={current} max={total} isCritical={isCritical} />
+                </div>
+
+                {/* Counter & Icon Refill Action */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <span
+                    className={`text-xs sm:text-sm font-semibold font-mono ${isCritical ? 'text-error font-bold' : 'text-on-surface-variant'
+                      }`}
+                  >
+                    {current}/{total} {t('patient.home.left')}
+                  </span>
+
+                  {/* Refill Action Button with Arrow Right Icon */}
+                  <AppButton
+                    type="button"
+                    variant={isCritical ? 'errorContainer' : 'primaryContainer'}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert(t('patient.home.refillRequested', { name: med.name }));
+                    }}
+                    rightIcon={
+                      <svg className="w-3.5 h-3.5 rtl:rotate-180 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    }
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
     </section>
   );
@@ -467,12 +290,10 @@ function HealthSummary({ adherenceRate, takenDoses, totalDoses }) {
             { day: "S", status: "pending" }
           ].map((item, idx) => (
             <div key={idx} className="flex flex-col items-center gap-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${
-                item.status === "taken" ? "bg-primary" : item.status === "missed" ? "bg-error" : "border-2 border-outline-variant bg-transparent opacity-60"
-              }`}></div>
-              <span className={`text-[10px] font-bold text-primary uppercase ${
-                item.status === "pending" ? "opacity-60" : ""
-              }`}>{item.day}</span>
+              <div className={`w-2.5 h-2.5 rounded-full ${item.status === "taken" ? "bg-primary" : item.status === "missed" ? "bg-error" : "border-2 border-outline-variant bg-transparent opacity-60"
+                }`}></div>
+              <span className={`text-[10px] font-bold text-primary uppercase ${item.status === "pending" ? "opacity-60" : ""
+                }`}>{item.day}</span>
             </div>
           ))}
         </div>
@@ -553,47 +374,19 @@ function CareCircle() {
   );
 }
 
-// ==========================================
-// SUB-COMPONENT: MOBILE NAVIGATION
-// ==========================================
-function MobileNav({ t }) {
-  return (
-    <nav className="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
-      <Link className="flex flex-col items-center justify-center text-primary px-3 py-1 scale-100 font-bold" href="/home">
-        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
-        <span className="font-label-sm text-[10px] mt-0.5">{t("patient.nav.home")}</span>
-      </Link>
-      <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-all duration-200" href="/medications">
-        <span className="material-symbols-outlined">medication</span>
-        <span className="font-label-sm text-[10px] mt-0.5">{t("patient.nav.meds")}</span>
-      </Link>
-      <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-all duration-200" href="/adherence">
-        <span className="material-symbols-outlined">query_stats</span>
-        <span className="font-label-sm text-[10px] mt-0.5">{t("patient.nav.adherence")}</span>
-      </Link>
-      <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-all duration-200" href="/caregivers">
-        <span className="material-symbols-outlined">groups</span>
-        <span className="font-label-sm text-[10px] mt-0.5">{t("patient.nav.care")}</span>
-      </Link>
-      <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-all duration-200" href="/profile">
-        <span className="material-symbols-outlined">person</span>
-        <span className="font-label-sm text-[10px] mt-0.5">{t("patient.nav.profile")}</span>
-      </Link>
-    </nav>
-  );
-}
+
 
 // ==========================================
 // MAIN PATIENT HOME DASHBOARD COMPONENT
 // ==========================================
 export default function PatientHomeComponent() {
   const { user } = useAuth();
-  
+
   // Dynamically resolve full display name based on user profile firstName/lastName, falling back to name/email
   const userName = user?.firstName
     ? `${user.firstName} ${user.lastName || ""}`.trim()
     : user?.name || user?.email || "";
-    
+
   const userAvatarLetter = (userName[0] || "U").toUpperCase();
 
   const { t, locale, toggleLanguage } = useTranslation();
@@ -625,95 +418,59 @@ export default function PatientHomeComponent() {
   });
 
   return (
-    <div 
-      dir={locale === "ar" ? "rtl" : "ltr"}
-      className="bg-background text-on-surface font-sans antialiased min-h-screen flex overflow-hidden selection:bg-primary-container selection:text-on-primary-container"
-    >
-      {/* 1. Sidebar Component (Aside) */}
-      <Sidebar 
+    <MainLayout activePath="/home">
+      {/* Welcome Banner */}
+      <WelcomeBanner
         userName={userName}
-        userAvatarLetter={userAvatarLetter}
-        locale={locale}
-        toggleLanguage={toggleLanguage}
-        t={t}
+        currentDateFormatted={currentDateFormatted}
       />
 
-      {/* Main Content View */}
-      <main className="flex-1 flex flex-col overflow-y-auto pb-20 lg:pb-0 h-screen">
-        
-        {/* 2. Desktop Header */}
-        <DesktopHeader 
-          resolvedTheme={resolvedTheme} 
-          setTheme={setTheme} 
-          mounted={mounted} 
-        />
+      {/* Inner Content Grid */}
+      <div className="p-6 lg:p-10 flex-1 grid grid-cols-12 gap-8 lg:gap-12 pt-0">
+        {loading ? (
+          <div className="col-span-12 text-center py-16 text-on-surface-variant font-medium">
+            Loading your clinical schedule...
+          </div>
+        ) : error ? (
+          <div className="col-span-12 bg-error-container/20 border border-error/20 text-error p-5 rounded-2xl text-center font-bold text-sm">
+            {error}
+          </div>
+        ) : (
+          <>
+            {/* Left Column: Timeline & Medications Cabinet */}
+            <div className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col gap-8 lg:gap-12">
+              {/* Active Timeline Section */}
+              <ActiveTimeline
+                doses={doses}
+                nextDose={nextDose}
+                confirmDose={confirmDose}
+                skipDose={skipDose}
+                locale={locale}
+                t={t}
+              />
 
-        {/* 3. Mobile Header */}
-        <MobileHeader 
-          locale={locale} 
-          toggleLanguage={toggleLanguage} 
-          resolvedTheme={resolvedTheme} 
-          setTheme={setTheme} 
-          mounted={mounted} 
-        />
-
-        {/* 4. Welcome Banner */}
-        <WelcomeBanner 
-          userName={userName} 
-          currentDateFormatted={currentDateFormatted} 
-        />
-
-        {/* Inner Content Grid */}
-        <div className="p-6 lg:p-10 flex-1 grid grid-cols-12 gap-8 lg:gap-12 pt-0">
-          {loading ? (
-            <div className="col-span-12 text-center py-16 text-on-surface-variant font-medium">
-              Loading your clinical schedule...
+              {/* Cabinet Quick View Section */}
+              <CabinetQuickView
+                medications={medications}
+                t={t}
+              />
             </div>
-          ) : error ? (
-            <div className="col-span-12 bg-error-container/20 border border-error/20 text-error p-5 rounded-2xl text-center font-bold text-sm">
-              {error}
+
+            {/* Right Column: Health Summary & Caregivers Circle */}
+            <div className="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-8 lg:gap-12">
+              {/* Health Summary Section (Biometric Waveform) */}
+              <HealthSummary
+                adherenceRate={adherenceRate}
+                takenDoses={takenDoses}
+                totalDoses={totalDoses}
+              />
+
+              {/* Caregivers Circle Section */}
+              <CareCircle />
             </div>
-          ) : (
-            <>
-              {/* Left Column: Timeline & Medications Cabinet */}
-              <div className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col gap-8 lg:gap-12">
-                {/* 5. Active Timeline Section */}
-                <ActiveTimeline 
-                  doses={doses} 
-                  nextDose={nextDose} 
-                  confirmDose={confirmDose} 
-                  skipDose={skipDose} 
-                  locale={locale}
-                  t={t} 
-                />
-
-                {/* 6. Cabinet Quick View Section */}
-                <CabinetQuickView 
-                  medications={medications} 
-                  t={t} 
-                />
-              </div>
-
-              {/* Right Column: Health Summary & Caregivers Circle */}
-              <div className="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-8 lg:gap-12">
-                {/* 7. Health Summary Section (Biometric Waveform) */}
-                <HealthSummary 
-                  adherenceRate={adherenceRate} 
-                  takenDoses={takenDoses} 
-                  totalDoses={totalDoses} 
-                />
-
-                {/* 8. Caregivers Circle Section */}
-                <CareCircle />
-              </div>
-            </>
-          )}
-        </div>
-      </main>
-
-      {/* 9. Mobile Navigation Bar (Mobile only) */}
-      <MobileNav t={t} />
-
-    </div>
+          </>
+        )}
+      </div>
+    </MainLayout>
   );
 }

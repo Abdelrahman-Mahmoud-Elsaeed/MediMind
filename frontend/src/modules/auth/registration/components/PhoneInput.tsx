@@ -34,12 +34,19 @@ export function PhoneInput({
   showAsterisk = false,
 }: PhoneInputProps) {
   const { isRtl, t } = useRTL();
+  const isPhone = isPhoneInput !== undefined ? isPhoneInput : (id === "phone" || id === "emergencyContactPhone");
 
   const fieldLabel = label || t("auth.register.emailOrPhoneLabel");
-  const fieldPlaceholder = placeholder || t("auth.register.emailOrPhonePlaceholder");
+  const defaultPhonePlaceholder = countrySelectorProps?.placeholder || "100 000 0000";
+  const fieldPlaceholder =
+    placeholder ||
+    (isPhone
+      ? defaultPhonePlaceholder
+      : t("auth.register.emailOrPhonePlaceholder"));
 
-  const hasError = touched && !!error;
-  const isValid = touched && !error && value !== "";
+  // errors are pre-filtered by the hook (only shown when field is touched/autofilled/submit-attempted)
+  const hasError = !!error;
+  const isValid = !error && value !== "" && value !== undefined;
 
   const stateBorderClass = hasError
     ? "border-error focus:border-error focus:ring-error/20"
@@ -56,7 +63,7 @@ export function PhoneInput({
       <div className="relative flex items-center">
         <span
           className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
-            } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none z-10 text-[22px]`}
+            } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none z-10 !text-[22px]`}
         >
           {isPhoneInput ? "call" : "mail"}
         </span>

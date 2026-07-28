@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useMedicationsCabinet } from "../hooks/useMedicationsCabinet";
+import { AppProgressBar } from "@/shared/components/ui/AppProgressBar";
+import { AppBadge } from "@/shared/components/ui/AppBadge";
 
 export default function MedicationsCabinetComponent() {
   const { t, locale, toggleLanguage } = useTranslation();
@@ -147,29 +149,19 @@ export default function MedicationsCabinetComponent() {
                         </p>
                       </div>
                     </div>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
-                      med.isActive ? "bg-secondary/10 text-secondary" : "bg-slate-500/10 text-slate-400"
-                    }`}>
+                    <AppBadge variant={med.isActive ? "success" : "outline"}>
                       {med.isActive ? (locale === "ar" ? "نشط" : "Active") : (locale === "ar" ? "غير نشط" : "Inactive")}
-                    </span>
+                    </AppBadge>
                   </div>
 
                   {/* Progress Count / Refill alert */}
                   <div className="pt-2 border-t border-outline-variant/10 flex flex-col gap-2">
-                    <div className="flex justify-between text-xs font-label-sm text-on-surface-variant/80">
-                      <span>Cabinet Stock</span>
-                      <span>
-                        {currentStock} / {totalStock} {t("patient.cabinet.remaining")}
-                      </span>
-                    </div>
-                    <div className="w-full bg-background h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isLowStock ? "bg-error" : "bg-primary"
-                        }`}
-                        style={{ width: `${Math.min(100, (currentStock / totalStock) * 100)}%` }}
-                      ></div>
-                    </div>
+                    <AppProgressBar
+                      value={currentStock}
+                      max={totalStock}
+                      label="Cabinet Stock"
+                      isCritical={isLowStock}
+                    />
                     {isLowStock && (
                       <div className="flex items-center gap-1.5 text-error text-xs font-bold mt-1">
                         <span className="material-symbols-outlined text-sm">warning</span>

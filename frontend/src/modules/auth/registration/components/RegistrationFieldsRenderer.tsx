@@ -258,7 +258,6 @@ export function RegistrationFieldsRenderer({
                 isPhoneInput={true}
                 countrySelectorProps={countrySelectorProps}
                 label={t("auth.register.emergencyContactPhoneLabel")}
-                placeholder={t("auth.register.emergencyContactPhonePlaceholder")}
                 required
                 showAsterisk={true}
               />

@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { LogOut } from 'lucide-react';
 import { useTranslation } from '@/shared/lib/i18nContext';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
+import { LanguageToggler } from '@/shared/components/LanguageToggler';
+import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 
 export const SidebarFooter: React.FC = () => {
-  const { locale, toggleLanguage } = useTranslation();
+  const { locale } = useTranslation();
+  const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -12,52 +18,54 @@ export const SidebarFooter: React.FC = () => {
   }, []);
 
   const isAr = mounted && locale === 'ar';
+  const userName = user?.name || user?.email?.split('@')[0] || (isAr ? 'سارة' : 'Sarah');
+  const userRole = isAr ? 'مريض' : 'Patient';
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
-    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-5" suppressHydrationWarning>
-      {/* Language Switch Pill */}
-      <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-full w-fit max-w-[140px]">
-        <button
-          type="button"
-          onClick={() => isAr && toggleLanguage()}
-          className={`flex-1 px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
-            !isAr
-              ? 'bg-[#006C4E] text-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-          }`}
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          onClick={() => !isAr && toggleLanguage()}
-          className={`flex-1 px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
-            isAr
-              ? 'bg-[#006C4E] text-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-          }`}
-        >
-          AR
-        </button>
+    <div className="pt-4 border-t border-outline-variant/30 space-y-3.5" suppressHydrationWarning>
+      {/* Language Switcher */}
+      <div className="w-full flex justify-center">
+        <LanguageToggler />
       </div>
 
       {/* Patient Profile Card */}
-      <div className="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group">
-        <div className="relative">
-          <img
-            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80"
-            alt="Sarah"
-            className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500/30 group-hover:border-emerald-500 transition-colors"
-          />
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-            {isAr ? 'سارة' : 'Sarah'}
-          </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            {isAr ? 'مريض' : 'Patient'}
-          </span>
+      <div className="p-2.5 rounded-2xl bg-surface-container/40 dark:bg-surface-container/60 border border-outline-variant/20 hover:border-primary/30 hover:bg-surface-container/80 transition-all duration-200 shadow-2xs">
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0 group">
+            <div className="relative shrink-0">
+              <Avatar className="w-10 h-10 border-2 border-primary/30 group-hover:border-primary transition-colors">
+                <AvatarImage
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80"
+                  alt={userName}
+                />
+                <AvatarFallback>{userInitial}</AvatarFallback>
+              </Avatar>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary border-2 border-background rounded-full" />
+            </div>
+
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                {userName}
+              </span>
+              <span className="text-[11px] text-on-surface-variant font-medium capitalize">
+                {userRole}
+              </span>
+            </div>
+          </Link>
+
+          {/* Quick Sign Out Action Button */}
+          {logout && (
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="w-8 h-8 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs"
+              title={isAr ? 'تسجيل الخروج' : 'Sign Out'}
+              aria-label="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

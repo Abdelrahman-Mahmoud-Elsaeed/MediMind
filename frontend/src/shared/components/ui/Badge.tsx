@@ -1,29 +1,42 @@
-import React from 'react';
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/shared/lib/utils';
 
-interface BadgeProps {
-  children: React.ReactNode;
-  variant?: 'emerald' | 'amber' | 'slate' | 'rose' | 'teal';
-  className?: string;
+const badgeVariants = cva(
+  'inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  {
+    variants: {
+      variant: {
+        default:
+          'bg-primary-container/30 text-primary border border-primary/30',
+        secondary:
+          'bg-secondary-container text-on-secondary-container border border-outline-variant/30',
+        destructive:
+          'bg-error-container/40 text-error border border-error/30',
+        outline:
+          'text-on-surface border border-outline-variant/40 bg-surface-container/20',
+        success:
+          'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30',
+        warning:
+          'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30',
+        info:
+          'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  );
 }
 
-export const Badge: React.FC<BadgeProps> = ({
-  children,
-  variant = 'emerald',
-  className = '',
-}) => {
-  const variantStyles = {
-    emerald: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/60',
-    teal: 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border-teal-200/60 dark:border-teal-800/60',
-    amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/60',
-    slate: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-    rose: 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200/60 dark:border-rose-800/60',
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${variantStyles[variant]} ${className}`}
-    >
-      {children}
-    </span>
-  );
-};
+export { Badge, badgeVariants };
