@@ -1,31 +1,32 @@
-import * as React from 'react';
-import { cn } from '@/shared/lib/utils';
+import React from 'react';
+import { motion } from 'framer-motion';
 
-export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
-  value?: number;
-  indicatorClassName?: string;
+interface ProgressBarProps {
+  value: number; // 0 - 100
+  max?: number;
+  color?: string; // e.g. '#16B364'
+  height?: string;
+  className?: string;
 }
 
-const ProgressBar = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value = 0, indicatorClassName, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'relative h-2 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800',
-        className
-      )}
-      {...props}
-    >
-      <div
-        className={cn(
-          'h-full w-full flex-1 bg-primary transition-all duration-500 rounded-full',
-          indicatorClassName
-        )}
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+export const ProgressBar: React.FC<ProgressBarProps> = ({
+  value,
+  max = 100,
+  color = '#16B364',
+  height = 'h-2',
+  className = '',
+}) => {
+  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+
+  return (
+    <div className={`w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden ${height} ${className}`}>
+      <motion.div
+        className="h-full rounded-full"
+        style={{ backgroundColor: color }}
+        initial={{ width: 0 }}
+        animate={{ width: `${percentage}%` }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
       />
     </div>
-  )
-);
-ProgressBar.displayName = 'ProgressBar';
-
-export { ProgressBar };
+  );
+};

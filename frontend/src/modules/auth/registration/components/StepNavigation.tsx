@@ -1,58 +1,43 @@
 import React from "react";
 import Link from "next/link";
 import { useRTL } from "../hooks/useRTL";
-import { AppButton } from "@/shared/components/ui/AppButton";
 
-interface StepNavigationProps {
-  currentStep: number;
-  onBack: () => void;
-  isFormValid: boolean;
-  loading?: boolean;
-}
-
-export function StepNavigation({ currentStep, onBack, isFormValid, loading = false }: StepNavigationProps) {
-  const { t } = useRTL();
+export function StepNavigation({ currentStep, onBack, isFormValid, loading }) {
+  const { isRtl, t } = useRTL();
 
   return (
     <>
       <div className="flex gap-3 pt-4">
         {currentStep > 1 && (
-          <AppButton
+          <button
             type="button"
-            variant="outline"
             onClick={onBack}
             disabled={loading}
-            size="lg"
-            className="w-1/3 h-[58px] rounded-full text-base"
-            leftIcon={
-              <span className="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_back</span>
-            }
+            className="w-1/3 h-[58px] bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-semibold text-base rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t("auth.register.back")}
-          </AppButton>
+            <span className="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_back</span>
+            <span>{t("auth.register.back")}</span>
+          </button>
         )}
 
-        <AppButton
+        <button
           type="submit"
-          variant="default"
-          size="lg"
           disabled={!isFormValid || loading}
-          isLoading={loading}
-          className="flex-1 h-[58px] rounded-full text-base md:text-lg group"
-          rightIcon={
-            !loading && (
-              <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1">
-                arrow_forward
-              </span>
-            )
-          }
+          className="flex-1 h-[58px] bg-primary text-on-primary rounded-full font-semibold text-base md:text-lg hover:bg-primary/90 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md group focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading
-            ? t("auth.register.completingButton") || "..."
-            : currentStep === 3
-              ? t("auth.register.completeButton")
-              : t("auth.register.continueButton")}
-        </AppButton>
+          <span>
+            {loading
+              ? t("auth.register.completingButton") || "..."
+              : currentStep === 3
+                ? t("auth.register.completeButton")
+                : t("auth.register.continueButton")}
+          </span>
+          <span
+            className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+          >
+            arrow_forward
+          </span>
+        </button>
       </div>
 
       {currentStep === 1 && (

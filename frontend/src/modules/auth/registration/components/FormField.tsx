@@ -1,7 +1,5 @@
 import React, { useRef } from "react";
 import { useRTL } from "../hooks/useRTL";
-import { AppInput } from "@/shared/components/ui/AppInput";
-import { cn } from "@/shared/lib/utils";
 
 interface FormFieldProps {
   id: string;
@@ -39,43 +37,48 @@ export function FormField({
   children,
 }: FormFieldProps) {
   const { isRtl } = useRTL();
+  const inputRef = useRef(null);
 
-  // errors are pre-filtered by the hook (only shown when field is touched/autofilled/submit-attempted)
-  const hasError = !!error;
-  const isValid = !error && value !== "" && value !== undefined;
+  // Determine border and visual states
+  const hasError = touched && !!error;
+  const isValid = touched && !error && value !== "";
 
   const stateBorderClass = hasError
-    ? "border-error focus-visible:border-error focus-visible:ring-error/20"
+    ? "border-error focus:border-error focus:ring-error/20"
     : isValid
-      ? "border-emerald-500/80 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20"
-      : "border-outline-variant focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";
+      ? "border-emerald-500/80 focus:border-emerald-500 focus:ring-emerald-500/20"
+      : "border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20";
+
+  const placeholderContrastClass = "placeholder:text-on-surface-variant/60 dark:placeholder:text-on-surface-variant/70";
+
+  const handleContainerClick = () => {
+    if (disabled) return;
+    if (type === "date" && inputRef.current) {
+      try {
+        inputRef.current.showPicker?.();
+      } catch (err) {
+        inputRef.current.focus();
+      }
+    } else {
+      inputRef.current?.focus();
+    }
+  };
 
   const resolvedDir = dir || (isRtl ? "rtl" : "ltr");
-
-  const labelContent = (
-    <span>
-      {label}
-      {showAsterisk && <span className="text-error ms-1"> *</span>}
-    </span>
-  );
-
-  const leftIconNode = icon ? (
-    <span className="material-symbols-outlined text-[22px]">
-      {icon}
-    </span>
-  ) : undefined;
+  const alignmentClass = resolvedDir === "ltr" && isRtl ? "text-right" : "";
 
   if (type === "select") {
     return (
-      <div className="w-full text-start">
+      <div className="w-full">
         <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
-          {labelContent}
+          {label}
+          {showAsterisk && <span className="text-error ms-1"> *</span>}
         </label>
-        <div className="relative flex items-center w-full">
+        <div className="relative">
           {icon && (
             <span
               className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
-                } inset-y-0 my-auto !flex !items-center !justify-center text-on-surface-variant pointer-events-none !text-[22px] z-10`}
+                } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
             >
               {icon}
             </span>
@@ -87,20 +90,14 @@ export function FormField({
             onBlur={onBlur}
             disabled={disabled}
             dir={resolvedDir}
-            style={{
-              paddingLeft: isRtl ? '40px' : icon ? '48px' : '16px',
-              paddingRight: isRtl ? (icon ? '48px' : '16px') : '40px',
-            }}
-            className={cn(
-              "w-full h-[58px] font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border transition-all rounded-[16px] shadow-2xs appearance-none cursor-pointer disabled:opacity-50 disabled:bg-surface-container-low",
-              stateBorderClass
-            )}
+            className={`w-full h-[58px] ${icon ? "ps-[48px] pe-[48px]" : "ps-4 pe-[36px]"
+              } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none transition-all rounded-[16px] shadow-sm appearance-none cursor-pointer disabled:opacity-50 disabled:bg-surface-container-low`}
           >
             {children}
           </select>
           <span
             className={`material-symbols-outlined absolute ${isRtl ? "start-3" : "end-3"
-              } inset-y-0 my-auto !flex !items-center !justify-center text-on-surface-variant pointer-events-none !text-[20px] z-10`}
+              } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px] z-10`}
           >
             unfold_more
           </span>
@@ -112,29 +109,53 @@ export function FormField({
     );
   }
 
-  const todayMax = type === "date" ? new Date().toISOString().split('T')[0] : undefined;
-
   return (
-    <div className="w-full text-start">
-      <AppInput
-        id={id}
-        type={type}
-        required={required}
-        max={todayMax}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        disabled={disabled}
-        placeholder={placeholder}
-        dir={resolvedDir}
-        error={hasError ? error : undefined}
-        label={typeof label === 'string' ? label : undefined}
-        leftIcon={leftIconNode}
-        className={cn(
-          "h-[58px] rounded-[16px] text-base md:text-lg bg-surface-container-lowest shadow-2xs",
-          stateBorderClass
+    <div className="w-full">
+      <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
+        {label}
+        {showAsterisk && <span className="text-error ms-1"> *</span>}
+      </label>
+      <div
+        onClick={handleContainerClick}
+        className="relative cursor-text"
+      >
+        {icon && (
+          <span
+            className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"
+              } top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
+          >
+            {icon}
+          </span>
         )}
-      />
+        <input
+          ref={inputRef}
+          id={id}
+          type={type}
+          required={required}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={disabled}
+          placeholder={placeholder}
+          dir={resolvedDir}
+          className={`w-full h-[58px] ${icon ? "ps-[48px] pe-[48px]" : "px-4"
+            } font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none ${placeholderContrastClass} transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low ${alignmentClass} ${type === "date" ? "[&::-webkit-calendar-picker-indicator]:opacity-0 cursor-pointer" : ""
+            }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (type === "date") {
+              try {
+                (e.target as any).showPicker?.();
+              } catch (err) {
+                // fall back to default focus/click
+              }
+            }
+          }}
+        />
+      </div>
+      {hasError && (
+        <p className="text-error text-xs md:text-sm font-medium mt-1.5 text-start">{error}</p>
+      )}
     </div>
   );
 }

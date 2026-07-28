@@ -1,31 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AppCard } from '@/shared/components/ui/AppCard';
+import { Card } from '@/shared/components/ui/Card';
 import { TimelineItem, TimelineItemData } from './TimelineItem';
 import { useTranslation } from '@/shared/lib/i18nContext';
 
 export const TimelineCard: React.FC = () => {
-  const { locale, t } = useTranslation();
+  const { locale } = useTranslation();
 
   const initialItems: TimelineItemData[] = [
     {
       id: '1',
-      timeSlot: t('patient.home.morningDose'),
+      timeSlot: locale === 'ar' ? 'جرعة الصباح' : 'Morning Dose',
       medication: locale === 'ar' ? 'ليزينوبريل • تم التناول الساعة 07:45 ص' : 'Lisinopril • Taken at 07:45 AM',
       time: '08:00 AM',
       status: 'completed',
     },
     {
       id: '2',
-      timeSlot: t('patient.home.lunchtimeDose'),
+      timeSlot: locale === 'ar' ? 'جرعة الغداء' : 'Lunchtime Dose',
       medication: locale === 'ar' ? 'أتورفاستاتين 10مجم - قرص واحد' : 'Atorvastatin 10mg - 1 Tablet',
       time: '01:00 PM',
       status: 'due',
     },
     {
       id: '3',
-      timeSlot: t('patient.home.eveningDose'),
+      timeSlot: locale === 'ar' ? 'جرعة المساء' : 'Evening Dose',
       medication: locale === 'ar' ? 'سيدوفاج/ميتفورمين 500مجم - قادمة' : 'Metformin 500mg - Upcoming',
       time: '08:00 PM',
       status: 'upcoming',
@@ -60,30 +60,29 @@ export const TimelineCard: React.FC = () => {
   });
 
   return (
-    <AppCard className="hover:shadow-lg transition-shadow">
+    <Card className="hover:shadow-lg transition-shadow">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-extrabold text-on-surface tracking-tight">
-          {t('patient.home.activeTimeline')}
+        <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+          {locale === 'ar' ? 'الجدول الزمني للجرعات' : 'Active Timeline'}
         </h2>
-        <span className="text-xs font-semibold text-on-surface-variant font-mono">
-          {t('patient.home.todayDate', { date: formattedDate })}
+        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+          {locale === 'ar' ? `اليوم، ${formattedDate}` : `Today, ${formattedDate}`}
         </span>
       </div>
 
-      {/* Timeline Items List */}
-      <div className="space-y-0">
+      {/* Timeline Items */}
+      <div className="space-y-1">
         {items.map((item, index) => (
           <TimelineItem
             key={item.id}
             item={item}
-            isFirst={index === 0}
             isLast={index === items.length - 1}
             onMarkAsTaken={handleMarkAsTaken}
             onSnooze={handleSnooze}
           />
         ))}
       </div>
-    </AppCard>
+    </Card>
   );
 };

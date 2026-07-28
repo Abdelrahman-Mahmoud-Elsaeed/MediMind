@@ -35,10 +35,10 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
   const isUrgent = medication.status === 'urgent';
 
   const iconBgMap: Record<Medication['iconType'], string> = {
-    pill: 'bg-primary-container/20 text-primary',
-    bottle: 'bg-primary-container/20 text-primary',
-    kit: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
-    urgent_pill: 'bg-error-container/20 text-error',
+    pill: 'bg-[#E8F0FE] text-[#1A73E8] dark:bg-blue-950/40 dark:text-blue-400',
+    bottle: 'bg-[#E8F0FE] text-[#1A73E8] dark:bg-blue-950/40 dark:text-blue-400',
+    kit: 'bg-[#FFE4DE] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400',
+    urgent_pill: 'bg-[#FEE2E2] text-[#C5221F] dark:bg-red-950/40 dark:text-red-400',
   };
 
   return (
@@ -49,8 +49,8 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
       transition={{ duration: 0.2 }}
       className={`rounded-[22px] p-5 transition-all duration-200 border flex flex-col justify-between ${
         isUrgent
-          ? 'bg-error-container/10 border-error/30 shadow-2xs'
-          : 'bg-surface-container-lowest dark:bg-surface-container-low border-outline-variant/30 text-on-surface shadow-2xs hover:shadow-md'
+          ? 'bg-[#FDF2F2] dark:bg-rose-950/20 border-[#FCA5A5]/60 shadow-xs'
+          : 'bg-white dark:bg-slate-900 border-[#EEF2F7] dark:border-slate-800 shadow-xs hover:shadow-md'
       }`}
     >
       <div>

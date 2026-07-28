@@ -1,7 +1,5 @@
 import React from "react";
 import { useRTL } from "../hooks/useRTL";
-import { AppInput } from "@/shared/components/ui/AppInput";
-import { cn } from "@/shared/lib/utils";
 
 interface PasswordInputProps {
   id?: string;
@@ -36,67 +34,62 @@ export function PasswordInput({
 }: PasswordInputProps) {
   const { isRtl, t } = useRTL();
 
+
   const fieldLabel = label || t("auth.register.passwordLabel");
   const fieldPlaceholder = placeholder || t("auth.register.passwordPlaceholder");
 
-  const hasError = !!error;
-  const isValid = !error && value !== "";
+  const hasError = touched && !!error;
+  const isValid = touched && !error && value !== "";
 
   const stateBorderClass = hasError
-    ? "border-error focus-visible:border-error focus-visible:ring-error/20"
+    ? "border-error focus:border-error focus:ring-error/20"
     : isValid
-      ? "border-emerald-500/80 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20"
-      : "border-outline-variant focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";
-
+      ? "border-emerald-500/80 focus:border-emerald-500 focus:ring-emerald-500/20"
+      : "border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20";
   return (
-    <div className="w-full text-start">
-      {label ? (
-        <div className="mb-2">
-          {typeof label === 'string' ? (
-            <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface" htmlFor={id}>
-              {fieldLabel}
-              {showAsterisk && <span className="text-error ms-1"> *</span>}
-            </label>
-          ) : (
-            fieldLabel
-          )}
-        </div>
-      ) : null}
+    <div className="w-full">
+      <label className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-2" htmlFor={id}>
+        {fieldLabel}
+        {showAsterisk && <span className="text-error ms-1"> *</span>}
+      </label>
+      <div className="relative">
+        {/* Lock Icon */}
+        <span
+          className={`material-symbols-outlined absolute ${isRtl ? "end-4" : "start-4"} top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[22px] z-10`}
+        >
+          lock
+        </span>
 
-      <AppInput
-        id={id}
-        type={showPassword ? "text" : "password"}
-        required={required}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        disabled={disabled}
-        placeholder={fieldPlaceholder}
-        dir={isRtl ? "rtl" : "ltr"}
-        error={hasError ? error : undefined}
-        leftIcon={
+        {/* Password Input */}
+        <input
+          id={id}
+          type={showPassword ? "text" : "password"}
+          required={required}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={disabled}
+          placeholder={fieldPlaceholder}
+          dir={isRtl ? "rtl" : "ltr"}
+          className={`w-full h-[58px] ps-[48px] pe-[48px] font-['Inter'] text-base md:text-lg text-on-surface bg-surface-container-lowest border ${stateBorderClass} focus:outline-none placeholder:text-on-surface-variant/60 dark:placeholder:text-on-surface-variant/70 transition-all rounded-[16px] shadow-sm disabled:opacity-50 disabled:bg-surface-container-low`}
+        />
+
+        {/* Eye Visibility Toggle */}
+        <button
+          type="button"
+          onClick={onTogglePassword}
+          disabled={disabled}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          className={`absolute end-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full p-1 z-10 disabled:opacity-50`}
+        >
           <span className="material-symbols-outlined text-[22px]">
-            lock
+            {showPassword ? "visibility" : "visibility_off"}
           </span>
-        }
-        rightIcon={
-          <button
-            type="button"
-            onClick={onTogglePassword}
-            disabled={disabled}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            className="text-on-surface-variant hover:text-on-surface cursor-pointer focus:outline-hidden rounded-full p-1 transition-colors disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[22px]">
-              {showPassword ? "visibility" : "visibility_off"}
-            </span>
-          </button>
-        }
-        className={cn(
-          "h-[58px] rounded-[16px] text-base md:text-lg bg-surface-container-lowest shadow-2xs",
-          stateBorderClass
-        )}
-      />
+        </button>
+      </div>
+      {hasError && (
+        <p className="text-error text-xs md:text-sm font-medium mt-1.5 text-start">{error}</p>
+      )}
     </div>
   );
 }
