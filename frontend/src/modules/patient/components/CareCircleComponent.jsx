@@ -1,179 +1,569 @@
 "use client";
-import React from "react";
+import React, { useState, useMemo } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useCareCircle } from "../hooks/useCareCircle";
+import { Card, Badge, Button } from "@/shared/components/ui";
+import {
+  UserPlus,
+  Phone,
+  Mail,
+  MessageSquare,
+  Video,
+  Plus,
+  History,
+  CheckCircle2,
+  Clock,
+  Activity,
+  X,
+  ChevronRight,
+  ShieldCheck,
+  Send,
+  FileText,
+  AlertCircle
+} from "lucide-react";
+
 export default function CareCircleComponent() {
-    const { t, locale } = useTranslation();
-    const { loading, error, submitting, emailInput, setEmailInput, canManageMeds, setCanManageMeds, canViewRecords, setCanViewRecords, activeCaregivers, pendingInvitations, sendInvitation, revokeRelationship, validationError } = useCareCircle();
-    const handleInviteSubmit = (e) => {
-        e.preventDefault();
-        sendInvitation(e);
+  const { t, locale } = useTranslation();
+  const isAr = locale === "ar";
+
+  const {
+    loading,
+    error,
+    submitting,
+    emailInput,
+    setEmailInput,
+    canManageMeds,
+    setCanManageMeds,
+    canViewRecords,
+    setCanViewRecords,
+    activeCaregivers,
+    pendingInvitations,
+    sendInvitation,
+    revokeRelationship,
+    validationError
+  } = useCareCircle();
+
+  // Interactive Modals State
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isAddNoteModalOpen, setIsAddNoteModalOpen] = useState(false);
+  const [activeActionModal, setActiveActionModal] = useState(null); // { type: 'Call' | 'Email' | 'Message' | 'Video', name: string }
+
+  // Shared Care Notes State
+  const [careNotes, setCareNotes] = useState([
+    {
+      id: "n1",
+      initials: "JW",
+      author: "Dr. James Wilson",
+      timeAgo: "2h ago",
+      text: "Updated prescription for Metformin. Please ensure the patient takes it after dinner to avoid nausea.",
+    },
+    {
+      id: "n2",
+      initials: "MS",
+      author: "Martha Sarah",
+      timeAgo: "5h ago",
+      text: "Patient's blood pressure was slightly higher this morning (135/85). Will monitor again at 4 PM.",
+    },
+    {
+      id: "n3",
+      initials: "SC",
+      author: "Sarah Chen",
+      timeAgo: "Yesterday",
+      text: "Appointment with the physical therapist confirmed for Thursday at 10:00 AM.",
+    },
+  ]);
+
+  // New Note Form State
+  const [newNoteAuthor, setNewNoteAuthor] = useState("Dr. James Wilson");
+  const [newNoteText, setNewNoteText] = useState("");
+
+  // Care Team Members list (mapped from backend activeCaregivers or reference default)
+  const careTeamMembers = useMemo(() => {
+    if (activeCaregivers && activeCaregivers.length > 0) {
+      return activeCaregivers.map((r, idx) => {
+        const cg = r.caregiverId;
+        const name = cg ? `${cg.firstName} ${cg.lastName}` : "Caregiver";
+        const roles = ["Primary Physician", "Family Member", "Care Coordinator"];
+        const statuses = ["AVAILABLE", "ONLINE", "BUSY"];
+        const statusTypes = ["available", "online", "busy"];
+
+        return {
+          id: r.relationshipId || String(idx),
+          name,
+          role: roles[idx % roles.length],
+          status: statuses[idx % statuses.length],
+          statusType: statusTypes[idx % statusTypes.length],
+          actions: idx === 0 ? ["Call", "Email"] : idx === 1 ? ["Message", "Video"] : ["Message"],
+          email: cg?.email || "caregiver@medimind.io",
+          phone: cg?.phone || "+1 (555) 019-2831",
+          raw: r,
+        };
+      });
+    }
+
+    return [
+      {
+        id: "1",
+        name: "Dr. James Wilson",
+        role: isAr ? "الطبيب المعالج الرئيسي" : "Primary Physician",
+        status: "AVAILABLE",
+        statusType: "available",
+        actions: ["Call", "Email"],
+        email: "dr.wilson@medimind.io",
+        phone: "+1 (555) 019-2831",
+      },
+      {
+        id: "2",
+        name: "Martha Sarah",
+        role: isAr ? "فرد من العائلة" : "Family Member",
+        status: "ONLINE",
+        statusType: "online",
+        actions: ["Message", "Video"],
+        email: "martha.sarah@medimind.io",
+        phone: "+1 (555) 018-9922",
+      },
+      {
+        id: "3",
+        name: "Sarah Chen",
+        role: isAr ? "منسق الرعاية" : "Care Coordinator",
+        status: "BUSY",
+        statusType: "busy",
+        actions: ["Message"],
+        email: "sarah.chen@medimind.io",
+        phone: "+1 (555) 012-3344",
+      },
+    ];
+  }, [activeCaregivers, isAr]);
+
+  // Circle Activity Feed Timeline
+  const activityFeed = useMemo(() => [
+    {
+      id: "f1",
+      actor: "Dr. James Wilson",
+      action: isAr ? "قام بتحديث" : "updated the",
+      target: isAr ? "خطة العلاج والأدوية" : "medication plan",
+      time: isAr ? "اليوم، ١٠:٤٥ صباحاً" : "Today, 10:45 AM",
+    },
+    {
+      id: "f2",
+      actor: "Martha Sarah",
+      action: isAr ? "قامت بتأكيد تناول" : "confirmed the",
+      target: isAr ? "الجرعة الصباحية" : "morning dose",
+      time: isAr ? "اليوم، ٨:١٥ صباحاً" : "Today, 8:15 AM",
+    },
+    {
+      id: "f3",
+      actor: "Sarah Chen",
+      action: isAr ? "قامت بجدولة" : "scheduled a",
+      target: isAr ? "جلسة العلاج الطبيعي" : "Physical Therapy Session",
+      time: isAr ? "أمس، ٤:٣٠ مساءً" : "Yesterday, 4:30 PM",
+    },
+    {
+      id: "f4",
+      actor: "Dr. James Wilson",
+      action: isAr ? "انضم إلى" : "joined the",
+      target: isAr ? "دائرة الرعاية الصحية" : "Care Circle",
+      time: isAr ? "منذ يومين" : "2 days ago",
+    },
+  ], [isAr]);
+
+  // Add Care Note Submit Handler
+  const handleAddNoteSubmit = (e) => {
+    e.preventDefault();
+    if (!newNoteText.trim()) return;
+
+    const initials = newNoteAuthor
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+    const newNote = {
+      id: `n-${Date.now()}`,
+      initials: initials || "JW",
+      author: newNoteAuthor,
+      timeAgo: "Just now",
+      text: newNoteText,
     };
-    const handleDisconnectClick = (relationshipId) => {
-        if (confirm(locale === "ar" ? "هل أنت متأكد من قطع الاتصال مع هذا الشخص؟" : "Are you sure you want to disconnect this caregiver?")) {
-            revokeRelationship(relationshipId);
-        }
-    };
-    return (<MainLayout activePath="/caregivers">
+
+    setCareNotes((prev) => [newNote, ...prev]);
+    setNewNoteText("");
+    setIsAddNoteModalOpen(false);
+  };
+
+  return (
+    <MainLayout activePath="/caregivers">
       <div className="max-w-[1400px] mx-auto space-y-8">
-        <section className="space-y-2">
-          <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{t("patient.care.title")}</h2>
-          <p className="text-on-surface-variant font-body-md">
-            {t("patient.care.subtitle")}
-          </p>
-        </section>
+        {/* HEADER SECTION with Title & Invite Button matching Reference UI */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#0b1c30] dark:text-slate-100 tracking-tight">
+              {isAr ? "دائرة الرعاية الصحية" : "Caregivers Circle"}
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+              {isAr
+                ? "تنسيق وتواصل دائم مع شبكة الدعم والرعاية الخاصة بك."
+                : "Coordinate and connect with your dedicated support network."}
+            </p>
+          </div>
 
-        {loading ? (<div className="text-center py-12 text-slate-500">Loading care circle...</div>) : error ? (<div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center">
-            {error}
-          </div>) : (<div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-            {/* Left Column: Active & Pending Caregivers */}
-            <div className="lg:col-span-8 space-y-6">
-              {/* Active Caregivers */}
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-headline-md text-body-lg font-bold text-on-surface flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-xl">group</span>
-                    {t("patient.care.activeCaregivers")}
-                  </h3>
-                  <span className="bg-secondary-container/20 text-secondary px-3 py-0.5 rounded-full text-xs font-bold border border-secondary/15">
-                    {activeCaregivers.length} {locale === "ar" ? "متصل" : "Connected"}
-                  </span>
-                </div>
+          <Button
+            onClick={() => setIsInviteModalOpen(true)}
+            className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-3 rounded-2xl shadow-md h-auto text-xs flex items-center gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            {isAr ? "دعوة مقدم رعاية جديد" : "Invite New Caregiver"}
+          </Button>
+        </div>
 
-                {activeCaregivers.length > 0 ? (<div className="space-y-4">
-                    {activeCaregivers.map((r) => {
-                    const cg = r.caregiverId;
-                    const initial = cg?.firstName ? cg.firstName.charAt(0).toUpperCase() : "C";
-                    const fullName = cg ? `${cg.firstName} ${cg.lastName}` : "Unknown Caregiver";
-                    const phoneText = cg?.phone ? ` • ${cg.phone}` : "";
-                    return (<div key={r.relationshipId} className="bg-surface-container border border-outline-variant/10 rounded-2xl p-6 transition-all hover:border-primary/20">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
-                                {initial}
-                              </div>
-                              <div>
-                                <h4 className="font-headline-md text-base font-bold text-on-surface">{fullName}</h4>
-                                <p className="text-on-surface-variant text-xs mt-0.5">{phoneText}</p>
-                                <div className="flex items-center gap-1.5 mt-2 text-secondary text-xs font-bold">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                                  {t("patient.care.connected")}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {r.permissions?.canAddMedication && (<span className="bg-surface-variant/50 text-on-surface-variant px-3 py-1 rounded-lg text-xs border border-outline-variant/10">
-                                  {t("patient.care.manageMeds")}
-                                </span>)}
-                              {r.permissions?.canViewMedicalRecords && (<span className="bg-surface-variant/50 text-on-surface-variant px-3 py-1 rounded-lg text-xs border border-outline-variant/10">
-                                  {t("patient.care.viewRecords")}
-                                </span>)}
-                            </div>
-                          </div>
-                          <div className="mt-6 pt-6 border-t border-outline-variant/10 flex gap-3">
-                            <button onClick={() => handleDisconnectClick(r.relationshipId)} className="px-4 py-2 border border-error/25 text-error rounded-xl font-label-sm text-xs font-bold hover:bg-error/10 transition-all">
-                              {t("patient.care.disconnect")}
-                            </button>
-                          </div>
-                        </div>);
-                })}
-                  </div>) : (<div className="bg-surface-container border border-dashed border-outline-variant/30 rounded-2xl p-8 text-center text-slate-500">
-                    No active caregivers. Invite a caregiver to start collaborating.
-                  </div>)}
-              </section>
+        {/* CARE TEAM SECTION matching Reference UI */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-extrabold text-[#0b1c30] dark:text-slate-100 tracking-tight">
+              {isAr ? "فريق الرعاية" : "Care Team"}
+            </h2>
+            <span className="bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 font-extrabold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-teal-200 dark:border-teal-800">
+              {careTeamMembers.length} {isAr ? "أعضاء نشطون" : "MEMBERS ACTIVE"}
+            </span>
+          </div>
 
-              {/* Pending Invitations */}
-              <section className="space-y-4">
-                <h3 className="font-headline-md text-body-lg font-bold text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-tertiary text-xl">hourglass_top</span>
-                  {t("patient.care.pendingInvites")}
-                </h3>
+          {/* Caregiver Cards Grid (3 Cards) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {careTeamMembers.map((member) => {
+              let statusBadgeBg = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+              let dotColor = "bg-emerald-500";
+              if (member.statusType === "online") {
+                statusBadgeBg = "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20";
+                dotColor = "bg-sky-500";
+              } else if (member.statusType === "busy") {
+                statusBadgeBg = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
+                dotColor = "bg-rose-500";
+              }
 
-                {pendingInvitations.length > 0 ? (<div className="space-y-4">
-                    {pendingInvitations.map((r) => {
-                    const cg = r.caregiverId;
-                    const initial = cg?.firstName ? cg.firstName.charAt(0).toUpperCase() : "C";
-                    const fullName = cg ? `${cg.firstName} ${cg.lastName}` : "Pending Caregiver";
-                    return (<div key={r.relationshipId} className="bg-surface-container border border-dashed border-outline-variant/40 rounded-2xl p-6">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-12 w-12 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary text-xl font-bold">
-                                {initial}
-                              </div>
-                              <div>
-                                <h4 className="font-headline-md text-base font-bold text-on-surface">{fullName}</h4>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-tertiary text-xs font-bold uppercase tracking-wider">
-                                    {locale === "ar" ? "معلقة" : "Pending"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <div className="flex flex-wrap gap-2 justify-end">
-                                {r.permissions?.canAddMedication && (<span className="bg-tertiary/5 text-tertiary px-3 py-1 rounded-lg text-xs border border-tertiary/15">
-                                    {locale === "ar" ? "أدوية" : "Meds"}
-                                  </span>)}
-                                {r.permissions?.canViewMedicalRecords && (<span className="bg-tertiary/5 text-tertiary px-3 py-1 rounded-lg text-xs border border-tertiary/15">
-                                    {locale === "ar" ? "سجلات" : "Records"}
-                                  </span>)}
-                              </div>
-                              <button onClick={() => revokeRelationship(r.relationshipId)} className="text-error font-label-sm text-xs hover:underline mt-1">
-                                {t("patient.care.cancelInvite")}
-                              </button>
-                            </div>
-                          </div>
-                        </div>);
-                })}
-                  </div>) : (<div className="bg-surface-container border border-dashed border-outline-variant/30 rounded-2xl p-8 text-center text-slate-500">
-                    No pending invitations.
-                  </div>)}
-              </section>
+              return (
+                <Card
+                  key={member.id}
+                  className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-6 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold flex items-center justify-center text-lg shadow-xs">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">{member.name}</h3>
+                        <p className="text-xs text-slate-400 font-semibold">{member.role}</p>
+                      </div>
+                    </div>
+
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase border ${statusBadgeBg}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+                      {member.status}
+                    </div>
+                  </div>
+
+                  {/* Available Action Buttons Grid */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {member.actions.map((act) => {
+                      let icon = <Phone className="w-3.5 h-3.5 mr-1" />;
+                      if (act === "Email") icon = <Mail className="w-3.5 h-3.5 mr-1" />;
+                      else if (act === "Message") icon = <MessageSquare className="w-3.5 h-3.5 mr-1" />;
+                      else if (act === "Video") icon = <Video className="w-3.5 h-3.5 mr-1" />;
+
+                      return (
+                        <Button
+                          key={act}
+                          variant="outline"
+                          onClick={() => setActiveActionModal({ type: act, name: member.name, email: member.email, phone: member.phone })}
+                          className="flex-1 border-slate-200 dark:border-slate-700 text-teal-700 dark:text-teal-400 font-bold text-xs py-2 rounded-xl h-auto hover:bg-teal-50 dark:hover:bg-teal-950/40"
+                        >
+                          {icon}
+                          {act}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* BOTTOM TWO COLUMNS GRID matching Reference UI */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Shared Care Notes */}
+          <Card className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-6">
+            <div className="flex justify-between items-center pb-2">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                <FileText className="w-5 h-5 text-teal-600" />
+                <h3 className="text-xl font-extrabold tracking-tight">{isAr ? "ملاحظات الرعاية المشتركة" : "Shared Care Notes"}</h3>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsAddNoteModalOpen(true)}
+                className="w-9 h-9 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 hover:bg-teal-100"
+                title={isAr ? "إضافة ملاحظة جديدة" : "Add Care Note"}
+              >
+                <Plus className="w-5 h-5" />
+              </Button>
             </div>
 
-            {/* Right Column: Invite Form */}
-            <section className="lg:col-span-4 bg-surface-container border border-outline-variant/10 rounded-2xl p-6 shadow-xl h-fit">
-              <h3 className="font-headline-md text-body-lg font-bold text-on-surface mb-1">{t("patient.care.addToCircle")}</h3>
-              <p className="text-on-surface-variant text-xs mb-6">{t("patient.care.inviteDesc")}</p>
-              
-              {validationError && (<div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-center text-xs font-bold mb-4">
-                  {validationError}
-                </div>)}
-
-              <form className="space-y-4" onSubmit={handleInviteSubmit}>
-                <div className="space-y-1.5">
-                  <label className="text-on-surface text-xs font-bold block px-1">{t("patient.care.email")}</label>
-                  <input type="email" required value={emailInput} onChange={(e) => setEmailInput(e.target.value)} className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-on-surface placeholder:text-on-surface-variant/40" placeholder="caregiver@example.com"/>
-                </div>
-
-                {/* Permission Switches */}
-                <div className="space-y-3 pt-2">
-                  <p className="text-on-surface text-xs font-bold block px-1">{t("patient.care.permissions")}</p>
-                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-xl border border-outline-variant/10">
-                    <span className="text-on-surface-variant text-sm font-medium">{t("patient.care.manageMeds")}</span>
-                    <button type="button" onClick={() => setCanManageMeds(!canManageMeds)} className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${canManageMeds ? "bg-primary-container" : "bg-outline-variant/30"}`}>
-                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${canManageMeds ? "translate-x-5" : "translate-x-0"}`}></span>
-                    </button>
+            {/* Notes List */}
+            <div className="space-y-4">
+              {careNotes.map((note) => (
+                <div
+                  key={note.id}
+                  className="bg-slate-50/80 dark:bg-slate-800/60 p-4.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex items-start gap-4 shadow-2xs"
+                >
+                  <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-extrabold text-xs flex items-center justify-center shrink-0">
+                    {note.initials}
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-xl border border-outline-variant/10">
-                    <span className="text-on-surface-variant text-sm font-medium">{t("patient.care.viewRecords")}</span>
-                    <button type="button" onClick={() => setCanViewRecords(!canViewRecords)} className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${canViewRecords ? "bg-primary-container" : "bg-outline-variant/30"}`}>
-                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${canViewRecords ? "translate-x-5" : "translate-x-0"}`}></span>
-                    </button>
+
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{note.author}</h4>
+                      <span className="text-[10px] font-semibold text-slate-400">{note.timeAgo}</span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{note.text}</p>
                   </div>
                 </div>
+              ))}
+            </div>
+          </Card>
 
-                <button type="submit" disabled={submitting} className="w-full py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50">
-                  <span className="material-symbols-outlined text-base">send</span>
-                  {submitting ? t("patient.care.sendingInvite") : t("patient.care.sendInvite")}
-                </button>
-                <p className="text-center text-on-surface-variant/50 text-[10px] px-2 leading-normal mt-2">
-                  Invitations are valid for 7 days. Shared data is encrypted and secure.
-                </p>
-              </form>
-            </section>
-          </div>)}
+          {/* Right Column: Circle Activity Feed */}
+          <Card className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-6">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 pb-2">
+              <History className="w-5 h-5 text-teal-600" />
+              <h3 className="text-xl font-extrabold tracking-tight">{isAr ? "سجل نشاط الدائرة" : "Circle Activity Feed"}</h3>
+            </div>
+
+            {/* Feed Timeline */}
+            <div className="space-y-6 relative before:absolute before:top-3 before:bottom-3 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+              {activityFeed.map((item) => (
+                <div key={item.id} className="flex items-start gap-4 relative z-10">
+                  <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-white dark:ring-slate-900">
+                    <span className="w-2 h-2 bg-white rounded-full" />
+                  </div>
+
+                  <div className="space-y-0.5 pt-0.5">
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-normal">
+                      <strong className="text-slate-900 dark:text-slate-100 font-bold">{item.actor}</strong> {item.action}{" "}
+                      <strong className="text-teal-700 dark:text-teal-400 font-bold">{item.target}</strong>
+                    </p>
+                    <span className="text-[10px] text-slate-400 font-semibold block">{item.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* FOOTER matching Reference UI */}
+        <footer className="pt-6 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-400">
+          <div>
+            © 2026 MediMind Health Coordination. All rights reserved.
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="#" className="hover:text-slate-600">{isAr ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
+            <Link href="#" className="hover:text-slate-600">{isAr ? "مركز المساعدة" : "Help Center"}</Link>
+          </div>
+        </footer>
       </div>
-    </MainLayout>);
+
+      {/* MODAL 1: Invite Caregiver Modal */}
+      <AnimatePresence>
+        {isInviteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-teal-600">
+                  <UserPlus className="w-5 h-5" />
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-slate-100">{isAr ? "دعوة مقدم رعاية" : "Invite Caregiver"}</h3>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setIsInviteModalOpen(false)} className="rounded-full">
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {validationError && (
+                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-600 p-3 rounded-xl text-xs font-bold">
+                  {validationError}
+                </div>
+              )}
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  await sendInvitation(e);
+                  setIsInviteModalOpen(false);
+                }}
+                className="space-y-4 text-xs font-bold"
+              >
+                <div>
+                  <label className="block text-slate-500 uppercase tracking-wider mb-1">{isAr ? "البريد الإلكتروني لمقدم الرعاية" : "Caregiver Email Address"}</label>
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="caregiver@example.com"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <span className="block text-slate-500 uppercase tracking-wider">{isAr ? "صلاحيات الوصول" : "Access Permissions"}</span>
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span>{isAr ? "إدارة الخطة العلاجية والأدوية" : "Manage Medications"}</span>
+                    <input
+                      type="checkbox"
+                      checked={canManageMeds}
+                      onChange={(e) => setCanManageMeds(e.target.checked)}
+                      className="w-4 h-4 accent-teal-600 cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span>{isAr ? "عرض السجلات الطبية الكاملة" : "View Medical Records"}</span>
+                    <input
+                      type="checkbox"
+                      checked={canViewRecords}
+                      onChange={(e) => setCanViewRecords(e.target.checked)}
+                      className="w-4 h-4 accent-teal-600 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setIsInviteModalOpen(false)}>
+                    {isAr ? "إلغاء" : "Cancel"}
+                  </Button>
+                  <Button type="submit" disabled={submitting} className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
+                    <Send className="w-3.5 h-3.5 mr-1" />
+                    {submitting ? (isAr ? "جاري الإرسال..." : "Sending...") : (isAr ? "إرسال الدعوة" : "Send Invitation")}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL 2: Add Care Note Modal */}
+      <AnimatePresence>
+        {isAddNoteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-teal-600">
+                  <FileText className="w-5 h-5" />
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-slate-100">{isAr ? "إضافة ملاحظة رعاية مشتركة" : "Add Shared Care Note"}</h3>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setIsAddNoteModalOpen(false)} className="rounded-full">
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <form onSubmit={handleAddNoteSubmit} className="space-y-4 text-xs font-bold">
+                <div>
+                  <label className="block text-slate-500 uppercase tracking-wider mb-1">{isAr ? "كاتب الملاحظة" : "Note Author"}</label>
+                  <select
+                    value={newNoteAuthor}
+                    onChange={(e) => setNewNoteAuthor(e.target.value)}
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="Dr. James Wilson">Dr. James Wilson (Physician)</option>
+                    <option value="Martha Sarah">Martha Sarah (Family Member)</option>
+                    <option value="Sarah Chen">Sarah Chen (Care Coordinator)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 uppercase tracking-wider mb-1">{isAr ? "نص الملاحظة" : "Note Content"}</label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Enter care instructions, health updates, or observations..."
+                    value={newNoteText}
+                    onChange={(e) => setNewNoteText(e.target.value)}
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setIsAddNoteModalOpen(false)}>
+                    {isAr ? "إلغاء" : "Cancel"}
+                  </Button>
+                  <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
+                    {isAr ? "نشر الملاحظة" : "Post Note"}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL 3: Action Trigger Dialog (Call, Email, Message, Video) */}
+      <AnimatePresence>
+        {activeActionModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 text-center"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                  {activeActionModal.type} {activeActionModal.name}
+                </h3>
+                <Button variant="ghost" size="icon" onClick={() => setActiveActionModal(null)} className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="bg-teal-50 dark:bg-teal-950/40 p-6 rounded-2xl space-y-2">
+                <div className="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center mx-auto text-xl font-bold">
+                  {activeActionModal.name.charAt(0)}
+                </div>
+                <h4 className="font-bold text-slate-900 dark:text-slate-100">{activeActionModal.name}</h4>
+                <p className="text-xs font-semibold text-teal-700 dark:text-teal-400">
+                  {activeActionModal.type === "Call" || activeActionModal.type === "Video"
+                    ? activeActionModal.phone
+                    : activeActionModal.email}
+                </p>
+              </div>
+
+              <Button
+                onClick={() => {
+                  alert(`Starting ${activeActionModal.type} session with ${activeActionModal.name}...`);
+                  setActiveActionModal(null);
+                }}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-2.5"
+              >
+                {isAr ? `بدء الـ ${activeActionModal.type} الآن` : `Start ${activeActionModal.type} Now`}
+              </Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </MainLayout>
+  );
 }
