@@ -6,18 +6,28 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { LanguageToggler } from '@/shared/components/LanguageToggler';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
+import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
+
 export const SidebarFooter = () => {
-    const { locale } = useTranslation();
-    const { user, logout } = useAuth();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-    const isAr = mounted && locale === 'ar';
-    const userName = user?.name || user?.email?.split('@')[0] || (isAr ? 'سارة' : 'Sarah');
-    const userRole = isAr ? 'مريض' : 'Patient';
-    const userInitial = userName.charAt(0).toUpperCase();
-    return (<div className="pt-4 border-t border-outline-variant/30 space-y-3.5" suppressHydrationWarning>
+  const { locale } = useTranslation();
+  const { user, logout } = useAuth();
+  const { data: patientProfile } = usePatientProfileQuery();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAr = mounted && locale === 'ar';
+  const userName = patientProfile?.firstName && patientProfile?.lastName
+    ? `${patientProfile.firstName} ${patientProfile.lastName}`
+    : user?.name || user?.email?.split('@')[0] || (isAr ? 'سارة' : 'Sarah');
+  const userRole = isAr ? 'مريض' : 'Patient';
+  const userInitial = userName.charAt(0).toUpperCase();
+  const avatarSrc = patientProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+
+  return (
+    <div className="pt-4 border-t border-outline-variant/30 space-y-3.5" suppressHydrationWarning>
       {/* Language Switcher */}
       <div className="w-full flex justify-center">
         <LanguageToggler />
@@ -29,8 +39,8 @@ export const SidebarFooter = () => {
           <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0 group">
             <div className="relative shrink-0">
               <Avatar className="w-10 h-10 border-2 border-primary/30 group-hover:border-primary transition-colors">
-                <AvatarImage src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80" alt={userName}/>
-                <AvatarFallback>{userInitial}</AvatarFallback>
+                {avatarSrc ? <AvatarImage src={avatarSrc} alt={userName} className="object-cover" /> : null}
+                <AvatarFallback className="bg-teal-600 text-white font-bold">{userInitial}</AvatarFallback>
               </Avatar>
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary border-2 border-background rounded-full"/>
             </div>
@@ -46,10 +56,19 @@ export const SidebarFooter = () => {
           </Link>
 
           {/* Quick Sign Out Action Button */}
-          {logout && (<button type="button" onClick={() => logout()} className="w-8 h-8 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs" title={isAr ? 'تسجيل الخروج' : 'Sign Out'} aria-label="Sign Out">
+          {logout && (
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="w-8 h-8 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs"
+              title={isAr ? 'تسجيل الخروج' : 'Sign Out'}
+              aria-label="Sign Out"
+            >
               <LogOut className="w-4 h-4"/>
-            </button>)}
+            </button>
+          )}
         </div>
       </div>
-    </div>);
+    </div>
+  );
 };

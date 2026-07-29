@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
@@ -16,31 +16,26 @@ import {
   Plus,
   Phone,
   MessageSquare,
-  Edit2,
-  Trash2,
-  Lock,
-  ShieldCheck,
-  CheckCircle2,
   ChevronRight,
   User,
   MapPin,
   X,
   QrCode,
   Sparkles,
-  HelpCircle,
-  Globe,
-  Bell,
-  ShieldAlert
+  Lock,
+  ShieldCheck,
+  ShieldAlert,
+  Loader2
 } from "lucide-react";
 
 export default function PatientProfileComponent() {
   const { user } = useAuth();
   const { t, locale } = useTranslation();
   const isAr = locale === "ar";
+  const fileInputRef = useRef(null);
 
   const {
     profile,
-    caregiver,
     loading,
     error,
     isEditing,
@@ -69,10 +64,11 @@ export default function PatientProfileComponent() {
     updateProfile
   } = usePatientProfile();
 
-  // Modals state
+  // Modals & Image Upload state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [isAddAddressOpen, setIsAddAddressOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // New Contact Form state
   const [newContactName, setNewContactName] = useState("");
@@ -96,6 +92,38 @@ export default function PatientProfileComponent() {
     : user?.name || "Sarah Jenkins";
   const displayEmail = user?.email || "sarah.jenkins@medimind.io";
   const displayPhone = phone || "+1 (555) 012-3456";
+
+  // Handle Profile Picture File Change
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert(isAr ? "يرجى اختيار ملف صورة صالح (PNG, JPEG, WebP)" : "Please select a valid image file (PNG, JPEG, WebP)");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert(isAr ? "يجب أن يكون حجم الصورة أقل من ٥ ميجابايت" : "Image file size must be less than 5MB");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target?.result;
+      try {
+        await updateProfile({ profilePictureUrl: base64Data });
+        alert(isAr ? "تم تحديث الصورة الشخصية بنجاح!" : "Profile picture updated successfully!");
+      } catch (err) {
+        console.error("Failed to upload profile image:", err);
+        alert(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture");
+      } finally {
+        setIsUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Calculate age
   const calculateAge = (dobString) => {
@@ -185,6 +213,15 @@ export default function PatientProfileComponent() {
   return (
     <MainLayout activePath="/profile">
       <div className="max-w-[1400px] mx-auto space-y-8">
+        {/* Hidden File Input for Avatar Upload */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageFileChange}
+        />
+
         {/* HERO CARD: User Profile Header matching Reference UI */}
         <Card className="bg-white dark:bg-slate-900 rounded-[32px] p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
@@ -193,16 +230,18 @@ export default function PatientProfileComponent() {
               {/* Profile Avatar with Camera Icon Overlay */}
               <div className="relative">
                 <div className="w-28 h-28 rounded-full border-4 border-teal-500/20 p-1 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-teal-600 dark:text-teal-400 font-extrabold text-4xl">
-                  {profile?.profilePictureUrl ? (
+                  {isUploadingImage ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+                  ) : profile?.profilePictureUrl ? (
                     <img src={profile.profilePictureUrl} alt={displayName} className="w-full h-full object-cover rounded-full" />
                   ) : (
                     displayName.charAt(0)
                   )}
                 </div>
                 <button
-                  onClick={() => setIsEditing(true)}
-                  className="absolute bottom-1 right-1 bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full shadow-lg border-2 border-white dark:border-slate-900 cursor-pointer transition-transform hover:scale-110"
-                  title={isAr ? "تغيير الصورة الشخصية" : "Change Profile Picture"}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-1 right-1 bg-teal-600 hover:bg-teal-700 text-white p-2.5 rounded-full shadow-lg border-2 border-white dark:border-slate-900 cursor-pointer transition-transform hover:scale-110"
+                  title={isAr ? "رفع صورة جديدة" : "Upload Profile Picture"}
                 >
                   <Camera className="w-4 h-4" />
                 </button>

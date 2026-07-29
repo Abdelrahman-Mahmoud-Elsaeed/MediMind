@@ -6,11 +6,21 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useTheme } from 'next-themes';
 import { LanguageToggler } from '@/shared/components/LanguageToggler';
-import { Button, Avatar, AvatarFallback } from '@/shared/components/ui';
+import { Button, Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
+import { User, LayoutDashboard, Settings, LogOut } from 'lucide-react';
+import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
 
 export default function LandingHeader() {
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { data: patientProfile } = usePatientProfileQuery();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { locale, t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
@@ -33,10 +43,13 @@ export default function LandingHeader() {
     }
   };
 
-  const userDisplayName = user?.firstName
+  const profilePic = patientProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+  const userDisplayName = patientProfile?.firstName && patientProfile?.lastName
+    ? `${patientProfile.firstName} ${patientProfile.lastName}`
+    : user?.firstName
     ? `${user.firstName} ${user.lastName || ''}`.trim()
     : user?.name || user?.email || 'User Profile';
-  const userAvatarLetter = (user?.firstName?.[0] || user?.name?.[0] || user?.email?.[0] || 'U').toUpperCase();
+  const userAvatarLetter = (userDisplayName?.[0] || 'U').toUpperCase();
   const userRolePath = user?.role === 'PATIENT' ? '/home' : user?.role ? '/dashboard' : '/home';
 
   return (
@@ -86,32 +99,60 @@ export default function LandingHeader() {
             </Button>
           </div>
 
+          {/* User Profile Avatar / Sign In Options */}
           <div className="flex items-center gap-3 ml-2">
             {mounted && (isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <Link href={userRolePath} className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 hover:border-teal-400 transition-all group">
-                  <Avatar className="w-8 h-8 border-none">
-                    <AvatarFallback className="bg-teal-600 text-white font-bold text-sm shadow-sm group-hover:scale-105 transition-transform">
-                      {userAvatarLetter}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-left pr-1">
-                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 max-w-[120px] truncate leading-tight">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2.5 p-1 rounded-full hover:bg-teal-50 dark:hover:bg-teal-950/60 transition-all cursor-pointer group outline-none">
+                    <Avatar className="w-10 h-10 border-2 border-teal-500/40 group-hover:border-teal-600 transition-colors">
+                      {profilePic ? <AvatarImage src={profilePic} alt={userDisplayName} className="object-cover" /> : null}
+                      <AvatarFallback className="bg-teal-600 text-white font-extrabold text-sm">
+                        {userAvatarLetter}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800">
+                  <div className="p-3 border-b border-slate-100 dark:border-slate-800 mb-1">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {userDisplayName}
                     </p>
-                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-medium capitalize leading-tight">
+                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold capitalize">
                       {user?.role?.toLowerCase() || 'Member'}
                     </p>
                   </div>
-                </Link>
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  className="text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 text-xs font-semibold px-3 py-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  {t('landing.nav.signOut')}
-                </Button>
-              </div>
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                      <User className="w-4 h-4 text-teal-600" />
+                      <span>My Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link href={userRolePath} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4 text-teal-600" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                      <Settings className="w-4 h-4 text-teal-600" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="my-1" />
+
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer">
+                    <LogOut className="w-4 h-4" />
+                    <span>{t('landing.nav.signOut')}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button variant="ghost" className="text-teal-700 dark:text-teal-400 font-bold px-4 py-2 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-full" asChild>
@@ -184,6 +225,7 @@ export default function LandingHeader() {
               <div className="space-y-3">
                 <Link href={userRolePath} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800">
                   <Avatar className="w-10 h-10 border-none">
+                    {profilePic ? <AvatarImage src={profilePic} alt={userDisplayName} className="object-cover" /> : null}
                     <AvatarFallback className="bg-teal-600 text-white font-bold">
                       {userAvatarLetter}
                     </AvatarFallback>
