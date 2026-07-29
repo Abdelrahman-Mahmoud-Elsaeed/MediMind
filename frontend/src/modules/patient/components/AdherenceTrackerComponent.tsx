@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import React from "react";
+import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useAdherenceTracker } from "../hooks/useAdherenceTracker";
 
 export default function AdherenceTrackerComponent() {
-  const { t, locale, toggleLanguage } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const {
     currentDate,
@@ -54,33 +55,8 @@ export default function AdherenceTrackerComponent() {
     : ["S", "M", "T", "W", "T", "F", "S"];
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen pb-32">
-      {/* Top App Bar */}
-      <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16 border-b border-outline-variant/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-primary font-bold">
-            M
-          </div>
-          <h1 className="font-headline-md text-headline-md font-bold text-primary">MediMind</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleLanguage}
-            className="text-xs font-bold px-3 py-1.5 rounded-full bg-primary-container/20 border border-primary/30 text-primary transition-all duration-200"
-          >
-            {locale === "en" ? "العربية" : "EN"}
-          </button>
-          <div className="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-full">
-            <span className="font-label-md text-label-md text-on-surface font-bold">
-              {monthNames[month]} {year}
-            </span>
-            <span className="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pt-20 px-margin-mobile max-w-container-max mx-auto space-y-6">
+    <MainLayout activePath="/adherence">
+      <div className="max-w-[1400px] mx-auto space-y-6">
         <section>
           <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">{t("patient.adherence.title")}</h2>
           <p className="font-body-md text-body-md text-on-surface-variant">{t("patient.adherence.subtitle")}</p>
@@ -272,31 +248,7 @@ export default function AdherenceTrackerComponent() {
             </div>
           )}
         </section>
-      </main>
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/home">
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.home")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/medications">
-          <span className="material-symbols-outlined">medication</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.meds")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-primary px-3 py-1 scale-100 font-bold" href="/adherence">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>query_stats</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.adherence")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/caregivers">
-          <span className="material-symbols-outlined">groups</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.care")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/profile">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.profile")}</span>
-        </Link>
-      </nav>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

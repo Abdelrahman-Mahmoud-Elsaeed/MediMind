@@ -13,7 +13,15 @@ export const addMedicationSchema = z.object({
 
 export const profileSchema = z.object({
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]),
-  dateOfBirth: z.string().datetime("Invalid date of birth format"),
+  dateOfBirth: z.string().refine((val) => {
+    if (!val) return false;
+    const date = new Date(val);
+    if (isNaN(date.getTime())) return false;
+    const now = new Date();
+    const twelveYearsAgo = new Date(now);
+    twelveYearsAgo.setFullYear(twelveYearsAgo.getFullYear() - 12);
+    return date <= twelveYearsAgo;
+  }, "User must be at least 12 years old"),
   emergencyContact: z.object({
     name: z.string().min(1, "Emergency contact name is required"),
     phone: z.string().min(1, "Emergency contact phone is required")

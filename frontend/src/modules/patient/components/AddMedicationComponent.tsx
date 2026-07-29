@@ -1,7 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useAddMedication } from "../hooks/useAddMedication";
 
@@ -148,26 +150,15 @@ export default function AddMedicationComponent() {
   }
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen pb-32">
-      {/* Top App Bar */}
-      <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16 border-b border-outline-variant/10">
+    <MainLayout activePath="/medications">
+      <div className="max-w-[1400px] mx-auto space-y-8">
         <div className="flex items-center gap-4">
           <Link href="/medications" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-colors duration-200">
             <span className="material-symbols-outlined text-primary">arrow_back</span>
           </Link>
-          <h1 className="font-headline-md text-headline-md font-bold text-primary">{t("patient.add.title")}</h1>
+          <h1 className="text-2xl font-bold text-on-surface">{t("patient.add.title")}</h1>
         </div>
-        <button
-          onClick={toggleLanguage}
-          className="text-xs font-bold px-3 py-1.5 rounded-full bg-primary-container/20 border border-primary/30 text-primary transition-all duration-200"
-        >
-          {locale === "en" ? "العربية" : "EN"}
-        </button>
-      </header>
 
-      {/* Main Content Form */}
-      <main className="pt-20 px-margin-mobile max-w-container-max mx-auto space-y-6">
-        {/* AI Scan Package Trigger */}
         <section onClick={triggerScan} className="bg-surface-container border border-dashed border-outline-variant hover:bg-surface-container-high transition-all p-6 rounded-2xl text-center cursor-pointer group">
           <div className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary mb-2 group-hover:scale-105 transition-transform">
@@ -311,31 +302,7 @@ export default function AddMedicationComponent() {
             </button>
           </form>
         </section>
-      </main>
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/home">
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.home")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-primary px-3 py-1 scale-100 font-bold" href="/medications">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>medication</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.meds")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/adherence">
-          <span className="material-symbols-outlined">query_stats</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.adherence")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/caregivers">
-          <span className="material-symbols-outlined">groups</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.care")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/profile">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.profile")}</span>
-        </Link>
-      </nav>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

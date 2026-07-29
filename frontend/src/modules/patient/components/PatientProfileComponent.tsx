@@ -1,6 +1,8 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
+import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { usePatientProfile } from "../hooks/usePatientProfile";
@@ -10,7 +12,7 @@ export default function PatientProfileComponent() {
   const userName = user?.name || "Sarah Smith";
   const userEmail = user?.email || "sarah.smith@example.com";
 
-  const { t, locale, toggleLanguage } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const {
     profile,
@@ -46,30 +48,8 @@ export default function PatientProfileComponent() {
   };
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen pb-32">
-      {/* Top App Bar */}
-      <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16 border-b border-outline-variant/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-primary font-bold">
-            M
-          </div>
-          <h1 className="font-headline-md text-headline-md font-bold text-primary">{t("patient.profile.title")}</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleLanguage}
-            className="text-xs font-bold px-3 py-1.5 rounded-full bg-primary-container/20 border border-primary/30 text-primary transition-all duration-200"
-          >
-            {locale === "en" ? "العربية" : "EN"}
-          </button>
-          <Link href="/notifications" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-all duration-200">
-            <span className="material-symbols-outlined text-primary">notifications</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pt-20 px-margin-mobile max-w-container-max mx-auto space-y-6">
+    <MainLayout activePath="/profile">
+      <div className="max-w-[1400px] mx-auto space-y-8">
         {loading ? (
           <div className="text-center py-12 text-slate-500">Loading profile...</div>
         ) : error ? (
@@ -200,7 +180,6 @@ export default function PatientProfileComponent() {
             </section>
           </div>
         )}
-      </main>
 
       {/* Edit Profile Modal overlay */}
       {isEditing && (
@@ -238,6 +217,11 @@ export default function PatientProfileComponent() {
                 <input
                   type="date"
                   value={dob}
+                  max={(() => {
+                    const d = new Date();
+                    d.setFullYear(d.getFullYear() - 12);
+                    return d.toISOString().split('T')[0];
+                  })()}
                   onChange={(e) => setDob(e.target.value)}
                   className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-2.5 outline-none text-on-surface focus:ring-2 focus:ring-primary"
                 />
@@ -283,30 +267,7 @@ export default function PatientProfileComponent() {
           </div>
         </div>
       )}
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/home">
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.home")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/medications">
-          <span className="material-symbols-outlined">medication</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.meds")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/adherence">
-          <span className="material-symbols-outlined">query_stats</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.adherence")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/caregivers">
-          <span className="material-symbols-outlined">groups</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.care")}</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-primary px-3 py-1 scale-100 font-bold" href="/profile">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
-          <span className="font-label-sm text-label-sm">{t("patient.nav.profile")}</span>
-        </Link>
-      </nav>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

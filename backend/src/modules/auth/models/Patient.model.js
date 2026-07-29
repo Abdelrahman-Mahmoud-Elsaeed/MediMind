@@ -11,8 +11,21 @@ const PatientSchema = new Schema(
     },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
-    dateOfBirth: { type: Date },
-    gender: { type: String, enum: ["male", "female", "other"] },
+    dateOfBirth: {
+      type: Date,
+      validate: {
+        validator: function (value) {
+          if (!value) return true;
+          const dob = new Date(value);
+          if (isNaN(dob.getTime())) return false;
+          const now = new Date();
+          const twelveYearsAgo = new Date(now);
+          twelveYearsAgo.setFullYear(twelveYearsAgo.getFullYear() - 12);
+          return dob <= twelveYearsAgo;
+        },
+        message: "Date of birth cannot be in the future and user must be at least 12 years old.",
+      },
+    },
     bloodType: {
       type: String,
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
