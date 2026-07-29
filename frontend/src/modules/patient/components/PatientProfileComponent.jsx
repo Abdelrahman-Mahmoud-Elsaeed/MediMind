@@ -93,7 +93,7 @@ export default function PatientProfileComponent() {
   const displayEmail = user?.email || "sarah.jenkins@medimind.io";
   const displayPhone = phone || "+1 (555) 012-3456";
 
-  // Handle Profile Picture File Change
+  // Handle Profile Picture File Change with Canvas Compression
   const handleImageFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -103,24 +103,53 @@ export default function PatientProfileComponent() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert(isAr ? "يجب أن يكون حجم الصورة أقل من ٥ ميجابايت" : "Image file size must be less than 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      alert(isAr ? "يجب أن يكون حجم الصورة أقل من ١٠ ميجابايت" : "Image file size must be less than 10MB");
       return;
     }
 
     setIsUploadingImage(true);
     const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64Data = event.target?.result;
-      try {
-        await updateProfile({ profilePictureUrl: base64Data });
-        alert(isAr ? "تم تحديث الصورة الشخصية بنجاح!" : "Profile picture updated successfully!");
-      } catch (err) {
-        console.error("Failed to upload profile image:", err);
-        alert(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture");
-      } finally {
-        setIsUploadingImage(false);
-      }
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+        try {
+          await updateProfile({ profilePictureUrl: compressedBase64 });
+          alert(isAr ? "تم تحديث الصورة الشخصية بنجاح!" : "Profile picture updated successfully!");
+        } catch (err) {
+          console.error("Failed to upload profile image:", err);
+          alert(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture");
+        } finally {
+          setIsUploadingImage(false);
+        }
+      };
+      img.src = event.target?.result;
     };
     reader.readAsDataURL(file);
   };
