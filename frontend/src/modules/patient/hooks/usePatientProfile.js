@@ -1,23 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProfileThunk, fetchRelationshipsThunk, updateProfileThunk } from "../store/patientSlice";
-import {
-  selectPatientProfile,
-  selectPatientRelationships,
-  selectPatientLoading,
-  selectPatientError
-} from "../store/patientSelectors";
+import { useState, useEffect } from "react";
 import { profileSchema } from "../validation/patientValidation";
+import {
+  usePatientProfileQuery,
+  usePatientRelationshipsQuery,
+  useUpdatePatientProfileMutation
+} from "./usePatientQueries";
 
 export function usePatientProfile() {
-  const dispatch = useDispatch();
-  const profile = useSelector(selectPatientProfile);
-  const relationships = useSelector(selectPatientRelationships);
-  const loading = useSelector(selectPatientLoading);
-  const error = useSelector(selectPatientError);
+  const { data: profile = null, isLoading: loadingProfile, error: errorProfile, refetch: refetchProfile } = usePatientProfileQuery();
+  const { data: relationships = [], isLoading: loadingRels, error: errorRels, refetch: refetchRels } = usePatientRelationshipsQuery();
+  const updateProfileMutation = useUpdatePatientProfileMutation();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState(null);
 
   // Edit fields
@@ -26,15 +20,6 @@ export function usePatientProfile() {
   const [bloodType, setBloodType] = useState("O+");
   const [ecName, setEcName] = useState("");
   const [ecPhone, setEcPhone] = useState("");
-
-  const fetchProfileData = useCallback(() => {
-    dispatch(fetchProfileThunk());
-    dispatch(fetchRelationshipsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchProfileData();
-  }, [fetchProfileData]);
 
   useEffect(() => {
     if (profile) {
@@ -67,28 +52,32 @@ export function usePatientProfile() {
     }
 
     try {
-      setSaving(true);
-      const res = await dispatch(updateProfileThunk(rawData));
-      if (res.payload) {
+      const res = await updateProfileMutation.mutateAsync(rawData);
+      if (res) {
         setIsEditing(false);
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setSaving(false);
     }
   };
 
   const caregiver = relationships.find((r) => r.status === "ACCEPTED")?.caregiverId || null;
 
+  const refetchAll = () => {
+    refetchProfile();
+    refetchRels();
+  };
+
+  const queryError = errorProfile || errorRels;
+
   return {
     profile,
     caregiver,
-    loading,
-    error,
+    loading: loadingProfile || loadingRels || updateProfileMutation.isPending,
+    error: queryError ? queryError.message : null,
     isEditing,
     setIsEditing,
-    saving,
+    saving: updateProfileMutation.isPending,
     validationError,
     phone,
     setPhone,
@@ -101,6 +90,6 @@ export function usePatientProfile() {
     ecPhone,
     setEcPhone,
     updateProfile,
-    refetch: fetchProfileData
+    refetch: refetchAll
   };
 }

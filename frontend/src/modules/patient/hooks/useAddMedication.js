@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { addMedicationThunk, fetchConditionsThunk, addConditionThunk } from "../store/patientSlice";
-import { selectPatientConditions } from "../store/patientSelectors";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { addMedicationSchema } from "../validation/patientValidation";
-import { patientService } from "../services/patientService";
+import {
+  usePatientConditionsQuery,
+  useAddConditionMutation,
+  useAddPatientMedicationMutation,
+  useScanPrescriptionMutation
+} from "./usePatientQueries";
 
 export function useAddMedication(onSuccess) {
-  const dispatch = useDispatch();
   const { locale } = useTranslation();
-  const conditions = useSelector(selectPatientConditions);
+
+  const { data: conditions = [] } = usePatientConditionsQuery();
+  const addConditionMutation = useAddConditionMutation();
+  const addMedicationMutation = useAddPatientMedicationMutation();
+  const scanPrescriptionMutation = useScanPrescriptionMutation();
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [scannedMedInfo, setScannedMedInfo] = useState(null);
   const [selectedConditionId, setSelectedConditionId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState(null);
 
   const [form, setForm] = useState({
@@ -31,10 +35,6 @@ export function useAddMedication(onSuccess) {
   });
 
   useEffect(() => {
-    dispatch(fetchConditionsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
     if (conditions.length > 0 && !selectedConditionId) {
       setSelectedConditionId(conditions[0]._id || conditions[0].conditionId);
     }
@@ -48,7 +48,7 @@ export function useAddMedication(onSuccess) {
 
   const captureScan = async (forceFail = false) => {
     try {
-      const data = await patientService.scanPrescription(
+      const data = await scanPrescriptionMutation.mutateAsync(
         forceFail ? "low_confidence_mock_data" : "normal_high_confidence_mock_data"
       );
       if (data?.success) {
@@ -81,7 +81,7 @@ export function useAddMedication(onSuccess) {
 
   const submitForm = async (e) => {
     if (e) e.preventDefault();
-    if (submitting) return;
+    if (addMedicationMutation.isPending) return;
 
     setValidationError(null);
 
@@ -104,18 +104,16 @@ export function useAddMedication(onSuccess) {
     }
 
     try {
-      setSubmitting(true);
       let conditionId = selectedConditionId;
       if (!conditionId) {
         // Create default condition
-        const condAction = await dispatch(
-          addConditionThunk({
-            diseaseName: locale === "ar" ? "رعاية صحية عامة" : "General Health Care",
-            isChronic: true
-          })
-        );
-        if (condAction.payload) {
-          conditionId = condAction.payload.conditionId;
+        const condRes = await addConditionMutation.mutateAsync({
+          diseaseName: locale === "ar" ? "رعاية صحية عامة" : "General Health Care",
+          isChronic: true
+        });
+        const condData = condRes?.data || condRes;
+        if (condData?.conditionId) {
+          conditionId = condData.conditionId;
         }
       }
 
@@ -150,14 +148,13 @@ export function useAddMedication(onSuccess) {
         expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
       };
 
-      const result = await dispatch(addMedicationThunk(payload));
-      if (result.payload && onSuccess) {
+      const result = await addMedicationMutation.mutateAsync(payload);
+      const resData = result?.data || result;
+      if (resData && onSuccess) {
         onSuccess();
       }
     } catch (err) {
       alert("Failed to add medication");
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -170,7 +167,7 @@ export function useAddMedication(onSuccess) {
     conditions,
     selectedConditionId,
     setSelectedConditionId,
-    submitting,
+    submitting: addMedicationMutation.isPending || addConditionMutation.isPending,
     validationError,
     triggerScan,
     captureScan,
