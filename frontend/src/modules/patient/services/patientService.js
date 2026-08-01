@@ -60,6 +60,16 @@ export const patientService = {
     return res.data;
   },
 
+  updateMedication: async (id, payload) => {
+    const res = await apiClient.put(`/medications/${id}`, payload);
+    return res.data;
+  },
+
+  deleteMedication: async (id) => {
+    const res = await apiClient.delete(`/medications/${id}`);
+    return res.data;
+  },
+
   // Conditions
   getConditions: async () => {
     const res = await apiClient.get("/conditions");
@@ -68,6 +78,11 @@ export const patientService = {
 
   createCondition: async (payload) => {
     const res = await apiClient.post("/conditions", payload);
+    return res.data;
+  },
+
+  updateCondition: async (conditionId, payload) => {
+    const res = await apiClient.put(`/conditions/${conditionId}`, payload);
     return res.data;
   },
 

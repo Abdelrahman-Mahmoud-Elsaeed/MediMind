@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
-import { useMedications, useCreateRefillOrder } from '@/modules/medication/hooks/useMedicationHooks';
-import { mockMedications } from '@/modules/medication/types/medication.data';
+import {
+  useMedications,
+  useCreateRefillOrder
+} from '@/modules/medication/hooks/useMedicationHooks';
+import { useDeletePatientMedicationMutation } from '@/modules/patient/hooks/usePatientQueries';
 import { Card, Badge, Button, ProgressBar } from '@/shared/components/ui';
-import { ArrowLeft, Clock, Edit3, RefreshCw, CheckCircle2, AlertCircle, Calendar, ShieldCheck, Pill, Utensils } from 'lucide-react';
+import { ArrowLeft, Clock, Edit3, RefreshCw, Trash2, Calendar, ShieldCheck, Pill, Utensils } from 'lucide-react';
 
 export default function MedicationDetailsPage({ params }) {
   const router = useRouter();
@@ -17,13 +20,13 @@ export default function MedicationDetailsPage({ params }) {
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
 
-  const { data: apiMedications, isLoading } = useMedications();
+  const { data: apiMedications = [], isLoading } = useMedications();
   const createRefillMutation = useCreateRefillOrder();
+  const deleteMedicationMutation = useDeletePatientMedicationMutation();
 
-  const medicationsList = apiMedications && apiMedications.length > 0 ? apiMedications : mockMedications;
-  const medication = medicationsList.find(
+  const medication = apiMedications.find(
     (m) => String(m.id || m._id) === String(medicationId)
-  ) || medicationsList[0];
+  );
 
   const handleRefill = () => {
     if (!medication) return;
@@ -36,11 +39,40 @@ export default function MedicationDetailsPage({ params }) {
     );
   };
 
-  if (isLoading || !medication) {
+  const handleDelete = () => {
+    if (!medication) return;
+    if (confirm(isAr ? 'هل أنت تأكد من رغبتك في حذف هذا الدواء؟' : 'Are you sure you want to delete this medication?')) {
+      deleteMedicationMutation.mutate(medication.id || medication._id, {
+        onSuccess: () => {
+          router.push('/medications');
+        }
+      });
+    }
+  };
+
+  if (isLoading) {
     return (
       <MainLayout activePath="/medications">
-        <div className="flex items-center justify-center py-24">
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600"></div>
+          <p className="text-sm text-on-surface-variant">{isAr ? 'جاري تحميل تفاصيل الدواء...' : 'Loading medication details...'}</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!medication) {
+    return (
+      <MainLayout activePath="/medications">
+        <div className="max-w-md mx-auto py-16 text-center space-y-4">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
+            <Pill className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-on-surface">{isAr ? 'لم يتم العثور على الدواء' : 'Medication Not Found'}</h2>
+          <p className="text-sm text-on-surface-variant">{isAr ? 'قد يكون تم حذف هذا الدواء أو غير موجود' : 'This medication may have been removed or does not exist.'}</p>
+          <Button onClick={() => router.push('/medications')} className="bg-teal-600 text-white">
+            {isAr ? 'العودة للخزانة' : 'Return to Cabinet'}
+          </Button>
         </div>
       </MainLayout>
     );
@@ -74,7 +106,15 @@ export default function MedicationDetailsPage({ params }) {
               className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200"
             >
               <Edit3 className="w-4 h-4 mr-2" />
-              {isAr ? 'تعديل الدواء' : 'Edit Medication'}
+              {isAr ? 'تعديل' : 'Edit'}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {isAr ? 'حذف' : 'Delete'}
             </Button>
             <Button
               onClick={handleRefill}
@@ -154,18 +194,22 @@ export default function MedicationDetailsPage({ params }) {
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800/60">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'رقم الوصفة (Rx)' : 'Rx Number'}</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">RX-849204</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'شكل الدواء' : 'Form Type'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{medication.formType || 'TABLET'}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800/60">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'الطبيب المعالج' : 'Prescribing Doctor'}</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">Dr. Sarah Jenkins</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'نوع المرض' : 'Condition Type'}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{medication.isChronic ? (isAr ? 'مزمن' : 'Chronic') : (isAr ? 'مؤقت' : 'Temporary')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800/60">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'حد التنبيه للتعبئة' : 'Refill Threshold'}</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400">{medication.inventory?.refillThreshold ?? 5} units</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'تاريخ التجديد القادم' : 'Next Refill Date'}</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium">{isAr ? 'تاريخ انتهاء الصلاحية' : 'Expiration Date'}</span>
                 <span className="font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  June 12, 2026
+                  {medication.expirationDate ? new Date(medication.expirationDate).toLocaleDateString(isAr ? 'ar-EG' : 'en-US') : 'N/A'}
                 </span>
               </div>
             </div>

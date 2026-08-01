@@ -6,6 +6,7 @@ import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { usePatientProfile } from "../hooks/usePatientProfile";
+import { usePatientConditionsQuery } from "../hooks/usePatientQueries";
 import { Card, Badge, Button } from "@/shared/components/ui";
 import {
   Share2,
@@ -33,6 +34,8 @@ export default function PatientProfileComponent() {
   const { t, locale } = useTranslation();
   const isAr = locale === "ar";
   const fileInputRef = useRef(null);
+
+  const { data: conditions = [] } = usePatientConditionsQuery();
 
   const {
     profile,
@@ -398,7 +401,7 @@ export default function PatientProfileComponent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/medical-records">
+            <Link href="/medical-records/conditions">
               <Card className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-teal-500/50 transition-all cursor-pointer flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
@@ -406,16 +409,18 @@ export default function PatientProfileComponent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-teal-600 transition-colors">
-                      {isAr ? "الوثائق السريرية" : "Clinical Documents"}
+                      {isAr ? "الوثائق السريرية والحالات" : "Clinical Documents & Conditions"}
                     </h4>
-                    <p className="text-xs text-slate-400 font-medium">{isAr ? "١٢ ملفاً تم تحديثها مؤخراً" : "12 files updated recently"}</p>
+                    <p className="text-xs text-slate-400 font-medium">
+                      {isAr ? `${conditions.length} حالات مسجلة في ملفك` : `${conditions.length} conditions logged in profile`}
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />
               </Card>
             </Link>
 
-            <Link href="/medical-records">
+            <Link href="/medical-records/conditions">
               <Card className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-teal-500/50 transition-all cursor-pointer flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
@@ -423,9 +428,11 @@ export default function PatientProfileComponent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-teal-600 transition-colors">
-                      {isAr ? "نتائج التحاليل الأخيرة" : "Recent Lab Results"}
+                      {isAr ? "السجلات والتحاليل الطبية" : "Medical Records & Lab History"}
                     </h4>
-                    <p className="text-xs text-slate-400 font-medium">{isAr ? "آخر فحص: ١٢ أكتوبر ٢٠٢٣" : "Last checkup: Oct 12, 2023"}</p>
+                    <p className="text-xs text-slate-400 font-medium">
+                      {isAr ? "خزينة السجلات الطبية المشفرة" : "Encrypted medical profile vault"}
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" />

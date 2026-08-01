@@ -1,5 +1,5 @@
 "use client";
-import CareCircleComponent from "@/modules/patient/components/CareCircleComponent";
+import CareCircleComponent from "@/modules/companion/components/CareCircleComponent";
 export default function PatientCaregiversPage() {
     return <CareCircleComponent />;
 }

@@ -15,8 +15,11 @@ export const MobileNav = () => {
     ];
     return (<nav className="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
       {navItems.map((item) => {
-            const isActive = pathname === item.href ||
-                (item.href !== '/home' && pathname?.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== '/home' && pathname?.startsWith(item.href)) ||
+              (item.href === '/medications' && pathname?.startsWith('/ocr-scan')) ||
+              (item.href === '/profile' && pathname?.startsWith('/medical-records'));
             return (<Link key={item.href} href={item.href} className={`flex flex-col items-center justify-center px-3 py-1 transition-transform duration-300 ${isActive
                     ? 'text-primary font-bold scale-105'
                     : 'text-on-surface-variant hover:text-primary'}`}>

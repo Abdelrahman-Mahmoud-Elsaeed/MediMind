@@ -22,32 +22,27 @@ export function usePatientProfile() {
   const [bloodType, setBloodType] = useState("O+");
   const [height, setHeight] = useState(168);
   const [weight, setWeight] = useState(62.5);
-  const [allergiesText, setAllergiesText] = useState("PENICILLIN");
+  const [allergiesText, setAllergiesText] = useState("");
   const [profilePictureUrl, setProfilePictureUrl] = useState("");
 
   // Emergency Contacts State
-  const [emergencyContacts, setEmergencyContacts] = useState([
-    { id: "ec-1", name: "Martha Sarah", relationship: "Mother", phone: "+1 (555) 019-2831", isPrimary: true }
-  ]);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
 
   // Addresses State
-  const [addresses, setAddresses] = useState([
-    { id: "addr-1", type: "Home Address", street: "452 Ocean View Terrace", city: "San Francisco", state: "CA", postalCode: "94121", isPrimary: true },
-    { id: "addr-2", type: "Office / Shipping", street: "101 Innovation Blvd, Suite 400", city: "Palo Alto", state: "CA", postalCode: "94301", isPrimary: false }
-  ]);
+  const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
     if (profile) {
       setFirstName(profile.firstName || "");
       setLastName(profile.lastName || "");
       setPhone(profile.phone || "");
-      setDob(profile.dateOfBirth ? profile.dateOfBirth.split("T")[0] : "1992-08-24");
+      setDob(profile.dateOfBirth ? profile.dateOfBirth.split("T")[0] : "");
       setBloodType(profile.bloodType || "O+");
-      setHeight(profile.height || 168);
-      setWeight(profile.weight || 62.5);
+      setHeight(profile.height || 170);
+      setWeight(profile.weight || 70);
       setProfilePictureUrl(profile.profilePictureUrl || "");
       
-      if (Array.isArray(profile.allergies) && profile.allergies.length > 0) {
+      if (Array.isArray(profile.allergies)) {
         setAllergiesText(profile.allergies.join(", "));
       }
 
@@ -57,10 +52,12 @@ export function usePatientProfile() {
             id: ec._id || `ec-${i}`,
             name: ec.name || "Emergency Contact",
             relationship: ec.relationship || "Family",
-            phone: ec.phone || "+1 (555) 000-0000",
+            phone: ec.phone || "",
             isPrimary: i === 0,
           }))
         );
+      } else {
+        setEmergencyContacts([]);
       }
 
       if (Array.isArray(profile.address) && profile.address.length > 0) {
@@ -75,12 +72,28 @@ export function usePatientProfile() {
             isPrimary: i === 0,
           }))
         );
+      } else {
+        setAddresses([]);
       }
     }
   }, [profile]);
 
   const updateProfile = async (customPayload) => {
     setValidationError(null);
+
+    const formattedContacts = emergencyContacts.map((ec) => ({
+      name: ec.name,
+      relationship: ec.relationship,
+      phone: ec.phone,
+    }));
+
+    const formattedAddresses = addresses.map((addr) => ({
+      street: addr.street,
+      city: addr.city,
+      state: addr.state,
+      postalCode: addr.postalCode,
+      country: "USA",
+    }));
 
     const rawData = customPayload || {
       firstName,
@@ -89,8 +102,10 @@ export function usePatientProfile() {
       dateOfBirth: dob ? new Date(dob).toISOString() : undefined,
       height: Number(height),
       weight: Number(weight),
-      allergies: allergiesText ? allergiesText.split(",").map(s => s.trim()) : ["PENICILLIN"],
+      allergies: allergiesText ? allergiesText.split(",").map(s => s.trim()) : [],
       profilePictureUrl,
+      emergencyContact: formattedContacts,
+      address: formattedAddresses,
     };
 
     try {
