@@ -16,25 +16,14 @@ import { store } from '../store';
 import { LanguageProvider } from '../shared/lib/i18nContext';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { checkAuthThunk } from '../modules/auth/store/authActions';
+import { useAuth } from '../modules/auth/hooks/useAuth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function AuthInitializer({ children }) {
-  const dispatch = useDispatch();
   const pathname = usePathname();
   const router = useRouter();
 
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
-
-  useEffect(() => {
-    const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
-    const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
-    const hasToken = typeof window !== 'undefined' && localStorage.getItem('accessToken');
-
-    if (!isPublicRoute || hasToken) {
-      dispatch(checkAuthThunk());
-    }
-  }, [dispatch, pathname]);
+  const { user, isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
     if (loading) return;

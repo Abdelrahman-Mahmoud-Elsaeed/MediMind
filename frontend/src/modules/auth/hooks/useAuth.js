@@ -1,41 +1,84 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useCallback } from 'react';
-import { 
-  selectAuthUser, 
-  selectIsAuthenticated, 
-  selectAuthLoading, 
-  selectAuthError,
-  selectRegistrationData
-} from '../store/authSelectors';
-import { loginThunk, registerThunk, logoutThunk } from '../store/authActions';
-import { clearError, setRegistrationData as setRegData, clearRegistrationData as clearRegData } from '../store/authSlice';
+import { useCallback, useState, useRef } from 'react';
+import { selectRegistrationData } from '../store/authSelectors';
+import { setRegistrationData as setRegData, clearRegistrationData as clearRegData } from '../store/authSlice';
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { 
+  useAuthUser, 
+  useLoginMutation, 
+  useRegisterMutation, 
+  useLogoutMutation 
+} from './useAuthQueries';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
   const { t, locale, dir } = useTranslation();
-  
-  const user = useSelector(selectAuthUser);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const loading = useSelector(selectAuthLoading);
-  const error = useSelector(selectAuthError);
+
+  const { data: user, isLoading, isError, error: userError } = useAuthUser();
+  const loginMutation = useLoginMutation();
+  const registerMutation = useRegisterMutation();
+  const logoutMutation = useLogoutMutation();
+
+  const loginMutationRef = useRef(loginMutation);
+  loginMutationRef.current = loginMutation;
+
+  const registerMutationRef = useRef(registerMutation);
+  registerMutationRef.current = registerMutation;
+
+  const logoutMutationRef = useRef(logoutMutation);
+  logoutMutationRef.current = logoutMutation;
+
+  const [localError, setLocalError] = useState(null);
+
   const registrationData = useSelector(selectRegistrationData);
+  const isAuthenticated = Boolean(user && (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : true));
+  const loading = isLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
-  const login = useCallback((credentials) => {
-    return dispatch(loginThunk(credentials));
-  }, [dispatch]);
+  const currentError = localError || 
+    loginMutation.error?.message || 
+    registerMutation.error?.message || 
+    logoutMutation.error?.message || 
+    (isError ? userError?.message : null);
 
-  const register = useCallback((userData) => {
-    return dispatch(registerThunk(userData));
-  }, [dispatch]);
+  const login = useCallback(async (credentials) => {
+    setLocalError(null);
+    try {
+      const data = await loginMutationRef.current.mutateAsync(credentials);
+      return { payload: data };
+    } catch (err) {
+      setLocalError(err.message);
+      return { error: err.message };
+    }
+  }, []);
 
-  const logout = useCallback(() => {
-    return dispatch(logoutThunk());
-  }, [dispatch]);
+  const register = useCallback(async (userData) => {
+    setLocalError(null);
+    try {
+      const data = await registerMutationRef.current.mutateAsync(userData);
+      return { payload: data };
+    } catch (err) {
+      setLocalError(err.message);
+      return { error: err.message };
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    setLocalError(null);
+    try {
+      await logoutMutationRef.current.mutateAsync();
+      return { payload: null };
+    } catch (err) {
+      setLocalError(err.message);
+      return { error: err.message };
+    }
+  }, []);
 
   const resetError = useCallback(() => {
-    dispatch(clearError());
-  }, [dispatch]);
+    setLocalError(null);
+    loginMutationRef.current.reset();
+    registerMutationRef.current.reset();
+    logoutMutationRef.current.reset();
+  }, []);
 
   const setRegistrationData = useCallback((data) => {
     dispatch(setRegData(data));
@@ -46,10 +89,10 @@ export const useAuth = () => {
   }, [dispatch]);
 
   return {
-    user,
+    user: user || null,
     isAuthenticated,
     loading,
-    error,
+    error: currentError,
     registrationData,
     login,
     register,

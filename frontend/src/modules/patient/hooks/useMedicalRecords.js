@@ -1,23 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchConditionsThunk, addConditionThunk, deleteConditionThunk } from "../store/patientSlice";
-import {
-  selectPatientConditions,
-  selectPatientLoading,
-  selectPatientError
-} from "../store/patientSelectors";
+import { useState } from "react";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { conditionSchema } from "../validation/patientValidation";
+import {
+  usePatientConditionsQuery,
+  useAddConditionMutation,
+  useDeleteConditionMutation
+} from "./usePatientQueries";
 
 export function useMedicalRecords() {
-  const dispatch = useDispatch();
   const { locale } = useTranslation();
-  
-  const conditions = useSelector(selectPatientConditions);
-  const loading = useSelector(selectPatientLoading);
-  const error = useSelector(selectPatientError);
-  
-  const [submitting, setSubmitting] = useState(false);
+
+  const { data: conditions = [], isLoading: loading, error: queryError } = usePatientConditionsQuery();
+  const addConditionMutation = useAddConditionMutation();
+  const deleteConditionMutation = useDeleteConditionMutation();
+
   const [validationError, setValidationError] = useState(null);
 
   // Form states
@@ -47,14 +43,6 @@ export function useMedicalRecords() {
     }
   ]);
 
-  const fetchConditions = useCallback(() => {
-    dispatch(fetchConditionsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchConditions();
-  }, [fetchConditions]);
-
   const addCondition = async (e) => {
     if (e) e.preventDefault();
     if (!diseaseName.trim()) return;
@@ -75,22 +63,23 @@ export function useMedicalRecords() {
     }
 
     try {
-      setSubmitting(true);
-      const res = await dispatch(addConditionThunk(rawData));
-      if (res.payload) {
+      const res = await addConditionMutation.mutateAsync(rawData);
+      if (res) {
         setDiseaseName("");
         setDiagnosedDate("");
         setNotes("");
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
   const deleteCondition = async (conditionId) => {
-    dispatch(deleteConditionThunk(conditionId));
+    try {
+      await deleteConditionMutation.mutateAsync(conditionId);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const uploadSimulatedDocument = () => {
@@ -117,8 +106,8 @@ export function useMedicalRecords() {
     conditions,
     uploadedDocs,
     loading,
-    error,
-    submitting,
+    error: queryError ? queryError.message : null,
+    submitting: addConditionMutation.isPending || deleteConditionMutation.isPending,
     validationError,
     diseaseName,
     setDiseaseName,

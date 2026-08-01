@@ -1,36 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchRelationshipsThunk,
-  inviteCaregiverThunk,
-  revokeRelationshipThunk
-} from "../store/patientSlice";
-import {
-  selectPatientRelationships,
-  selectPatientLoading,
-  selectPatientError
-} from "../store/patientSelectors";
+import { useState } from "react";
 import { inviteCaregiverSchema } from "../validation/patientValidation";
+import {
+  usePatientRelationshipsQuery,
+  useInviteCaregiverMutation,
+  useRevokeRelationshipMutation
+} from "./usePatientQueries";
 
 export function useCareCircle() {
-  const dispatch = useDispatch();
-  const relationships = useSelector(selectPatientRelationships);
-  const loading = useSelector(selectPatientLoading);
-  const error = useSelector(selectPatientError);
+  const { data: relationships = [], isLoading: loading, error: queryError } = usePatientRelationshipsQuery();
+  const inviteCaregiverMutation = useInviteCaregiverMutation();
+  const revokeRelationshipMutation = useRevokeRelationshipMutation();
 
-  const [submitting, setSubmitting] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [canManageMeds, setCanManageMeds] = useState(true);
   const [canViewRecords, setCanViewRecords] = useState(false);
   const [validationError, setValidationError] = useState(null);
-
-  const fetchRelationships = useCallback(() => {
-    dispatch(fetchRelationshipsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchRelationships();
-  }, [fetchRelationships]);
 
   const sendInvitation = async (e) => {
     if (e) e.preventDefault();
@@ -53,20 +37,21 @@ export function useCareCircle() {
     }
 
     try {
-      setSubmitting(true);
-      const res = await dispatch(inviteCaregiverThunk(rawData));
-      if (res.payload) {
+      const res = await inviteCaregiverMutation.mutateAsync(rawData);
+      if (res) {
         setEmailInput("");
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
   const revokeRelationship = async (relationshipId) => {
-    dispatch(revokeRelationshipThunk(relationshipId));
+    try {
+      await revokeRelationshipMutation.mutateAsync(relationshipId);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const activeCaregivers = relationships.filter((r) => r.status === "ACCEPTED");
@@ -75,8 +60,8 @@ export function useCareCircle() {
   return {
     relationships,
     loading,
-    error,
-    submitting,
+    error: queryError ? queryError.message : null,
+    submitting: inviteCaregiverMutation.isPending || revokeRelationshipMutation.isPending,
     emailInput,
     setEmailInput,
     canManageMeds,

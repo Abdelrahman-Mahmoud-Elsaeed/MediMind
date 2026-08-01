@@ -17,17 +17,25 @@ class ProfilesService {
       throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
     }
 
-    if (updateData.bloodType !== undefined) {
-      patient.bloodType = updateData.bloodType;
-    }
-    if (updateData.dateOfBirth !== undefined) {
-      patient.dateOfBirth = updateData.dateOfBirth;
-    }
+    if (updateData.firstName !== undefined) patient.firstName = updateData.firstName;
+    if (updateData.lastName !== undefined) patient.lastName = updateData.lastName;
+    if (updateData.bloodType !== undefined) patient.bloodType = updateData.bloodType;
+    if (updateData.dateOfBirth !== undefined) patient.dateOfBirth = updateData.dateOfBirth;
+    if (updateData.height !== undefined) patient.height = updateData.height;
+    if (updateData.weight !== undefined) patient.weight = updateData.weight;
+    if (updateData.allergies !== undefined) patient.allergies = updateData.allergies;
+    if (updateData.profilePictureUrl !== undefined) patient.profilePictureUrl = updateData.profilePictureUrl;
+    if (updateData.address !== undefined) patient.address = updateData.address;
+
     if (updateData.emergencyContact !== undefined) {
-      patient.emergencyContact = {
-        name: updateData.emergencyContact.name || patient.emergencyContact?.name,
-        phone: updateData.emergencyContact.phone || patient.emergencyContact?.phone
-      };
+      if (Array.isArray(updateData.emergencyContact)) {
+        patient.emergencyContact = updateData.emergencyContact;
+      } else {
+        patient.emergencyContact = [{
+          name: updateData.emergencyContact.name || patient.emergencyContact?.[0]?.name,
+          phone: updateData.emergencyContact.phone || patient.emergencyContact?.[0]?.phone
+        }];
+      }
     }
 
     await patient.save();

@@ -1,47 +1,31 @@
-import { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchDosesThunk, confirmDoseThunk, skipDoseThunk } from "../store/patientSlice";
+import { useState, useMemo } from "react";
 import {
-  selectPatientDoses,
-  selectPatientLoading,
-  selectPatientError
-} from "../store/patientSelectors";
+  usePatientDosesQuery,
+  useConfirmDoseMutation,
+  useSkipDoseMutation
+} from "./usePatientQueries";
 
 export function useAdherenceTracker() {
-  const dispatch = useDispatch();
-  const doses = useSelector(selectPatientDoses);
-  const loading = useSelector(selectPatientLoading);
-  const error = useSelector(selectPatientError);
-
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const fetchDoses = useCallback((targetDate) => {
-    const year = targetDate.getFullYear();
-    const month = String(targetDate.getMonth() + 1).padStart(2, "0");
-    const day = String(targetDate.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    dispatch(fetchDosesThunk(dateStr));
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchDoses(selectedDate);
-  }, [selectedDate, fetchDoses]);
-
-  const confirmDose = async (doseEventId) => {
+  const dateStr = useMemo(() => {
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const day = String(selectedDate.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    dispatch(confirmDoseThunk({ doseEventId, dateStr }));
+    return `${year}-${month}-${day}`;
+  }, [selectedDate]);
+
+  const { data: doses = [], isLoading: loading, error: queryError, refetch } = usePatientDosesQuery(dateStr);
+  const confirmDoseMutation = useConfirmDoseMutation();
+  const skipDoseMutation = useSkipDoseMutation();
+
+  const confirmDose = async (doseEventId) => {
+    await confirmDoseMutation.mutateAsync({ doseEventId, dateStr });
   };
 
   const skipDose = async (doseEventId) => {
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(selectedDate.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    dispatch(skipDoseThunk({ doseEventId, dateStr }));
+    await skipDoseMutation.mutateAsync({ doseEventId, dateStr });
   };
 
   const changeMonth = (offset) => {
@@ -60,8 +44,8 @@ export function useAdherenceTracker() {
     selectedDate,
     setSelectedDate,
     doses,
-    loading,
-    error,
+    loading: loading || confirmDoseMutation.isPending || skipDoseMutation.isPending,
+    error: queryError ? queryError.message : null,
     takenCount,
     missedCount,
     skippedCount,
@@ -70,6 +54,6 @@ export function useAdherenceTracker() {
     confirmDose,
     skipDose,
     changeMonth,
-    refetch: () => fetchDoses(selectedDate)
+    refetch
   };
 }

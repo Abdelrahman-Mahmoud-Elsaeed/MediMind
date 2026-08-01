@@ -1,43 +1,31 @@
-import { useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useMemo } from "react";
 import {
-  fetchMedicationsThunk,
-  fetchDosesThunk,
-  confirmDoseThunk,
-  skipDoseThunk
-} from "../store/patientSlice";
-import {
-  selectPatientMedications,
-  selectPatientDoses,
-  selectPatientLoading,
-  selectPatientError
-} from "../store/patientSelectors";
+  usePatientMedicationsQuery,
+  usePatientDosesQuery,
+  useConfirmDoseMutation,
+  useSkipDoseMutation
+} from "./usePatientQueries";
 
 export function usePatientDashboard() {
-  const dispatch = useDispatch();
-  const medications = useSelector(selectPatientMedications);
-  const doses = useSelector(selectPatientDoses);
-  const loading = useSelector(selectPatientLoading);
-  const error = useSelector(selectPatientError);
+  const dateStr = useMemo(() => new Date().toISOString().split("T")[0], []);
 
-  const fetchData = useCallback(() => {
-    dispatch(fetchMedicationsThunk());
-    const dateStr = new Date().toISOString().split("T")[0];
-    dispatch(fetchDosesThunk(dateStr));
-  }, [dispatch]);
+  const { data: medications = [], isLoading: loadingMeds, error: errorMeds, refetch: refetchMeds } = usePatientMedicationsQuery();
+  const { data: doses = [], isLoading: loadingDoses, error: errorDoses, refetch: refetchDoses } = usePatientDosesQuery(dateStr);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const confirmDoseMutation = useConfirmDoseMutation();
+  const skipDoseMutation = useSkipDoseMutation();
 
   const confirmDose = async (doseEventId) => {
-    const dateStr = new Date().toISOString().split("T")[0];
-    dispatch(confirmDoseThunk({ doseEventId, dateStr }));
+    await confirmDoseMutation.mutateAsync({ doseEventId, dateStr });
   };
 
   const skipDose = async (doseEventId) => {
-    const dateStr = new Date().toISOString().split("T")[0];
-    dispatch(skipDoseThunk({ doseEventId, dateStr }));
+    await skipDoseMutation.mutateAsync({ doseEventId, dateStr });
+  };
+
+  const refetchAll = () => {
+    refetchMeds();
+    refetchDoses();
   };
 
   const totalDoses = doses.length;
@@ -45,17 +33,19 @@ export function usePatientDashboard() {
   const adherenceRate = totalDoses > 0 ? Math.round((takenDoses / totalDoses) * 100) : 100;
   const nextDose = doses.find((d) => d.status === "PENDING");
 
+  const queryError = errorMeds || errorDoses;
+
   return {
     medications,
     doses,
-    loading,
-    error,
+    loading: loadingMeds || loadingDoses || confirmDoseMutation.isPending || skipDoseMutation.isPending,
+    error: queryError ? queryError.message : null,
     adherenceRate,
     nextDose,
     takenDoses,
     totalDoses,
     confirmDose,
     skipDose,
-    refetch: fetchData
+    refetch: refetchAll
   };
 }
