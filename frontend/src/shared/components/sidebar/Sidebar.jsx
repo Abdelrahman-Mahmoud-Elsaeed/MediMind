@@ -57,11 +57,25 @@ export const Sidebar = ({ activePath = '/dashboard' }) => {
             </div>
           </div>
 
-          {/* Navigation List */}
           <nav className="space-y-1.5">
-            {navItems.map((item) => (<SidebarItem key={item.href} icon={item.icon} label={item.label} href={item.href} active={activePath === item.href ||
-                (activePath === '/dashboard' && item.href === '/home') ||
-                (activePath === '/' && item.href === '/home')}/>))}
+            {navItems.map((item) => {
+              const isActive =
+                activePath === item.href ||
+                (item.href === '/home' && (activePath === '/dashboard' || activePath === '/')) ||
+                (item.href === '/medications' && (activePath.startsWith('/medications') || activePath.startsWith('/ocr-scan'))) ||
+                (item.href === '/caregivers' && activePath.startsWith('/caregivers')) ||
+                (item.href === '/profile' && (activePath.startsWith('/profile') || activePath.startsWith('/medical-records')));
+
+              return (
+                <SidebarItem
+                  key={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  href={item.href}
+                  active={isActive}
+                />
+              );
+            })}
           </nav>
         </div>
 

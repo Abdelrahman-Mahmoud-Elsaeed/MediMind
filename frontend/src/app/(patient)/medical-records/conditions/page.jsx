@@ -1,167 +1,211 @@
 "use client";
+
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { MainLayout } from "@/shared/components/layout/MainLayout";
+import { useTranslation } from "@/shared/lib/i18nContext";
+import {
+  usePatientConditionsQuery,
+  useDeleteConditionMutation
+} from "@/modules/patient/hooks/usePatientQueries";
+import { Card, Badge, Button } from "@/shared/components/ui";
+import { ArrowLeft, Plus, Search, Edit3, Trash2, Activity, Calendar, FileText, AlertCircle } from "lucide-react";
+
 export default function PatientConditionsPage() {
-    const records = [
-        {
-            id: 1,
-            title: "CBC Blood Test Report",
-            category: "Lab Result",
-            date: "Oct 12, 2024",
-            filename: "cbc_blood_test.pdf",
-            size: "1.2 MB",
-            icon: "description",
-            iconColor: "text-primary",
-        },
-        {
-            id: 2,
-            title: "Diabetes Prescription",
-            category: "Prescription",
-            date: "Sep 10, 2024",
-            filename: "rx_metformin.jpg",
-            size: "800 KB",
-            icon: "prescriptions",
-            iconColor: "text-secondary",
-        },
-    ];
-    return (<div className="bg-background text-on-surface font-body-md min-h-screen pb-32">
-      {/* Top App Bar */}
-      <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex items-center justify-between px-margin-mobile h-16 border-b border-outline-variant/10">
-        <div className="flex items-center gap-4">
-          <Link href="/profile" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/20 transition-colors">
-            <span className="material-symbols-outlined text-primary">arrow_back</span>
-          </Link>
-          <h1 className="font-headline-md text-headline-md font-bold text-primary">Medical Records</h1>
-        </div>
-      </header>
+  const router = useRouter();
+  const { locale } = useTranslation();
+  const isAr = locale === "ar";
 
-      {/* Main Content */}
-      <main className="pt-20 px-margin-mobile max-w-container-max mx-auto space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-          {/* Left Column: Upload & Add Form */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            {/* Upload Zone */}
-            <section className="bg-surface-container border border-dashed border-outline-variant/50 hover:bg-surface-container-high transition-colors rounded-2xl p-6 text-center cursor-pointer group">
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform mb-1">
-                  <span className="material-symbols-outlined text-2xl">cloud_upload</span>
-                </div>
-                <h3 className="font-headline-md text-body-lg font-bold text-on-surface">Upload Documents</h3>
-                <p className="text-on-surface-variant text-xs">PDF, PNG, or JPG (Max 5MB)</p>
-              </div>
-            </section>
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all"); // 'all' | 'chronic' | 'acute'
 
-            {/* Add Record Form */}
-            <section className="bg-surface-container border border-outline-variant/10 rounded-2xl p-6">
-              <h3 className="font-headline-md text-body-lg font-bold text-on-surface flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary text-xl">add_box</span>
-                Add New Record
-              </h3>
-              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant mb-1.5">Record Title</label>
-                  <input type="text" required className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-on-surface placeholder:text-on-surface-variant/40" placeholder="e.g. Cholesterol Panel"/>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant mb-1.5">Select Category</label>
-                  <select className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-on-surface">
-                    <option>Lab Result</option>
-                    <option>Prescription</option>
-                    <option>Imaging</option>
-                    <option>Clinical Note</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant mb-1.5">Doctor Remarks</label>
-                  <textarea rows={3} className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-on-surface placeholder:text-on-surface-variant/40 resize-none" placeholder="Observations..."></textarea>
-                </div>
-                <button type="submit" className="w-full py-3 bg-primary-container text-on-primary-container font-bold rounded-xl shadow-lg hover:brightness-105 active:scale-95 transition-all">
-                  Add Record to Vault
-                </button>
-              </form>
-            </section>
-          </div>
+  const { data: conditions = [], isLoading, error } = usePatientConditionsQuery();
+  const deleteConditionMutation = useDeleteConditionMutation();
 
-          {/* Right Column: Recent Records & Stats */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-headline-md text-body-lg font-bold text-on-surface">Recent Records</h2>
-              <button className="text-primary text-xs font-bold hover:underline flex items-center gap-0.5">
-                View All <span className="material-symbols-outlined text-xs">open_in_new</span>
-              </button>
-            </div>
+  const handleDelete = (id, name) => {
+    if (confirm(isAr ? `هل أنت تأكد من رغبتك في حذف الحالة الطبية "${name}"؟` : `Are you sure you want to delete condition "${name}"?`)) {
+      deleteConditionMutation.mutate(id);
+    }
+  };
 
-            {/* Records List */}
-            <div className="flex flex-col gap-4">
-              {records.map((rec) => (<div key={rec.id} className="bg-surface-container border border-outline-variant/10 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:border-primary/20 transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center">
-                    <span className={`material-symbols-outlined text-2xl ${rec.iconColor}`}>{rec.icon}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-headline-md text-base font-bold text-on-surface truncate">{rec.title}</h4>
-                    <div className="flex items-center gap-2 text-xs text-on-surface-variant mt-1">
-                      <span className="bg-secondary-container/20 text-secondary px-2.5 py-0.5 rounded-full font-bold">
-                        {rec.category}
-                      </span>
-                      <span>•</span>
-                      <span>{rec.date}</span>
-                    </div>
-                    <div className="mt-2.5 bg-background border border-outline-variant/10 rounded-lg px-3 py-1.5 w-fit flex items-center gap-1.5 text-xs text-on-surface-variant/80">
-                      <span className="material-symbols-outlined text-xs">picture_as_pdf</span>
-                      <span className="truncate">{rec.filename} ({rec.size})</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4 sm:mt-0">
-                    <button className="flex-1 sm:flex-none border border-outline-variant hover:bg-surface-variant/10 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all">
-                      View
-                    </button>
-                    <button className="flex-1 sm:flex-none text-error hover:bg-error-container/10 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all">
-                      Delete
-                    </button>
-                  </div>
-                </div>))}
-            </div>
+  const filteredConditions = useMemo(() => {
+    return conditions.filter((c) => {
+      const nameMatch = c.diseaseName?.toLowerCase().includes(searchQuery.toLowerCase()) || c.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      if (filterType === "chronic") return nameMatch && c.isChronic;
+      if (filterType === "acute") return nameMatch && !c.isChronic;
+      return nameMatch;
+    });
+  }, [conditions, searchQuery, filterType]);
 
-            {/* Storage Info Cards */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-surface-container border border-outline-variant/10 border-l-4 border-l-primary p-5 rounded-2xl">
-                <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Vault Encryption</span>
-                <h4 className="font-headline-md text-base font-bold text-on-surface mt-1">100% Encrypted</h4>
-                <p className="text-[10px] text-primary mt-1 font-bold">Biometric locking active</p>
-              </div>
-              <div className="bg-surface-container border border-outline-variant/10 border-l-4 border-l-secondary p-5 rounded-2xl">
-                <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Total Storage</span>
-                <h4 className="font-headline-md text-base font-bold text-on-surface mt-1">2.4 / 50 MB</h4>
-                <div className="w-full bg-background h-1.5 rounded-full mt-2.5 overflow-hidden">
-                  <div className="h-full bg-secondary w-[5%] rounded-full shadow-[0_0_8px_rgba(159,213,136,0.5)]"></div>
-                </div>
-              </div>
+  return (
+    <MainLayout activePath="/profile">
+      <div className="max-w-[1200px] mx-auto space-y-8">
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild className="rounded-full">
+              <Link href="/medical-records">
+                <ArrowLeft className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-on-surface">
+                {isAr ? "الحالات والتشخيصات الطبية" : "Medical Conditions"}
+              </h1>
+              <p className="text-xs text-on-surface-variant font-medium mt-0.5">
+                {isAr ? "إدارة ومتابعة حالتك الصحية وتاريخ التشخيص" : "Manage your diagnosed medical conditions and chronic health profile."}
+              </p>
             </div>
           </div>
-        </div>
-      </main>
 
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/home">
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-sm text-label-sm">Home</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/medications">
-          <span className="material-symbols-outlined">medication</span>
-          <span className="font-label-sm text-label-sm">Meds</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/adherence">
-          <span className="material-symbols-outlined">query_stats</span>
-          <span className="font-label-sm text-label-sm">Adherence</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-transform duration-300" href="/caregivers">
-          <span className="material-symbols-outlined">groups</span>
-          <span className="font-label-sm text-label-sm">Care</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-primary px-3 py-1 scale-100 font-bold" href="/profile">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
-          <span className="font-label-sm text-label-sm">Profile</span>
-        </Link>
-      </nav>
-    </div>);
+          <Button
+            onClick={() => router.push("/medical-records/conditions/add")}
+            className="bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {isAr ? "إضافة حالة جديدة" : "Add Condition"}
+          </Button>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <Card className="p-4 rounded-2xl bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="relative w-full sm:max-w-md">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isAr ? "ابحث عن حالة طبية..." : "Search conditions..."}
+              className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500 text-on-surface"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setFilterType("all")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                filterType === "all" ? "bg-teal-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              {isAr ? "الكل" : "All"} ({conditions.length})
+            </button>
+            <button
+              onClick={() => setFilterType("chronic")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                filterType === "chronic" ? "bg-teal-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              {isAr ? "مزمنة" : "Chronic"} ({conditions.filter((c) => c.isChronic).length})
+            </button>
+            <button
+              onClick={() => setFilterType("acute")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                filterType === "acute" ? "bg-teal-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              {isAr ? "حادّة" : "Acute"} ({conditions.filter((c) => !c.isChronic).length})
+            </button>
+          </div>
+        </Card>
+
+        {/* Content List */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600"></div>
+            <p className="text-sm text-on-surface-variant">{isAr ? "جاري تحميل الحالات الطبية..." : "Loading medical conditions..."}</p>
+          </div>
+        ) : error ? (
+          <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold text-center">
+            {isAr ? "تعذر تحميل الحالات الطبية من السيرفر." : "Failed to load medical conditions."}
+          </div>
+        ) : filteredConditions.length === 0 ? (
+          <Card className="p-12 text-center rounded-3xl bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto">
+              <Activity className="w-8 h-8" />
+            </div>
+            <h3 className="text-lg font-bold text-on-surface">
+              {isAr ? "لا توجد حالات طبية مسجلة" : "No Medical Conditions Found"}
+            </h3>
+            <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
+              {isAr ? "لم تقم بإضافة أي حالات أو تشخيصات طبية بعد. انقر فوق الزر أدناه لإضافة حالة." : "You have not logged any medical conditions yet. Click below to add a new condition."}
+            </p>
+            <Button
+              onClick={() => router.push("/medical-records/conditions/add")}
+              className="bg-teal-600 text-white font-bold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {isAr ? "إضافة حالة جديدة" : "Add Condition"}
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredConditions.map((cond) => {
+              const condId = cond._id || cond.conditionId;
+              const dateFormatted = cond.diagnosedDate
+                ? new Date(cond.diagnosedDate).toLocaleDateString(isAr ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" })
+                : null;
+
+              return (
+                <Card
+                  key={condId}
+                  className="p-6 rounded-3xl bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 hover:border-teal-500/40 transition-all shadow-xs flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg text-on-surface">{cond.diseaseName}</h3>
+                          {dateFormatted && (
+                            <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {isAr ? `تاريخ التشخيص: ${dateFormatted}` : `Diagnosed: ${dateFormatted}`}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <Badge variant={cond.isChronic ? "destructive" : "secondary"}>
+                        {cond.isChronic ? (isAr ? "مزمن" : "Chronic") : (isAr ? "حاد" : "Acute")}
+                      </Badge>
+                    </div>
+
+                    {cond.notes && (
+                      <p className="text-xs text-on-surface-variant bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 leading-relaxed">
+                        {cond.notes}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push(`/medical-records/conditions/${condId}/edit`)}
+                      className="text-xs text-slate-700 dark:text-slate-300"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                      {isAr ? "تعديل" : "Edit"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(condId, cond.diseaseName)}
+                      className="text-xs text-red-500 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                      {isAr ? "حذف" : "Delete"}
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  );
 }

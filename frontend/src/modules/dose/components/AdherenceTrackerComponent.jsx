@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useMedications } from "@/modules/medication/hooks/useMedicationHooks";
-import { usePatientDosesQuery, useConfirmDoseMutation, useSkipDoseMutation } from "../hooks/usePatientQueries";
+import { usePatientDosesQuery, useConfirmDoseMutation, useSkipDoseMutation } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Badge, Button, ProgressBar } from "@/shared/components/ui";
 import {
   CheckCircle2,
@@ -37,7 +37,7 @@ export default function AdherenceTrackerComponent() {
   const confirmDoseMutation = useConfirmDoseMutation();
   const skipDoseMutation = useSkipDoseMutation();
 
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); 
 
   const stats = useMemo(() => {
     if (!doses || doses.length === 0) {
@@ -57,7 +57,6 @@ export default function AdherenceTrackerComponent() {
 
     const adherencePct = totalFinished > 0 ? Math.round((takenCount / totalFinished) * 100) : 100;
 
-    // Calculate streak
     let streak = 0;
     const sorted = [...doses].sort((a, b) => new Date(b.scheduledFor) - new Date(a.scheduledFor));
     for (const d of sorted) {
@@ -65,7 +64,6 @@ export default function AdherenceTrackerComponent() {
       else if (d.status === "MISSED") break;
     }
 
-    // Heatmap calculation for 30 days
     const dayMap = {};
     doses.forEach((d) => {
       if (!d.scheduledFor) return;
@@ -102,7 +100,6 @@ export default function AdherenceTrackerComponent() {
     };
   }, [doses]);
 
-  // Medication performance list
   const medicationPerformance = useMemo(() => {
     if (!medications || medications.length === 0) return [];
     return medications.map((med, idx) => {
@@ -127,7 +124,6 @@ export default function AdherenceTrackerComponent() {
     });
   }, [medications, doses, isAr]);
 
-  // Activity Log Rows filtered by status and query
   const activityLogs = useMemo(() => {
     if (!doses || doses.length === 0) return [];
     let filtered = doses;
@@ -173,7 +169,6 @@ export default function AdherenceTrackerComponent() {
   return (
     <MainLayout activePath="/adherence">
       <div className="max-w-[1400px] mx-auto space-y-8">
-        {/* Header Section with Title & Time Range Filter Pills */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-extrabold text-[#0b1c30] dark:text-slate-100 tracking-tight">
@@ -184,41 +179,41 @@ export default function AdherenceTrackerComponent() {
             </p>
           </div>
 
-          {/* Time Range Filter Pills matching Reference UI */}
           <div className="flex items-center bg-slate-200/60 dark:bg-slate-800 p-1.5 rounded-full text-xs font-bold shadow-inner">
             <button
               onClick={() => setTimeFrame("30days")}
-              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${timeFrame === "30days"
-                ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${
+                timeFrame === "30days"
+                  ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
             >
               {isAr ? "آخر ٣٠ يوماً" : "Last 30 Days"}
             </button>
             <button
               onClick={() => setTimeFrame("90days")}
-              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${timeFrame === "90days"
-                ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${
+                timeFrame === "90days"
+                  ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
             >
               {isAr ? "آخر ٩٠ يوماً" : "Last 90 Days"}
             </button>
             <button
               onClick={() => setTimeFrame("yearly")}
-              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${timeFrame === "yearly"
-                ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+              className={`px-5 py-2 rounded-full transition-all cursor-pointer ${
+                timeFrame === "yearly"
+                  ? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-400 shadow-md font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
             >
               {isAr ? "سنوي" : "Yearly"}
             </button>
           </div>
         </div>
 
-        {/* Row 1: Top 3 Summary Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Overall Adherence */}
           <Card className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -233,7 +228,6 @@ export default function AdherenceTrackerComponent() {
             </div>
           </Card>
 
-          {/* Card 2: Current Streak */}
           <Card className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -249,7 +243,6 @@ export default function AdherenceTrackerComponent() {
             </div>
           </Card>
 
-          {/* Card 3: Perfect Days */}
           <Card className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -266,16 +259,13 @@ export default function AdherenceTrackerComponent() {
           </Card>
         </div>
 
-        {/* Row 2: Heatmap & Consistency Insights (2 Columns Grid) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column (2 Cols): Monthly Adherence Heatmap */}
           <Card className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h3 className="text-xl font-extrabold text-[#0b1c30] dark:text-slate-100">
                 {isAr ? "خريطة الحرارة الشهرية للالتزام" : "Monthly Adherence Heatmap"}
               </h3>
 
-              {/* Legend matching Reference UI */}
               <div className="flex items-center gap-4 text-xs font-bold">
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-md bg-teal-600" />
@@ -292,7 +282,6 @@ export default function AdherenceTrackerComponent() {
               </div>
             </div>
 
-            {/* Days of Week Header */}
             <div className="grid grid-cols-7 gap-3 text-center text-xs font-black text-slate-400 mb-3 uppercase">
               <div>M</div>
               <div>T</div>
@@ -303,7 +292,6 @@ export default function AdherenceTrackerComponent() {
               <div>S</div>
             </div>
 
-            {/* 30 Days Heatmap Grid */}
             <div className="grid grid-cols-7 gap-3">
               {stats.heatmap.map((d) => {
                 let bgClass = "bg-teal-600 text-white font-black";
@@ -328,7 +316,6 @@ export default function AdherenceTrackerComponent() {
             </div>
           </Card>
 
-          {/* Right Column (1 Col): Consistency Insights */}
           <Card className="bg-teal-50/50 dark:bg-slate-900/80 p-8 rounded-[32px] border border-teal-100 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-6">
             <div className="flex items-center gap-2.5 text-teal-700 dark:text-teal-400">
               <Sparkles className="w-5 h-5" />
@@ -336,7 +323,6 @@ export default function AdherenceTrackerComponent() {
             </div>
 
             <div className="space-y-4">
-              {/* Insight Card 1 */}
               <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-teal-100 dark:border-slate-700/60 flex items-start gap-3 shadow-2xs">
                 <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5">
                   <Lightbulb className="w-4 h-4" />
@@ -350,7 +336,6 @@ export default function AdherenceTrackerComponent() {
                 </p>
               </div>
 
-              {/* Insight Card 2 */}
               <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-teal-100 dark:border-slate-700/60 flex items-start gap-3 shadow-2xs">
                 <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5">
                   <TrendingUp className="w-4 h-4" />
@@ -364,7 +349,6 @@ export default function AdherenceTrackerComponent() {
                 </p>
               </div>
 
-              {/* Insight Card 3 */}
               <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-teal-100 dark:border-slate-700/60 flex items-start gap-3 shadow-2xs">
                 <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5">
                   <CalendarIcon className="w-4 h-4" />
@@ -388,7 +372,6 @@ export default function AdherenceTrackerComponent() {
           </Card>
         </div>
 
-        {/* Row 3: Medication Performance */}
         <div className="space-y-4">
           <h3 className="text-xl font-extrabold text-[#0b1c30] dark:text-slate-100 tracking-tight">
             {isAr ? "أداء الالتزام لكل دواء" : "Medication Performance"}
@@ -409,7 +392,6 @@ export default function AdherenceTrackerComponent() {
 
                 <div className="flex items-end justify-between pt-2">
                   <div className="text-3xl font-black text-[#0b1c30] dark:text-slate-100">{med.percentage}%</div>
-                  {/* Mini Vertical Bar Sparkline */}
                   <div className="flex items-end gap-1.5 h-8">
                     {med.bars.map((h, bIdx) => (
                       <div
@@ -429,7 +411,6 @@ export default function AdherenceTrackerComponent() {
           </div>
         </div>
 
-        {/* Row 4: Activity Log Table matching Reference UI */}
         <Card className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-extrabold text-[#0b1c30] dark:text-slate-100">{isAr ? "سجل النشاط والجرعات" : "Activity Log"}</h3>
@@ -503,7 +484,6 @@ export default function AdherenceTrackerComponent() {
         </Card>
       </div>
 
-      {/* AI Full Report Modal */}
       <AnimatePresence>
         {isAiReportOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">

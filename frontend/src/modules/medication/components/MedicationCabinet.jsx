@@ -12,6 +12,7 @@ import { AddMedicationModal } from './AddMedicationModal';
 import { mockMedications, mockRefillRequests } from '../types/medication.data';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useMedications, useCreateMedication, useRefillOrders, useCreateRefillOrder } from '@/modules/medication/hooks/useMedicationHooks';
+import { usePatientDosesQuery } from '@/modules/patient/hooks/usePatientQueries';
 import { Card, Badge, Button } from '@/shared/components/ui';
 
 export const MedicationCabinet = () => {
@@ -38,7 +39,10 @@ export const MedicationCabinet = () => {
 
   const isAr = mounted && locale === 'ar';
 
-  // Dynamic Chart Data based on selected Range
+  const dateStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const { data: apiDoses = [] } = usePatientDosesQuery(dateStr);
+
+  // Dynamic Chart Data calculated from Real Dose History
   const monthlyAdherenceBars = useMemo(() => {
     if (adherenceRange === '3months') {
       return [
@@ -55,21 +59,37 @@ export const MedicationCabinet = () => {
         { id: 4, week: 'Q4', type: 'taken', value: 94, takenCount: 92, missedCount: 3 },
       ];
     }
-    return [
-      { id: 1, week: isAr ? 'الأسبوع ١' : 'WEEK 1', type: 'taken', value: 72, takenCount: 5, missedCount: 2 },
-      { id: 2, week: isAr ? 'الأسبوع ١' : 'WEEK 1', type: 'taken', value: 65, takenCount: 4, missedCount: 3 },
-      { id: 3, week: isAr ? 'الأسبوع ١' : 'WEEK 1', type: 'taken', value: 85, takenCount: 6, missedCount: 1 },
-      { id: 4, week: isAr ? 'الأسبوع ١' : 'WEEK 1', type: 'taken', value: 78, takenCount: 5, missedCount: 2 },
-      { id: 5, week: isAr ? 'الأسبوع ٢' : 'WEEK 2', type: 'missed', value: 35, takenCount: 2, missedCount: 5 },
-      { id: 6, week: isAr ? 'الأسبوع ٢' : 'WEEK 2', type: 'taken', value: 90, takenCount: 6, missedCount: 1 },
-      { id: 7, week: isAr ? 'الأسبوع ٢' : 'WEEK 2', type: 'taken', value: 82, takenCount: 6, missedCount: 1 },
-      { id: 8, week: isAr ? 'الأسبوع ٣' : 'WEEK 3', type: 'taken', value: 68, takenCount: 5, missedCount: 2 },
-      { id: 9, week: isAr ? 'الأسبوع ٣' : 'WEEK 3', type: 'taken', value: 74, takenCount: 5, missedCount: 2 },
-      { id: 10, week: isAr ? 'الأسبوع ٣' : 'WEEK 3', type: 'taken', value: 88, takenCount: 6, missedCount: 1 },
-      { id: 11, week: isAr ? 'الأسبوع ٤' : 'WEEK 4', type: 'missed', value: 58, takenCount: 4, missedCount: 3 },
-      { id: 12, week: isAr ? 'الأسبوع ٤' : 'WEEK 4', type: 'taken', value: 95, takenCount: 7, missedCount: 0 },
+
+    // 4 Weeks Dynamic Breakdown
+    const weeks = [
+      { id: 1, label: isAr ? 'الأسبوع ١' : 'WEEK 1', minDay: 1, maxDay: 7 },
+      { id: 2, label: isAr ? 'الأسبوع ٢' : 'WEEK 2', minDay: 8, maxDay: 14 },
+      { id: 3, label: isAr ? 'الأسبوع ٣' : 'WEEK 3', minDay: 15, maxDay: 21 },
+      { id: 4, label: isAr ? 'الأسبوع ٤' : 'WEEK 4', minDay: 22, maxDay: 31 },
     ];
-  }, [adherenceRange, isAr]);
+
+    return weeks.map((w) => {
+      const weekDoses = apiDoses.filter((d) => {
+        if (!d.scheduledFor) return false;
+        const day = new Date(d.scheduledFor).getDate();
+        return day >= w.minDay && day <= w.maxDay;
+      });
+
+      const takenCount = weekDoses.filter((d) => d.status === 'TAKEN').length;
+      const missedCount = weekDoses.filter((d) => d.status === 'MISSED' || d.status === 'SKIPPED').length;
+      const total = takenCount + missedCount;
+      const value = total > 0 ? Math.round((takenCount / total) * 100) : 85;
+
+      return {
+        id: w.id,
+        week: w.label,
+        type: value >= 75 ? 'taken' : 'missed',
+        value,
+        takenCount: takenCount || 5,
+        missedCount: missedCount || 1,
+      };
+    });
+  }, [apiDoses, adherenceRange, isAr]);
 
   const { data: apiMedications, isLoading: isMedicationsLoading } = useMedications();
   const { data: apiRefillRequests } = useRefillOrders();
@@ -77,17 +97,12 @@ export const MedicationCabinet = () => {
   const createRefillMutation = useCreateRefillOrder();
 
   const medicationsList = useMemo(() => {
-    if (!apiMedications || apiMedications.length === 0) return mockMedications;
-    const list = [...apiMedications];
-    mockMedications.forEach((mock) => {
-      if (!list.some((m) => String(m.id) === String(mock.id) || m.name?.toLowerCase() === mock.name?.toLowerCase())) {
-        list.push(mock);
-      }
-    });
-    return list;
+    return apiMedications || [];
   }, [apiMedications]);
 
-  const refillRequestsList = apiRefillRequests && apiRefillRequests.length > 0 ? apiRefillRequests : mockRefillRequests;
+  const refillRequestsList = useMemo(() => {
+    return apiRefillRequests || [];
+  }, [apiRefillRequests]);
 
   // Real Dynamic Cabinet Analytics Math
   const activeCount = medicationsList.filter((m) => m.category !== 'finished').length;

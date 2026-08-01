@@ -34,35 +34,49 @@ function WelcomeBanner({ userName, currentDateFormatted }) {
 // ==========================================
 function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, locale, t }) {
     const isRtl = locale === "ar";
-    const sampleDoses = doses.length > 0 ? doses : [
-        {
-            doseEventId: 'd1',
-            medicationName: isRtl ? 'ليزينوبريل' : 'Lisinopril',
-            scheduledFor: new Date().setHours(8, 0, 0, 0),
-            status: 'TAKEN',
-            timeSlotName: t('patient.home.morningDose'),
-            subtext: isRtl ? 'ليزينوبريل • تم التناول الساعة 07:45 ص' : 'Lisinopril • Taken at 07:45 AM',
-            formattedTime: '08:00 AM'
-        },
-        {
-            doseEventId: 'd2',
-            medicationName: isRtl ? 'أتورفاستاتين 10مجم' : 'Atorvastatin 10mg',
-            scheduledFor: new Date().setHours(13, 0, 0, 0),
-            status: 'DUE',
-            timeSlotName: t('patient.home.lunchtimeDose'),
-            subtext: isRtl ? 'أتورفاستاتين 10مجم • قرص واحد' : 'Atorvastatin 10mg • 1 Tablet',
-            formattedTime: '01:00 PM'
-        },
-        {
-            doseEventId: 'd3',
-            medicationName: isRtl ? 'سيدوفاج/ميتفورمين 500مجم' : 'Metformin 500mg',
-            scheduledFor: new Date().setHours(20, 0, 0, 0),
-            status: 'UPCOMING',
-            timeSlotName: t('patient.home.eveningDose'),
-            subtext: isRtl ? 'سيدوفاج 500مجم • قادمة' : 'Metformin 500mg • Upcoming',
-            formattedTime: '08:00 PM'
-        }
-    ];
+    
+    // Sort doses with priority (DUE/PENDING first, then UPCOMING, then TAKEN) and limit to ONLY 3 items
+    const sampleDoses = React.useMemo(() => {
+        const raw = doses && doses.length > 0 ? doses : [
+            {
+                doseEventId: 'd1',
+                medicationName: isRtl ? 'ليزينوبريل' : 'Lisinopril',
+                scheduledFor: new Date().setHours(8, 0, 0, 0),
+                status: 'TAKEN',
+                timeSlotName: t('patient.home.morningDose'),
+                subtext: isRtl ? 'ليزينوبريل • تم التناول الساعة 07:45 ص' : 'Lisinopril • Taken at 07:45 AM',
+                formattedTime: '08:00 AM'
+            },
+            {
+                doseEventId: 'd2',
+                medicationName: isRtl ? 'أتورفاستاتين 10مجم' : 'Atorvastatin 10mg',
+                scheduledFor: new Date().setHours(11, 0, 0, 0),
+                status: 'DUE',
+                timeSlotName: t('patient.home.lunchtimeDose'),
+                subtext: isRtl ? 'أتورفاستاتين 10مجم • قرص واحد' : 'Atorvastatin 10mg • 1 Tablet',
+                formattedTime: '11:00 AM'
+            },
+            {
+                doseEventId: 'd3',
+                medicationName: isRtl ? 'سيدوفاج/ميتفورمين 500مجم' : 'Metformin 500mg',
+                scheduledFor: new Date().setHours(20, 0, 0, 0),
+                status: 'UPCOMING',
+                timeSlotName: t('patient.home.eveningDose'),
+                subtext: isRtl ? 'سيدوفاج 500مجم • قادمة' : 'Metformin 500mg • Upcoming',
+                formattedTime: '08:00 PM'
+            }
+        ];
+
+        // Sort strictly chronologically by scheduled time (08:00 AM -> 11:00 AM -> 20:00) and limit to 3 items
+        const sorted = [...raw].sort((a, b) => {
+            const t1 = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
+            const t2 = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
+            return t1 - t2;
+        });
+
+        return sorted.slice(0, 3);
+    }, [doses, isRtl, t]);
+
     const formattedHeaderDate = new Date().toLocaleDateString(isRtl ? 'ar-EG' : 'en-US', {
         month: 'short',
         day: 'numeric'

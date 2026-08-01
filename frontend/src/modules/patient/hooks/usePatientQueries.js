@@ -155,6 +155,36 @@ export function useRevokeRelationshipMutation() {
   });
 }
 
+export function useUpdatePatientMedicationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, payload }) => {
+      const res = await patientService.updateMedication(id, payload);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.medications });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'doses'] });
+    },
+  });
+}
+
+export function useDeletePatientMedicationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id) => {
+      const res = await patientService.deleteMedication(id);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.medications });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'doses'] });
+    },
+  });
+}
+
 // 5. Patient Conditions
 export function usePatientConditionsQuery() {
   return useQuery({
@@ -173,6 +203,20 @@ export function useAddConditionMutation() {
   return useMutation({
     mutationFn: async (payload) => {
       const res = await patientService.createCondition(payload);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.conditions });
+    },
+  });
+}
+
+export function useUpdateConditionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ conditionId, payload }) => {
+      const res = await patientService.updateCondition(conditionId, payload);
       return res;
     },
     onSuccess: () => {

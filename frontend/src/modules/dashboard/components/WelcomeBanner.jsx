@@ -2,14 +2,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/shared/lib/i18nContext';
+import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
+
 export const WelcomeBanner = () => {
     const { locale } = useTranslation();
+    const { user } = useAuth();
+    const { data: profile } = usePatientProfileQuery();
+
+    const name = profile?.firstName || user?.name || (locale === 'ar' ? 'المريض' : 'Patient');
+
     const formattedDate = new Date().toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric',
     });
+
     return (<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="relative w-full min-h-[150px] sm:h-[180px] rounded-[24px] overflow-hidden bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 p-6 sm:p-8 md:p-10 flex flex-col justify-center text-white shadow-xl mb-6 sm:mb-8 border border-primary-container/20">
       {/* Wave / Radial Geometric Background Artwork */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -37,7 +46,7 @@ export const WelcomeBanner = () => {
       {/* Content */}
       <div className="relative z-10 space-y-1.5 max-w-xl">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-xs">
-          {locale === 'ar' ? 'مرحباً بك مجدداً، سارة' : 'Welcome back, Sarah'}
+          {locale === 'ar' ? `مرحباً بك مجدداً، ${name}` : `Welcome back, ${name}`}
         </h1>
         <p className="text-emerald-200/80 font-medium text-sm sm:text-base tracking-wide">
           {formattedDate}

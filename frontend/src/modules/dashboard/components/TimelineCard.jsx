@@ -1,50 +1,61 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { AppCard } from '@/shared/components/ui/AppCard';
 import { TimelineItem } from './TimelineItem';
 import { useTranslation } from '@/shared/lib/i18nContext';
+import {
+  usePatientDosesQuery,
+  useConfirmDoseMutation,
+  useSkipDoseMutation
+} from '@/modules/patient/hooks/usePatientQueries';
+
 export const TimelineCard = () => {
     const { locale, t } = useTranslation();
-    const initialItems = [
-        {
-            id: '1',
-            timeSlot: t('patient.home.morningDose'),
-            medication: locale === 'ar' ? 'ليزينوبريل • تم التناول الساعة 07:45 ص' : 'Lisinopril • Taken at 07:45 AM',
-            time: '08:00 AM',
-            status: 'completed',
-        },
-        {
-            id: '2',
-            timeSlot: t('patient.home.lunchtimeDose'),
-            medication: locale === 'ar' ? 'أتورفاستاتين 10مجم - قرص واحد' : 'Atorvastatin 10mg - 1 Tablet',
-            time: '01:00 PM',
-            status: 'due',
-        },
-        {
-            id: '3',
-            timeSlot: t('patient.home.eveningDose'),
-            medication: locale === 'ar' ? 'سيدوفاج/ميتفورمين 500مجم - قادمة' : 'Metformin 500mg - Upcoming',
-            time: '08:00 PM',
-            status: 'upcoming',
-        },
-    ];
-    const [items, setItems] = useState(initialItems);
+    const isAr = locale === 'ar';
+    const dateStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+    const { data: doses = [], isLoading, error } = usePatientDosesQuery(dateStr);
+    const confirmDoseMutation = useConfirmDoseMutation();
+    const skipDoseMutation = useSkipDoseMutation();
+
     const handleMarkAsTaken = (id) => {
-        setItems((prev) => prev.map((item) => item.id === id
-            ? {
-                ...item,
-                status: 'completed',
-                medication: `${item.medication.split(' - ')[0]} • ${locale === 'ar' ? 'تم التناول الآن' : 'Taken just now'}`,
-            }
-            : item));
+      confirmDoseMutation.mutate({ doseEventId: id });
     };
+
     const handleSnooze = (id) => {
-        alert(locale === 'ar' ? 'تم الغفوة لمدة 15 دقيقة' : 'Snoozed for 15 minutes');
+      skipDoseMutation.mutate({ doseEventId: id });
     };
-    const formattedDate = new Date().toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+
+    const formattedDate = new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
         month: 'short',
         day: 'numeric',
     });
+
+    const items = doses.map((dose) => {
+      const timeFormatted = dose.scheduledFor
+        ? new Date(dose.scheduledFor).toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+        : '08:00 AM';
+
+      let status = 'upcoming';
+      if (dose.status === 'TAKEN') status = 'completed';
+      else if (dose.status === 'MISSED' || dose.status === 'SKIPPED') status = 'missed';
+      else if (dose.status === 'PENDING') status = 'due';
+
+      return {
+        id: dose.doseEventId || dose._id || dose.id,
+        timeSlot: timeFormatted,
+        medication: `${dose.medicationName || dose.medicationId?.name || 'Medication'} • ${
+          status === 'completed'
+            ? (isAr ? 'تم التناول' : 'Taken')
+            : status === 'missed'
+            ? (isAr ? 'جرعة فائتة' : 'Missed Dose')
+            : (isAr ? 'مجدولة' : 'Scheduled')
+        }`,
+        time: timeFormatted,
+        status,
+      };
+    });
+
     return (<AppCard className="hover:shadow-lg transition-shadow">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -56,9 +67,31 @@ export const TimelineCard = () => {
         </span>
       </div>
 
-      {/* Timeline Items List */}
-      <div className="space-y-0">
-        {items.map((item, index) => (<TimelineItem key={item.id} item={item} isFirst={index === 0} isLast={index === items.length - 1} onMarkAsTaken={handleMarkAsTaken} onSnooze={handleSnooze}/>))}
-      </div>
+      {isLoading ? (
+        <div className="py-8 text-center text-sm text-on-surface-variant animate-pulse">
+          {isAr ? 'جاري تحميل الجرعات اليومية...' : 'Loading daily doses...'}
+        </div>
+      ) : error ? (
+        <div className="p-4 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold text-center">
+          {isAr ? 'تعذر تحميل الجرعات اليومية' : 'Failed to load daily doses'}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-8 text-center text-sm text-on-surface-variant">
+          {isAr ? 'لا توجد جرعات مجدولة لهذا اليوم 🎉' : 'No doses scheduled for today 🎉'}
+        </div>
+      ) : (
+        <div className="space-y-0">
+          {items.map((item, index) => (
+            <TimelineItem
+              key={item.id}
+              item={item}
+              isFirst={index === 0}
+              isLast={index === items.length - 1}
+              onMarkAsTaken={handleMarkAsTaken}
+              onSnooze={handleSnooze}
+            />
+          ))}
+        </div>
+      )}
     </AppCard>);
 };

@@ -7,22 +7,29 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 import { Button, Card, CardTitle, CardDescription, Badge, Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui';
 
 export default function LandingPage() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  const { t } = useTranslation();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { t, locale } = useTranslation();
+  const isAr = locale === 'ar';
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const heroBtnHref = mounted && isAuthenticated ? "/home" : "/register";
-  const heroBtnText = mounted && isAuthenticated ? t('landing.nav.goDashboard') : t('landing.nav.goJourney');
-  const card1Href = mounted && isAuthenticated ? "/caregivers" : "/register";
-  const card2Href = mounted && isAuthenticated ? "/caregivers" : "/register";
-  const card3Href = mounted && isAuthenticated ? "/caregivers" : "/register";
-  const caregiversViewAllHref = mounted && isAuthenticated ? "/caregivers" : "/register";
-  const ctaBtnHref = mounted && isAuthenticated ? "/home" : "/register";
-  const ctaBtnText = mounted && isAuthenticated ? t('landing.cta.goApp') : t('landing.cta.startFree');
+  const isUserLoggedIn = mounted && Boolean(
+    isAuthenticated ||
+    user ||
+    (typeof window !== 'undefined' && (localStorage.getItem('accessToken') || localStorage.getItem('user')))
+  );
+
+  const heroBtnHref = isUserLoggedIn ? "/home" : "/register";
+  const heroBtnText = isUserLoggedIn ? (isAr ? "لوحة التحكم" : "Dashboard") : t('landing.nav.goJourney');
+  const card1Href = isUserLoggedIn ? "/caregivers" : "/register";
+  const card2Href = isUserLoggedIn ? "/caregivers" : "/register";
+  const card3Href = isUserLoggedIn ? "/caregivers" : "/register";
+  const caregiversViewAllHref = isUserLoggedIn ? "/caregivers" : "/register";
+  const ctaBtnHref = isUserLoggedIn ? "/home" : "/register";
+  const ctaBtnText = isUserLoggedIn ? (isAr ? "لوحة التحكم" : "Dashboard") : t('landing.cta.startFree');
 
   return (
     <div className="bg-[#f8f9ff] text-[#0b1c30] dark:bg-slate-950 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300" suppressHydrationWarning>

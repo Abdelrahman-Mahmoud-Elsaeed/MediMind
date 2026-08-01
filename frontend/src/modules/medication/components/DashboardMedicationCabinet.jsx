@@ -46,12 +46,13 @@ const fallbackMedications = [
     },
 ];
 export const DashboardMedicationCabinet = () => {
-    const { t } = useTranslation();
-    const { data: apiMeds, isLoading } = useMedications();
+    const { t, locale } = useTranslation();
+    const isAr = locale === 'ar';
+    const { data: apiMeds = [], isLoading, error } = useMedications();
     const handleRefill = (name) => {
         alert(t('patient.home.refillRequested', { name }));
     };
-    const medications = apiMeds && apiMeds.length > 0 ? apiMeds.slice(0, 4) : fallbackMedications;
+    const medications = apiMeds.slice(0, 4);
     return (<Card className="hover:shadow-lg transition-shadow p-6 sm:p-8">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -74,7 +75,11 @@ export const DashboardMedicationCabinet = () => {
           <span className="text-xs font-semibold">
             {t('patient.home.loadingMeds')}
           </span>
-        </div>) : (<div className="space-y-3.5">
+        </div>) : medications.length === 0 ? (
+          <div className="py-8 text-center text-xs text-on-surface-variant">
+            {isAr ? 'لا توجد أدوية مضافة في الخزانة حتى الآن' : 'No medications added in your cabinet yet'}
+          </div>
+        ) : (<div className="space-y-3.5">
           {medications.map((med) => {
                 const current = Number(med.currentStock ?? 20);
                 const total = Number(med.totalStock ?? 30);

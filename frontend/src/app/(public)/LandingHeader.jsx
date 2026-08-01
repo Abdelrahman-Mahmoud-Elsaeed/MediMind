@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { User, LayoutDashboard, Settings, LogOut } from 'lucide-react';
+import { User, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
 
 export default function LandingHeader() {
@@ -29,6 +29,12 @@ export default function LandingHeader() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const isUserLoggedIn = Boolean(
+    isAuthenticated ||
+    user ||
+    (typeof window !== 'undefined' && (localStorage.getItem('accessToken') || localStorage.getItem('user')))
+  );
 
   const handleLogout = () => {
     dispatch(logoutThunk());
@@ -50,7 +56,13 @@ export default function LandingHeader() {
     ? `${user.firstName} ${user.lastName || ''}`.trim()
     : user?.name || user?.email || 'User Profile';
   const userAvatarLetter = (userDisplayName?.[0] || 'U').toUpperCase();
-  const userRolePath = user?.role === 'PATIENT' ? '/home' : user?.role ? '/dashboard' : '/home';
+  const isPatient = !user?.role || user?.role === 'PATIENT';
+  const userRolePath = isPatient ? '/home' : user?.role === 'CAREGIVER' ? '/caregivers' : '/dashboard';
+  const userRoleLabel = isPatient
+    ? (locale === 'ar' ? 'مريض' : 'Patient')
+    : user?.role === 'CAREGIVER'
+    ? (locale === 'ar' ? 'مقدم رعاية' : 'Caregiver')
+    : (locale === 'ar' ? 'مسؤول النظام' : 'Administrator');
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm" suppressHydrationWarning>
@@ -100,60 +112,79 @@ export default function LandingHeader() {
           </div>
 
           {/* User Profile Avatar / Sign In Options */}
-          <div className="flex items-center gap-3 ml-2">
-            {mounted && (isAuthenticated ? (
+          <div className="flex items-center gap-3 ml-2" suppressHydrationWarning>
+            {mounted && isUserLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2.5 p-1 rounded-full hover:bg-teal-50 dark:hover:bg-teal-950/60 transition-all cursor-pointer group outline-none">
-                    <Avatar className="w-10 h-10 border-2 border-teal-500/40 group-hover:border-teal-600 transition-colors">
+                  <button className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 hover:bg-teal-50 dark:hover:bg-teal-950/60 border border-slate-200 dark:border-slate-700 transition-all duration-200 cursor-pointer group outline-none shadow-xs hover:shadow-md hover:border-teal-400 dark:hover:border-teal-500">
+                    <div className="relative">
+                      <Avatar className="w-8 h-8 ring-2 ring-teal-500/50 group-hover:ring-teal-600 transition-all">
+                        {profilePic ? <AvatarImage src={profilePic} alt={userDisplayName} className="object-cover" /> : null}
+                        <AvatarFallback className="bg-gradient-to-br from-teal-500 to-teal-700 text-white font-black text-xs">
+                          {userAvatarLetter}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+                    </div>
+
+                    <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 max-w-[120px] truncate group-hover:text-teal-700 dark:group-hover:text-teal-400">
+                      {userDisplayName}
+                    </span>
+
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-teal-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-60 p-2 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
+                  <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center gap-3 bg-teal-50/50 dark:bg-teal-950/30 rounded-xl">
+                    <Avatar className="w-10 h-10 ring-2 ring-teal-500/40">
                       {profilePic ? <AvatarImage src={profilePic} alt={userDisplayName} className="object-cover" /> : null}
                       <AvatarFallback className="bg-teal-600 text-white font-extrabold text-sm">
                         {userAvatarLetter}
                       </AvatarFallback>
                     </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800">
-                  <div className="p-3 border-b border-slate-100 dark:border-slate-800 mb-1">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                      {userDisplayName}
-                    </p>
-                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold capitalize">
-                      {user?.role?.toLowerCase() || 'Member'}
-                    </p>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                        {userDisplayName}
+                      </p>
+                      <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider truncate">
+                        {userRoleLabel}
+                      </p>
+                    </div>
                   </div>
 
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                    <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
                       <User className="w-4 h-4 text-teal-600" />
-                      <span>My Profile</span>
+                      <span>{locale === 'ar' ? 'الملف الشخصي' : 'My Profile'}</span>
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
-                    <Link href={userRolePath} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                    <Link href={userRolePath} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
                       <LayoutDashboard className="w-4 h-4 text-teal-600" />
-                      <span>Dashboard</span>
+                      <span>{locale === 'ar' ? 'لوحة التحكم' : 'Dashboard'}</span>
                     </Link>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
-                      <Settings className="w-4 h-4 text-teal-600" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {!isPatient && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 cursor-pointer">
+                        <Settings className="w-4 h-4 text-teal-600" />
+                        <span>{locale === 'ar' ? 'الإعدادات' : 'Settings'}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
 
                   <DropdownMenuSeparator className="my-1" />
 
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer">
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer">
                     <LogOut className="w-4 h-4" />
                     <span>{t('landing.nav.signOut')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
+            ) : mounted && !isUserLoggedIn ? (
               <>
                 <Button variant="ghost" className="text-teal-700 dark:text-teal-400 font-bold px-4 py-2 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-full" asChild>
                   <Link href="/login">
@@ -166,7 +197,7 @@ export default function LandingHeader() {
                   </Link>
                 </Button>
               </>
-            ))}
+            ) : null}
           </div>
         </nav>
 
@@ -232,7 +263,7 @@ export default function LandingHeader() {
                   </Avatar>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{userDisplayName}</p>
-                    <p className="text-xs text-teal-600 dark:text-teal-400 capitalize">{user?.role?.toLowerCase() || 'Member'}</p>
+                    <p className="text-xs text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider">{userRoleLabel}</p>
                   </div>
                 </Link>
                 <Button
