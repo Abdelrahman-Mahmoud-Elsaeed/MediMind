@@ -63,24 +63,35 @@ export const Header = () => {
                 {/* User Info Header */}
                 <div className="p-3 border-b border-outline-variant/20 mb-1">
                   <p className="text-xs font-bold text-on-surface truncate">
-                    {user?.name || user?.email || (isAr ? 'حساب المريض' : 'Patient Account')}
+                    {user?.name || user?.email?.split('@')[0] || (isAr ? 'حساب المستخدم' : 'User Account')}
                   </p>
-                  <p className="text-[10px] text-on-surface-variant capitalize">
-                    {user?.role?.toLowerCase() || (isAr ? 'مريض' : 'patient')}
+                  <p className="text-[10px] font-bold text-primary capitalize">
+                    {user?.role === 'FAMILY_CAREGIVER' ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+                     : user?.role === 'PROFESSIONAL_CAREGIVER' ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
+                     : user?.role === 'CAREGIVER' ? (isAr ? 'مقدم رعاية' : 'Caregiver')
+                     : user?.role === 'ADMIN' ? (isAr ? 'مسؤول النظام' : 'Administrator')
+                     : (isAr ? 'مريض' : 'Patient')}
                   </p>
                 </div>
 
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container transition-colors w-full">
                     <User className="w-4 h-4 text-primary"/>
-                    <span>{t('patient.nav.profile')}</span>
+                    <span>{isAr ? 'الملف الشخصي' : 'My Profile'}</span>
                   </Link>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem asChild>
-                  <Link href="/caregivers" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container transition-colors w-full">
+                  <Link 
+                    href={['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role) ? '/patients' : '/caregivers'} 
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container transition-colors w-full"
+                  >
                     <ShieldCheck className="w-4 h-4 text-primary"/>
-                    <span>{t('patient.nav.care')}</span>
+                    <span>
+                      {['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role)
+                        ? (isAr ? 'قائمة المرضى' : 'My Patients')
+                        : (isAr ? 'دائرة الرعاية' : 'Caregivers Circle')}
+                    </span>
                   </Link>
                 </DropdownMenuItem>
 

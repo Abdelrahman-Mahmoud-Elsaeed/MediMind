@@ -1,5 +1,17 @@
+'use client';
+
+import React from 'react';
+import { use } from 'react';
+import { MainLayout } from '@/shared/components/layout/MainLayout';
+import { CaregiverPatientRecordsComponent } from '@/modules/caregiver/components/CaregiverPatientRecordsComponent';
+
 export default function CaregiverPatientMedicalRecordsPage({ params }) {
-    return (<main className="p-8">
-      <h1 className="text-2xl font-semibold">Patient Medical Records</h1>
-    </main>);
+  const resolvedParams = use(params);
+  const patientId = resolvedParams?.id;
+
+  return (
+    <MainLayout activePath="/patients">
+      <CaregiverPatientRecordsComponent patientId={patientId} />
+    </MainLayout>
+  );
 }

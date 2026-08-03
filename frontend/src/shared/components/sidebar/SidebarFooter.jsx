@@ -7,24 +7,40 @@ import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { LanguageToggler } from '@/shared/components/LanguageToggler';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
+import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiverQueries';
 
 export const SidebarFooter = () => {
   const { locale } = useTranslation();
   const { user, logout } = useAuth();
-  const { data: patientProfile } = usePatientProfileQuery();
   const [mounted, setMounted] = useState(false);
+
+  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: !isCaregiver });
+  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: isCaregiver });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const isAr = mounted && locale === 'ar';
-  const userName = patientProfile?.firstName && patientProfile?.lastName
-    ? `${patientProfile.firstName} ${patientProfile.lastName}`
-    : user?.name || user?.email?.split('@')[0] || (isAr ? 'سارة' : 'Sarah');
-  const userRole = isAr ? 'مريض' : 'Patient';
+
+  const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
+
+  const userName = activeProfile?.firstName && activeProfile?.lastName
+    ? `${activeProfile.firstName} ${activeProfile.lastName}`
+    : user?.name || user?.email?.split('@')[0] || (isAr ? 'مستخدم' : 'User');
+
+  const userRole = user?.role === 'FAMILY_CAREGIVER' 
+    ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+    : user?.role === 'PROFESSIONAL_CAREGIVER'
+    ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
+    : user?.role === 'CAREGIVER'
+    ? (isAr ? 'مقدم رعاية' : 'Caregiver')
+    : (isAr ? 'مريض' : 'Patient');
+
   const userInitial = userName.charAt(0).toUpperCase();
-  const avatarSrc = patientProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+  const avatarSrc = activeProfile?.profilePictureUrl || user?.profilePictureUrl || '';
 
   return (
     <div className="pt-4 border-t border-outline-variant/30 space-y-3.5" suppressHydrationWarning>

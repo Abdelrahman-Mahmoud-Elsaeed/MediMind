@@ -3,16 +3,32 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/shared/lib/i18nContext';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
+
 export const MobileNav = () => {
     const pathname = usePathname();
-    const { t } = useTranslation();
-    const navItems = [
-        { href: '/home', icon: 'home', labelKey: 'patient.nav.home' },
-        { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds' },
-        { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence' },
-        { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care' },
-        { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile' },
+    const { t, locale } = useTranslation();
+    const { user } = useAuth();
+    const isAr = locale === 'ar';
+
+    const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+
+    const caregiverItems = [
+        { href: '/dashboard', icon: 'dashboard', label: isAr ? 'الرئيسية' : 'Dashboard' },
+        { href: '/patients', icon: 'groups', label: isAr ? 'مرضاي' : 'My Patients' },
+        { href: '/profile', icon: 'person', label: isAr ? 'الملف الشخصي' : 'Profile' },
     ];
+
+    const patientItems = [
+        { href: '/home', icon: 'home', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: '/medications', icon: 'medication', label: isAr ? 'الأدوية' : 'Meds' },
+        { href: '/adherence', icon: 'query_stats', label: isAr ? 'الالتزام' : 'Adherence' },
+        { href: '/caregivers', icon: 'groups', label: isAr ? 'الرعاية' : 'Care' },
+        { href: '/profile', icon: 'person', label: isAr ? 'الملف' : 'Profile' },
+    ];
+
+    const navItems = isCaregiver ? caregiverItems : patientItems;
+
     return (<nav className="lg:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant/10 shadow-lg">
       {navItems.map((item) => {
             const isActive =
@@ -26,7 +42,7 @@ export const MobileNav = () => {
             <span className="material-symbols-outlined" style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
               {item.icon}
             </span>
-            <span className="font-label-sm text-[10px] mt-0.5">{t(item.labelKey)}</span>
+            <span className="font-label-sm text-[10px] mt-0.5">{item.label || (item.labelKey ? t(item.labelKey) : '')}</span>
           </Link>);
         })}
     </nav>);
