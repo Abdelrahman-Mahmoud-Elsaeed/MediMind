@@ -18,9 +18,10 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
             <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-3">
               {t("auth.register.roleTitle")}
             </span>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
               <RoleCard roleKey="patient" icon="person" title={t("auth.register.patientRole")} isSelected={formData.role === "patient"} onClick={() => handleRoleSelect("patient")}/>
               <RoleCard roleKey="caregiver" icon="favorite" title={t("auth.register.caregiverRole")} isSelected={formData.role === "caregiver"} onClick={() => handleRoleSelect("caregiver")}/>
+              <RoleCard roleKey="pharmacist" icon="local_pharmacy" title={t("auth.register.pharmacistRole")} isSelected={formData.role === "pharmacist"} onClick={() => handleRoleSelect("pharmacist")}/>
             </div>
           </div>
         </>)}
@@ -34,7 +35,7 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
 
           {isPhoneInput ? (<FormField id="email" type="email" label={t("auth.register.emailLabelOptional")} value={formData.email} onChange={handleChange} onBlur={handleBlur} error={errors.email} touched={touchedFields.email} placeholder={t("auth.register.emailPlaceholder")} icon="mail" dir="ltr"/>) : (<PhoneInput id="phone" value={formData.phone} onChange={handleChange} onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)} error={errors.phone} touched={touchedFields.phone} isPhoneInput={true} countrySelectorProps={countrySelectorProps} label={t("auth.register.phoneLabel")} placeholder={t("auth.register.phonePlaceholder")} required={false}/>)}
 
-          {formData.role === "caregiver" ? null : (<>
+          {formData.role === "caregiver" || formData.role === "pharmacist" ? null : (<>
               <FormField id="dateOfBirth" type="date" label={t("auth.register.dobLabel")} value={formData.dateOfBirth} onChange={handleChange} onBlur={handleBlur} error={errors.dateOfBirth} touched={touchedFields.dateOfBirth} icon="calendar_today" required showAsterisk={true}/>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -66,7 +67,13 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
               <FormField id="emergencyContactName" label={t("auth.register.emergencyContactNameLabel")} value={formData.emergencyContactName} onChange={handleChange} onBlur={handleBlur} error={errors.emergencyContactName} touched={touchedFields.emergencyContactName} placeholder={t("auth.register.emergencyContactNamePlaceholder")} icon="person" required showAsterisk={true}/>
 
               <PhoneInput id="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)} error={errors.emergencyContactPhone} touched={touchedFields.emergencyContactPhone} isPhoneInput={true} countrySelectorProps={countrySelectorProps} label={t("auth.register.emergencyContactPhoneLabel")} required showAsterisk={true}/>
-            </>) : (<div className="space-y-4 bg-surface-container-low p-4 rounded-[16px] border border-outline-variant/40">
+            </>) : formData.role === "pharmacist" ? (<div className="space-y-4">
+              <FormField id="pharmacyName" label={t("auth.register.pharmacyNameLabel")} value={formData.pharmacyName} onChange={handleChange} onBlur={handleBlur} error={errors.pharmacyName} touched={touchedFields.pharmacyName} placeholder={t("auth.register.pharmacyNamePlaceholder")} icon="local_pharmacy" required showAsterisk={true}/>
+
+              <FormField id="licenseNumber" label={t("auth.register.licenseNumberLabel")} value={formData.licenseNumber} onChange={handleChange} onBlur={handleBlur} error={errors.licenseNumber} touched={touchedFields.licenseNumber} placeholder={t("auth.register.licenseNumberPlaceholder")} icon="badge" required showAsterisk={true}/>
+
+              <PhoneInput id="pharmacyPhone" value={formData.pharmacyPhone} onChange={handleChange} onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)} error={errors.pharmacyPhone} touched={touchedFields.pharmacyPhone} isPhoneInput={true} countrySelectorProps={countrySelectorProps} label={t("auth.register.pharmacyPhoneLabel")} required={false}/>
+            </div>) : (<div className="space-y-4 bg-surface-container-low p-4 rounded-[16px] border border-outline-variant/40">
               <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface">
                 {t("auth.register.caregiverAlertsTitle") || "إعدادات التنبيهات"}
               </span>

@@ -1,6 +1,7 @@
 export const ROLES = {
   PATIENT: "patient",
   CAREGIVER: "caregiver",
+  PHARMACIST: "pharmacist",
 };
 
 export const CAREGIVER_RELATIONS = [

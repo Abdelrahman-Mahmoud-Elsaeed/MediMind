@@ -1,14 +1,16 @@
 import React from "react";
 import { useRTL } from "../hooks/useRTL";
-export function RegistrationStepIndicator({ currentStep }) {
+export function RegistrationStepIndicator({ currentStep, role }) {
     const { t } = useRTL();
     const getStepLabel = (stepNum) => {
         if (stepNum === 1)
             return t("auth.register.step1Label") || "Account";
         if (stepNum === 2)
             return t("auth.register.step2Label") || "Profile";
-        if (stepNum === 3)
+        if (stepNum === 3) {
+            if (role === "pharmacist") return t("auth.register.pharmacyStep3Label") || "Pharmacy";
             return t("auth.register.step3Label") || "Medical";
+        }
         return "";
     };
     const progressWidth = currentStep === 1 ? "0%" : currentStep === 2 ? "33.33%" : "66.66%";
