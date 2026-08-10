@@ -16,7 +16,32 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
     }, []);
     const isAr = mounted && locale === 'ar';
     const { user } = useAuth();
-    const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+    const userRole = mounted ? user?.role : null;
+    const isPharmacist = userRole === 'PHARMACIST';
+    const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
+
+    const pharmacistNavItems = [
+        {
+            label: isAr ? 'بوابة الصيدلية' : 'Pharmacy Portal',
+            href: '/pharmacy',
+            icon: LayoutGrid,
+        },
+        {
+            label: isAr ? 'طلبات تعبئة الأدوية' : 'Refill Orders',
+            href: '/pharmacy/orders',
+            icon: Pill,
+        },
+        {
+            label: isAr ? 'دليل الصيدليات' : 'Pharmacy Directory',
+            href: '/pharmacies',
+            icon: Users,
+        },
+        {
+            label: isAr ? 'ملف الصيدلية' : 'Pharmacy Profile',
+            href: '/profile',
+            icon: User,
+        },
+    ];
 
     const caregiverNavItems = [
         {
@@ -64,7 +89,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
         },
     ];
 
-    const navItems = isCaregiver ? caregiverNavItems : patientNavItems;
+    const navItems = isPharmacist ? pharmacistNavItems : isCaregiver ? caregiverNavItems : patientNavItems;
     return (<>
       <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 transition-all duration-300 ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
         <div className="space-y-8">
@@ -132,6 +157,8 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
             {navItems.map((item) => {
               const isActive =
                 activePath === item.href ||
+                (item.href === '/pharmacy' && (activePath === '/pharmacy' || activePath === '/pharmacy/dashboard')) ||
+                (item.href === '/pharmacy/orders' && activePath === '/pharmacy/orders') ||
                 (item.href === '/home' && (activePath === '/dashboard' || activePath === '/')) ||
                 (item.href === '/medications' && (activePath.startsWith('/medications') || activePath.startsWith('/ocr-scan'))) ||
                 (item.href === '/caregivers' && activePath.startsWith('/caregivers')) ||

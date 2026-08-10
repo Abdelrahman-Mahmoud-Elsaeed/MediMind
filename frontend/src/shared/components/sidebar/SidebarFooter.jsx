@@ -14,9 +14,10 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
   const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
 
+  const isPharmacist = user?.role === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
 
-  const { data: patientProfile } = usePatientProfileQuery({ enabled: !isCaregiver });
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: !isCaregiver && !isPharmacist });
   const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: isCaregiver });
 
   useEffect(() => {
@@ -27,11 +28,17 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
 
   const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
 
-  const userName = activeProfile?.firstName && activeProfile?.lastName
+  const userName = isPharmacist
+    ? user?.pharmacyName || user?.name || user?.email?.split('@')[0] || (isAr ? 'صيدلية معتمدة' : 'Pharmacy')
+    : activeProfile?.firstName && activeProfile?.lastName
     ? `${activeProfile.firstName} ${activeProfile.lastName}`
     : user?.name || user?.email?.split('@')[0] || (isAr ? 'مستخدم' : 'User');
 
-  const userRole = user?.role === 'FAMILY_CAREGIVER' 
+  const userRole = user?.role === 'PHARMACIST'
+    ? (isAr ? 'صيدلي معتمد' : 'Pharmacist')
+    : user?.role === 'ADMIN'
+    ? (isAr ? 'مسؤول النظام' : 'Super Admin')
+    : user?.role === 'FAMILY_CAREGIVER' 
     ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
     : user?.role === 'PROFESSIONAL_CAREGIVER'
     ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
