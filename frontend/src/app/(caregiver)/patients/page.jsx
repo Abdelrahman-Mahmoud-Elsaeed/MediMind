@@ -1,5 +1,13 @@
+'use client';
+
+import React from 'react';
+import { MainLayout } from '@/shared/components/layout/MainLayout';
+import { CaregiverPatientsListComponent } from '@/modules/caregiver/components/CaregiverPatientsListComponent';
+
 export default function CaregiverPatientsPage() {
-    return (<main className="p-8">
-      <h1 className="text-2xl font-semibold">My Patients</h1>
-    </main>);
+  return (
+    <MainLayout activePath="/patients">
+      <CaregiverPatientsListComponent />
+    </MainLayout>
+  );
 }

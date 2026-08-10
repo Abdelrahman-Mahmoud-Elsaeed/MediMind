@@ -5,6 +5,8 @@ import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import Link from 'next/link';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
+
 export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim }) => {
     const { locale } = useTranslation();
     const [mounted, setMounted] = useState(false);
@@ -13,7 +15,28 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
         setMounted(true);
     }, []);
     const isAr = mounted && locale === 'ar';
-    const navItems = [
+    const { user } = useAuth();
+    const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+
+    const caregiverNavItems = [
+        {
+            label: isAr ? 'الرئيسية' : 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        {
+            label: isAr ? 'مرضاي وقائمة المتابعة' : 'My Patients',
+            href: '/patients',
+            icon: Users,
+        },
+        {
+            label: isAr ? 'الملف الشخصي' : 'My Profile',
+            href: '/profile',
+            icon: User,
+        },
+    ];
+
+    const patientNavItems = [
         {
             label: isAr ? 'الرئيسية' : 'Dashboard',
             href: '/home',
@@ -40,6 +63,8 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
             icon: User,
         },
     ];
+
+    const navItems = isCaregiver ? caregiverNavItems : patientNavItems;
     return (<>
       <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 transition-all duration-300 ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
         <div className="space-y-8">

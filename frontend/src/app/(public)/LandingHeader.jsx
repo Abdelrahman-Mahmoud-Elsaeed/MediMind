@@ -16,11 +16,20 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { User, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
+import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiverQueries';
 
 export default function LandingHeader() {
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const { data: patientProfile } = usePatientProfileQuery();
+
+  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+  const isPatient = user?.role === 'PATIENT' || (!user?.role && isAuthenticated);
+
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: isPatient });
+  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: isCaregiver });
+
+  const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { locale, t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
@@ -49,20 +58,26 @@ export default function LandingHeader() {
     }
   };
 
-  const profilePic = patientProfile?.profilePictureUrl || user?.profilePictureUrl || '';
-  const userDisplayName = patientProfile?.firstName && patientProfile?.lastName
-    ? `${patientProfile.firstName} ${patientProfile.lastName}`
+  const profilePic = activeProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+  const userDisplayName = activeProfile?.firstName && activeProfile?.lastName
+    ? `${activeProfile.firstName} ${activeProfile.lastName}`
     : user?.firstName
     ? `${user.firstName} ${user.lastName || ''}`.trim()
-    : user?.name || user?.email || 'User Profile';
-  const userAvatarLetter = (userDisplayName?.[0] || 'U').toUpperCase();
-  const isPatient = !user?.role || user?.role === 'PATIENT';
-  const userRolePath = isPatient ? '/home' : user?.role === 'CAREGIVER' ? '/caregivers' : '/dashboard';
-  const userRoleLabel = isPatient
-    ? (locale === 'ar' ? 'مريض' : 'Patient')
+    : user?.name || user?.email?.split('@')[0] || (locale === 'ar' ? 'حساب مقدم الرعاية' : 'Caregiver Profile');
+
+  const userAvatarLetter = (userDisplayName?.[0] || 'C').toUpperCase();
+
+  const userRolePath = isCaregiver ? '/dashboard' : user?.role === 'ADMIN' ? '/admin-dashboard' : '/home';
+
+  const userRoleLabel = user?.role === 'FAMILY_CAREGIVER'
+    ? (locale === 'ar' ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+    : user?.role === 'PROFESSIONAL_CAREGIVER'
+    ? (locale === 'ar' ? 'مقدم رعاية محترف' : 'Professional Caregiver')
     : user?.role === 'CAREGIVER'
     ? (locale === 'ar' ? 'مقدم رعاية' : 'Caregiver')
-    : (locale === 'ar' ? 'مسؤول النظام' : 'Administrator');
+    : user?.role === 'ADMIN'
+    ? (locale === 'ar' ? 'مسؤول النظام' : 'Administrator')
+    : (locale === 'ar' ? 'مريض' : 'Patient');
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm" suppressHydrationWarning>
