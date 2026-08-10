@@ -15,7 +15,7 @@ import { Save, Trash2, Activity, AlertCircle } from "lucide-react";
 
 export default function EditConditionPage({ params }) {
   const router = useRouter();
-  const unwrappedParams = use(params);
+  const unwrappedParams = params && typeof params.then === 'function' ? use(params) : params;
   const conditionId = unwrappedParams?.id;
 
   const { locale } = useTranslation();

@@ -12,10 +12,10 @@ import {
 import { Card, Badge, Button } from "@/shared/components/ui";
 import { ArrowLeft, User, Phone, Mail, ShieldCheck, Trash2, CheckCircle2, Clock } from "lucide-react";
 
-export default function CaregiverDetailsPage({ params }) {
+export default function CaregiverDetailPage({ params }) {
   const router = useRouter();
-  const unwrappedParams = use(params);
-  const relationshipId = unwrappedParams?.id;
+  const unwrappedParams = params && typeof params.then === 'function' ? use(params) : params;
+  const caregiverId = unwrappedParams?.id;
 
   const { locale } = useTranslation();
   const isAr = locale === "ar";

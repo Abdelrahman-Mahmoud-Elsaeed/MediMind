@@ -6,7 +6,7 @@ import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { CaregiverPatientMedicationsComponent } from '@/modules/caregiver/components/CaregiverPatientMedicationsComponent';
 
 export default function CaregiverPatientMedicationsPage({ params }) {
-  const resolvedParams = use(params);
+  const resolvedParams = params && typeof params.then === 'function' ? use(params) : params;
   const patientId = resolvedParams?.id;
 
   return (

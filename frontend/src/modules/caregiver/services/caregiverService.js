@@ -54,4 +54,16 @@ export const caregiverService = {
     const res = await apiClient.get(`/conditions?patientId=${patientId}`);
     return res.data;
   },
+
+  // Update Medication
+  updateMedication: async (medicationId, payload) => {
+    const res = await apiClient.patch(`/medications/${medicationId}`, payload);
+    return res.data;
+  },
+
+  // Send Invitation
+  sendInvitation: async (targetEmail, relation) => {
+    const res = await apiClient.post('/relationships', { caregiverEmail: targetEmail, relation: relation || 'FAMILY' });
+    return res.data;
+  },
 };

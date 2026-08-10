@@ -177,8 +177,8 @@ export function CaregiverPatientDetailComponent({ patientId }) {
               </div>
             ) : (
               <div className="space-y-4">
-                {doses.map((dose) => {
-                  const doseId = dose.doseEventId || dose._id;
+                {doses.map((dose, idx) => {
+                  const doseId = dose.doseEventId || dose._id || dose.id;
                   const isTaken = dose.status === 'TAKEN';
                   const isSkipped = dose.status === 'SKIPPED';
                   const isPending = dose.status === 'PENDING';
@@ -190,7 +190,7 @@ export function CaregiverPatientDetailComponent({ patientId }) {
 
                   return (
                     <div 
-                      key={doseId}
+                      key={doseId || idx}
                       className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
                     >
                       <div className="flex items-center gap-3.5">
@@ -217,27 +217,23 @@ export function CaregiverPatientDetailComponent({ patientId }) {
                       {/* Action Buttons */}
                       {isPending && (
                         <div className="flex items-center gap-2 shrink-0">
-                          <AppButton
-                            size="sm"
-                            variant="primary"
+                          <button
                             onClick={() => confirmMutation.mutate({ doseEventId: doseId })}
-                            isLoading={confirmMutation.isPending}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                            disabled={confirmMutation.isPending}
+                            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
                           >
-                            <CheckCircle2 className="w-4 h-4 mr-1 rtl:ml-1" />
-                            {isAr ? 'تأكيد التناول' : 'Take Dose'}
-                          </AppButton>
+                            <CheckCircle2 className="w-4 h-4 shrink-0" />
+                            <span>{isAr ? 'تأكيد التناول' : 'Take Dose'}</span>
+                          </button>
 
-                          <AppButton
-                            size="sm"
-                            variant="outline"
+                          <button
                             onClick={() => skipMutation.mutate({ doseEventId: doseId })}
-                            isLoading={skipMutation.isPending}
-                            className="text-on-surface-variant hover:bg-surface-container-high text-xs font-semibold"
+                            disabled={skipMutation.isPending}
+                            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-xl border border-outline-variant/30 bg-surface-container-lowest dark:bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant active:scale-95 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
                           >
-                            <XCircle className="w-4 h-4 mr-1 rtl:ml-1" />
-                            {isAr ? 'تخطي' : 'Skip'}
-                          </AppButton>
+                            <XCircle className="w-4 h-4 shrink-0" />
+                            <span>{isAr ? 'تخطي' : 'Skip'}</span>
+                          </button>
                         </div>
                       )}
 
@@ -283,9 +279,9 @@ export function CaregiverPatientDetailComponent({ patientId }) {
               </p>
             ) : (
               <div className="space-y-3">
-                {medications.slice(0, 4).map((med) => (
+                {medications.slice(0, 4).map((med, idx) => (
                   <div 
-                    key={med._id}
+                    key={med._id || med.medicationId || med.id || idx}
                     className="p-3 bg-surface-container-low/60 rounded-xl flex items-center justify-between text-xs"
                   >
                     <div>
@@ -326,9 +322,9 @@ export function CaregiverPatientDetailComponent({ patientId }) {
               </p>
             ) : (
               <div className="space-y-2">
-                {conditions.slice(0, 3).map((cond) => (
+                {conditions.slice(0, 3).map((cond, idx) => (
                   <div 
-                    key={cond._id}
+                    key={cond._id || cond.conditionId || cond.id || idx}
                     className="p-3 bg-surface-container-low/60 rounded-xl flex items-center justify-between text-xs font-semibold text-on-surface"
                   >
                     <span>{cond.diseaseName}</span>

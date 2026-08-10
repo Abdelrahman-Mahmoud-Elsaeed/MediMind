@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useInviteCaregiverMutation } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Button } from "@/shared/components/ui";
 import { ArrowLeft, UserPlus, Mail, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
@@ -12,7 +13,9 @@ import { ArrowLeft, UserPlus, Mail, ShieldCheck, CheckCircle2, AlertCircle } fro
 export default function AddCaregiverPage() {
   const router = useRouter();
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const isAr = locale === "ar";
+  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
 
   const [email, setEmail] = useState("");
   const [relation, setRelation] = useState("spouse");
@@ -33,6 +36,7 @@ export default function AddCaregiverPage() {
 
     const payload = {
       caregiverEmail: email.trim(),
+      targetEmail: email.trim(),
       relation,
       permissions: {
         canAddMedication: permissions.canAddMedication,
@@ -47,8 +51,12 @@ export default function AddCaregiverPage() {
 
     inviteMutation.mutate(payload, {
       onSuccess: () => {
-        alert(isAr ? "تم إرسال دعوة مقدم الرعاية بنجاح!" : "Caregiver invitation sent successfully!");
-        router.push("/caregivers");
+        alert(
+          isCaregiver
+            ? (isAr ? "تم إرسال دعوة المريض بنجاح!" : "Patient invitation sent successfully!")
+            : (isAr ? "تم إرسال دعوة مقدم الرعاية بنجاح!" : "Caregiver invitation sent successfully!")
+        );
+        router.push(isCaregiver ? "/patients" : "/caregivers");
       },
       onError: (err) => {
         setErrorMsg(
@@ -60,21 +68,25 @@ export default function AddCaregiverPage() {
   };
 
   return (
-    <MainLayout activePath="/caregivers">
+    <MainLayout activePath={isCaregiver ? "/patients" : "/caregivers"}>
       <div className="max-w-[800px] mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild className="rounded-full">
-            <Link href="/caregivers">
+            <Link href={isCaregiver ? "/patients" : "/caregivers"}>
               <ArrowLeft className="w-5 h-5 text-teal-600 dark:text-teal-400" />
             </Link>
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-on-surface">
-              {isAr ? "دعوة مقدم رعاية جديد" : "Invite New Caregiver"}
+              {isCaregiver
+                ? (isAr ? "دعوة مريض جديد" : "Invite New Patient")
+                : (isAr ? "دعوة مقدم رعاية جديد" : "Invite New Caregiver")}
             </h1>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">
-              {isAr ? "إضافة أفراد العائلة أو الأطباء لمساعدتك في تتبع خطة العلاج" : "Add family members or healthcare providers to support your care plan."}
+              {isCaregiver
+                ? (isAr ? "إضافة مريض جديد لمتابعة الأدوية والالتزام والخطة العلاجية" : "Connect a new patient to monitor medications, adherence, and care plan.")
+                : (isAr ? "إضافة أفراد العائلة أو الأطباء لمساعدتك في تتبع خطة العلاج" : "Add family members or healthcare providers to support your care plan.")}
             </p>
           </div>
         </div>
@@ -91,7 +103,9 @@ export default function AddCaregiverPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                {isAr ? "البريد الإلكتروني لمقدم الرعاية" : "Caregiver Email Address"}
+                {isCaregiver
+                  ? (isAr ? "البريد الإلكتروني للمريض" : "Patient Email Address")
+                  : (isAr ? "البريد الإلكتروني لمقدم الرعاية" : "Caregiver Email Address")}
               </label>
               <div className="relative">
                 <input
@@ -99,7 +113,7 @@ export default function AddCaregiverPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="caregiver@example.com"
+                  placeholder={isCaregiver ? "patient@example.com" : "caregiver@example.com"}
                   className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl pl-11 pr-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
                 />
                 <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />

@@ -155,6 +155,20 @@ export function useRevokeRelationshipMutation() {
   });
 }
 
+export function useUpdateRelationshipStatusMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ relationshipId, status }) => {
+      const res = await patientService.updateRelationshipStatus(relationshipId, status);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.relationships });
+    },
+  });
+}
+
 export function useUpdatePatientMedicationMutation() {
   const queryClient = useQueryClient();
 

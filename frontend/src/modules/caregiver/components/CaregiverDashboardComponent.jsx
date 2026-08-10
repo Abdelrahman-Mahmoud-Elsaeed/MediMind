@@ -64,11 +64,12 @@ export function CaregiverDashboardComponent() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/patients">
-              <AppButton variant="primary" className="shadow-lg shadow-primary/20">
-                <Users className="w-4 h-4 mr-2 rtl:ml-2" />
-                <span>{isAr ? 'عرض كافة المرضى' : 'View Patients Roster'}</span>
-              </AppButton>
+            <Link
+              href="/patients"
+              className="inline-flex items-center justify-center py-2.5 px-5 rounded-2xl bg-primary hover:opacity-95 text-on-primary font-bold text-xs sm:text-sm shadow-lg shadow-primary/20 transition-all gap-2 cursor-pointer select-none"
+            >
+              <Users className="w-4 h-4" />
+              <span>{isAr ? 'عرض كافة المرضى' : 'View Patients Roster'}</span>
             </Link>
           </div>
         </div>

@@ -13,7 +13,7 @@ import { ArrowLeft, Save, Pill } from 'lucide-react';
 
 export default function EditMedicationPage({ params }) {
   const router = useRouter();
-  const unwrappedParams = use(params);
+  const unwrappedParams = params && typeof params.then === 'function' ? use(params) : params;
   const medicationId = unwrappedParams?.id;
 
   const { locale } = useTranslation();

@@ -126,3 +126,34 @@ export function usePatientConditionsQuery(patientId) {
     staleTime: 1000 * 60 * 5,
   });
 }
+
+// 6. Update Patient Medication (Caregiver)
+export function useUpdatePatientMedicationMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ medicationId, payload }) => {
+      return await caregiverService.updateMedication(medicationId, payload);
+    },
+    onSuccess: () => {
+      if (patientId) {
+        queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
+        queryClient.invalidateQueries({ queryKey: ['caregiver', 'patient', patientId] });
+      }
+    },
+  });
+}
+
+// 7. Send Invitation (Caregiver)
+export function useSendCaregiverInvitationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ targetEmail, relation }) => {
+      return await caregiverService.sendInvitation(targetEmail, relation);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.relationships });
+    },
+  });
+}

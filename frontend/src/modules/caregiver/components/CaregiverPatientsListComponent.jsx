@@ -70,19 +70,27 @@ export function CaregiverPatientsListComponent() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 shadow-sm text-center min-w-[120px]">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+            <Link
+              href="/caregivers/invite"
+              className="inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-primary text-on-primary font-bold text-xs sm:text-sm shadow-md hover:opacity-95 transition-all whitespace-nowrap cursor-pointer"
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              <span>{isAr ? 'دعوة مريض جديد' : 'Invite Patient'}</span>
+            </Link>
+
+            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-3 sm:p-4 shadow-sm text-center min-w-[90px] sm:min-w-[100px]">
               <span className="text-xs font-semibold text-on-surface-variant block uppercase tracking-wider">
                 {isAr ? 'نشطين' : 'Active'}
               </span>
-              <span className="text-2xl font-black text-primary">{activePatients.length}</span>
+              <span className="text-xl sm:text-2xl font-black text-primary leading-none mt-1 block">{activePatients.length}</span>
             </div>
 
-            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 shadow-sm text-center min-w-[120px]">
+            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-3 sm:p-4 shadow-sm text-center min-w-[90px] sm:min-w-[100px]">
               <span className="text-xs font-semibold text-on-surface-variant block uppercase tracking-wider">
                 {isAr ? 'معلقة' : 'Pending'}
               </span>
-              <span className="text-2xl font-black text-amber-500">{pendingRequests.length}</span>
+              <span className="text-xl sm:text-2xl font-black text-amber-500 leading-none mt-1 block">{pendingRequests.length}</span>
             </div>
           </div>
         </div>
@@ -115,27 +123,23 @@ export function CaregiverPatientsListComponent() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <AppButton
-                    size="sm"
-                    variant="primary"
+                  <button
                     onClick={() => handleStatusUpdate(req.relationshipId, 'ACCEPTED')}
-                    isLoading={updateStatusMutation.isPending}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    disabled={updateStatusMutation.isPending}
+                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-1 rtl:ml-1" />
-                    {isAr ? 'قبول' : 'Accept'}
-                  </AppButton>
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{isAr ? 'قبول' : 'Accept'}</span>
+                  </button>
 
-                  <AppButton
-                    size="sm"
-                    variant="outline"
+                  <button
                     onClick={() => handleStatusUpdate(req.relationshipId, 'REJECTED')}
-                    isLoading={updateStatusMutation.isPending}
-                    className="text-red-500 border-red-200 hover:bg-red-50"
+                    disabled={updateStatusMutation.isPending}
+                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-surface-container-lowest dark:bg-surface-container-low hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-400 active:scale-95 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
                   >
-                    <XCircle className="w-4 h-4 mr-1 rtl:ml-1" />
-                    {isAr ? 'رفض' : 'Reject'}
-                  </AppButton>
+                    <XCircle className="w-4 h-4 shrink-0" />
+                    <span>{isAr ? 'رفض' : 'Reject'}</span>
+                  </button>
                 </div>
               </div>
             ))}

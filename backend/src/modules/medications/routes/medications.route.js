@@ -18,6 +18,7 @@ router.patch('/refills/:id/status', authenticate, validate(updateRefillStatusSch
 
 router.get('/:medicationId', authenticate, medicationsController.getOne);
 router.put('/:medicationId', authenticate, validate(updateMedicationSchema), medicationsController.update);
+router.patch('/:medicationId', authenticate, validate(updateMedicationSchema), medicationsController.update);
 router.delete('/:medicationId', authenticate, medicationsController.delete);
 
 module.exports = router;

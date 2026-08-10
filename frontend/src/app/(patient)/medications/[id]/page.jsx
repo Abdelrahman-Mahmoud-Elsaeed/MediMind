@@ -14,7 +14,7 @@ import { ArrowLeft, Clock, Edit3, RefreshCw, Trash2, Calendar, ShieldCheck, Pill
 
 export default function MedicationDetailsPage({ params }) {
   const router = useRouter();
-  const unwrappedParams = use(params);
+  const unwrappedParams = params && typeof params.then === 'function' ? use(params) : params;
   const medicationId = unwrappedParams?.id;
 
   const { locale } = useTranslation();
