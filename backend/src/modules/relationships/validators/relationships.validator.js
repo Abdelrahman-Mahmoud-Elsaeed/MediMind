@@ -6,17 +6,18 @@ const ALL_RELATIONS = Object.values(RELATIONS).flat();
 const createRelationshipSchema = z.object({
   caregiverEmail: z.string().email('Invalid email address format').optional(),
   targetEmail: z.string().email('Invalid email address format').optional(),
-  relation: z.string().refine(val => ALL_RELATIONS.includes(val), {
-    message: `Relation must be one of: ${ALL_RELATIONS.join(', ')}`
-  }),
+  relation: z.string().optional(),
   permissions: z.object({
-    canAddMedication: z.boolean().default(false),
-    canEditMedication: z.boolean().default(false),
-    canDeleteMedication: z.boolean().default(false),
-    canViewMedicalRecords: z.boolean().default(false),
-    canEditMedicalRecords: z.boolean().default(false),
-    canManageAppointments: z.boolean().default(false),
-    canReceiveNotifications: z.boolean().default(false)
+    canViewMedications: z.boolean().optional(),
+    canAddMedication: z.boolean().optional(),
+    canEditMedication: z.boolean().optional(),
+    canDeleteMedication: z.boolean().optional(),
+    canViewMedicalRecords: z.boolean().optional(),
+    canEditMedicalRecords: z.boolean().optional(),
+    canViewDoseSchedule: z.boolean().optional(),
+    canConfirmDose: z.boolean().optional(),
+    canOrderRefills: z.boolean().optional(),
+    canReceiveNotifications: z.boolean().optional()
   }).optional()
 }).refine(data => data.caregiverEmail || data.targetEmail, {
   message: 'Email address is required',

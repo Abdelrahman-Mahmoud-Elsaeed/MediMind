@@ -5,9 +5,18 @@ const { createRelationshipSchema, updateStatusSchema } = require('../validators/
 const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
 const validate = require('../../../shared/middleware/validation.middleware');
 
-router.post('/', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), validate(createRelationshipSchema), relationshipsController.initiate);
-router.get('/', authenticate, relationshipsController.list);
-router.patch('/:relationshipId/status', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), validate(updateStatusSchema), relationshipsController.updateStatus);
-router.delete('/:relationshipId', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), relationshipsController.revoke);
+// Roles that can initiate a relationship (patient or a caregiver/doctor inviting a patient)
+const RELATIONSHIP_INITIATORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+// All relational roles can list their own relationships
+const RELATIONSHIP_VIEWERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'PHARMACIST'];
+// Both sides of the relationship can accept/reject a pending invitation
+const RELATIONSHIP_STATUS_UPDATERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+// Only the patient can revoke (permanently remove) a relationship
+const RELATIONSHIP_REVOKERS = ['PATIENT'];
+
+router.post('/', authenticate, authorize(...RELATIONSHIP_INITIATORS), validate(createRelationshipSchema), relationshipsController.initiate);
+router.get('/', authenticate, authorize(...RELATIONSHIP_VIEWERS), relationshipsController.list);
+router.patch('/:relationshipId/status', authenticate, authorize(...RELATIONSHIP_STATUS_UPDATERS), validate(updateStatusSchema), relationshipsController.updateStatus);
+router.delete('/:relationshipId', authenticate, authorize(...RELATIONSHIP_REVOKERS), relationshipsController.revoke);
 
 module.exports = router;

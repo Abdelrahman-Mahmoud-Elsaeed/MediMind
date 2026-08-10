@@ -12,7 +12,7 @@ class DosesService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -36,12 +36,12 @@ class DosesService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       if (!queryPatientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
       patientId = queryPatientId;
-      await this.validateAccess(userAccountId, userRole, patientId, 'canAddMedication');
+      await this.validateAccess(userAccountId, userRole, patientId, 'canViewDoseSchedule');
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
@@ -112,7 +112,7 @@ class DosesService {
       throw new AppError('Dose event not found', 404, 'DOSE_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, dose.patientId, 'canAddMedication');
+    await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
 
     if (dose.status !== 'PENDING') {
       throw new AppError('Dose is not in PENDING status', 400, 'INVALID_STATUS');
@@ -156,7 +156,7 @@ class DosesService {
       throw new AppError('Dose event not found', 404, 'DOSE_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, dose.patientId, 'canAddMedication');
+    await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
 
     if (dose.status !== 'PENDING') {
       throw new AppError('Dose is not in PENDING status', 400, 'INVALID_STATUS');

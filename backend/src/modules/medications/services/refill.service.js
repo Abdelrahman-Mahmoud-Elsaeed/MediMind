@@ -13,7 +13,7 @@ class RefillService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (userRole === 'FAMILY_CAREGIVER' || userRole === 'PROFESSIONAL_CAREGIVER' || userRole === 'CAREGIVER') {
+    } else if (userRole === 'FAMILY_CAREGIVER' || userRole === 'PROFESSIONAL_CAREGIVER' || userRole === 'DOCTOR' || userRole === 'CAREGIVER') {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -122,7 +122,7 @@ class RefillService {
         throw new AppError('Pharmacist profile not found', 404, 'PHARMACIST_NOT_FOUND');
       }
       filter.targetPharmacyId = pharmacist._id;
-    } else if (userRole === 'FAMILY_CAREGIVER' || userRole === 'PROFESSIONAL_CAREGIVER' || userRole === 'CAREGIVER') {
+    } else if (userRole === 'FAMILY_CAREGIVER' || userRole === 'PROFESSIONAL_CAREGIVER' || userRole === 'DOCTOR' || userRole === 'CAREGIVER') {
       // Caregiver views patient refills
       if (!query.patientId) {
         throw new AppError('patientId filter is required for caregivers', 400, 'VALIDATION_ERROR');

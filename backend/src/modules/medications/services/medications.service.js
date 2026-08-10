@@ -27,7 +27,7 @@ class MedicationsService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -51,7 +51,7 @@ class MedicationsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       if (!payload.patientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
@@ -113,12 +113,12 @@ class MedicationsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       if (!targetPatientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
       patientId = targetPatientId;
-      await this.validateAccess(userAccountId, userRole, patientId, 'canAddMedication');
+      await this.validateAccess(userAccountId, userRole, patientId, 'canViewMedications');
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
@@ -137,7 +137,7 @@ class MedicationsService {
       throw new AppError('Medication not found', 404, 'MEDICATION_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canAddMedication');
+    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canViewMedications');
     return medication;
   }
 
@@ -147,7 +147,7 @@ class MedicationsService {
       throw new AppError('Medication not found', 404, 'MEDICATION_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canAddMedication');
+    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canEditMedication');
 
     // Update inventory
     if (updateData.inventory) {
@@ -216,7 +216,7 @@ class MedicationsService {
       throw new AppError('Medication not found', 404, 'MEDICATION_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canAddMedication');
+    await this.validateAccess(userAccountId, userRole, medication.patientId, 'canDeleteMedication');
 
     // Archive or Delete: The requirement says return 204 No Content. Let's delete the record.
     await Medication.deleteOne({ _id: medicationId });

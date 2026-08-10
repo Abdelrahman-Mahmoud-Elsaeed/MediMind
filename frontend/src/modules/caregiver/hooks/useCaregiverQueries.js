@@ -1,15 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { caregiverService } from '../services/caregiverService';
 
+// ─── Query Key Factory ────────────────────────────────────────────────────────
+
 export const CAREGIVER_KEYS = {
-  profile: ['caregiver', 'profile'],
-  relationships: ['caregiver', 'relationships'],
-  patientMedications: (patientId) => ['caregiver', 'patient', patientId, 'medications'],
-  patientDoses: (patientId, dateStr) => ['caregiver', 'patient', patientId, 'doses', dateStr],
-  patientConditions: (patientId) => ['caregiver', 'patient', patientId, 'conditions'],
+  profile:              ['caregiver', 'profile'],
+  relationships:        ['caregiver', 'relationships'],
+  patientMedications:   (patientId) => ['caregiver', 'patient', patientId, 'medications'],
+  patientDoses:         (patientId, dateStr) => ['caregiver', 'patient', patientId, 'doses', dateStr],
+  patientConditions:    (patientId) => ['caregiver', 'patient', patientId, 'conditions'],
+  patientRefillOrders:  (patientId) => ['caregiver', 'patient', patientId, 'refills'],
+  patient:              (patientId) => ['caregiver', 'patient', patientId],
 };
 
-// 1. Caregiver Profile
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
 export function useCaregiverProfileQuery() {
   return useQuery({
     queryKey: CAREGIVER_KEYS.profile,
@@ -25,16 +30,20 @@ export function useUpdateCaregiverProfileMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload) => {
-      return await caregiverService.updateProfile(payload);
-    },
+    mutationFn: async (payload) => caregiverService.updateProfile(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.profile });
     },
   });
 }
 
-// 2. Linked Patient Relationships Roster
+// ─── Relationships ────────────────────────────────────────────────────────────
+
+/**
+ * List this caregiver's linked patient relationships.
+ * The `permissions` object on each relationship reflects the
+ * 10-key canonical permission set from the backend.
+ */
 export function useCaregiverRelationshipsQuery(status) {
   return useQuery({
     queryKey: [...CAREGIVER_KEYS.relationships, status || 'all'],
@@ -46,20 +55,38 @@ export function useCaregiverRelationshipsQuery(status) {
   });
 }
 
+/** Accept or reject a pending relationship invitation. */
 export function useUpdateRelationshipStatusMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ relationshipId, status }) => {
-      return await caregiverService.updateRelationshipStatus(relationshipId, status);
-    },
+    mutationFn: async ({ relationshipId, status }) =>
+      caregiverService.updateRelationshipStatus(relationshipId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.relationships });
     },
   });
 }
 
-// 3. Patient Medications
+/** Send a care-relationship invitation to a patient. */
+export function useSendCaregiverInvitationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ targetEmail, relation }) =>
+      caregiverService.sendInvitation(targetEmail, relation),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.relationships });
+    },
+  });
+}
+
+// ─── Patient Medications ─────────────────────────────────────────────────────
+
+/**
+ * List a linked patient's medications.
+ * Gate in UI with: relationship.permissions.canViewMedications
+ */
 export function usePatientMedicationsQuery(patientId) {
   return useQuery({
     queryKey: CAREGIVER_KEYS.patientMedications(patientId),
@@ -73,7 +100,63 @@ export function usePatientMedicationsQuery(patientId) {
   });
 }
 
-// 4. Patient Doses Timeline
+/**
+ * Add a medication for a linked patient.
+ * Gate in UI with: relationship.permissions.canAddMedication
+ */
+export function useAddPatientMedicationMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ patientId: pid, payload }) =>
+      caregiverService.addPatientMedication(pid ?? patientId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patient(patientId) });
+    },
+  });
+}
+
+/**
+ * Update an existing medication for a linked patient.
+ * Gate in UI with: relationship.permissions.canEditMedication
+ */
+export function useUpdatePatientMedicationMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ medicationId, payload }) =>
+      caregiverService.updateMedication(medicationId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patient(patientId) });
+    },
+  });
+}
+
+/**
+ * Delete a medication for a linked patient.
+ * Gate in UI with: relationship.permissions.canDeleteMedication
+ */
+export function useDeletePatientMedicationMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (medicationId) =>
+      caregiverService.deletePatientMedication(medicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patient(patientId) });
+    },
+  });
+}
+
+// ─── Patient Dose Schedule ───────────────────────────────────────────────────
+
+/**
+ * Get a linked patient's daily dose schedule.
+ * Gate in UI with: relationship.permissions.canViewDoseSchedule
+ */
 export function usePatientDosesQuery(patientId, dateStr) {
   return useQuery({
     queryKey: CAREGIVER_KEYS.patientDoses(patientId, dateStr),
@@ -87,33 +170,44 @@ export function usePatientDosesQuery(patientId, dateStr) {
   });
 }
 
+/**
+ * Confirm a dose on behalf of a linked patient.
+ * Gate in UI with: relationship.permissions.canConfirmDose
+ */
 export function useConfirmCaregiverDoseMutation(patientId) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ doseEventId }) => {
-      return await caregiverService.confirmDose(doseEventId);
-    },
+    mutationFn: async ({ doseEventId }) =>
+      caregiverService.confirmDose(doseEventId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['caregiver', 'patient', patientId] });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patient(patientId) });
     },
   });
 }
 
+/**
+ * Skip a dose on behalf of a linked patient.
+ * Gate in UI with: relationship.permissions.canConfirmDose
+ */
 export function useSkipCaregiverDoseMutation(patientId) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ doseEventId }) => {
-      return await caregiverService.skipDose(doseEventId);
-    },
+    mutationFn: async ({ doseEventId }) =>
+      caregiverService.skipDose(doseEventId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['caregiver', 'patient', patientId] });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patient(patientId) });
     },
   });
 }
 
-// 5. Patient Conditions
+// ─── Patient Medical Conditions ──────────────────────────────────────────────
+
+/**
+ * List a linked patient's medical conditions.
+ * Gate in UI with: relationship.permissions.canViewMedicalRecords
+ */
 export function usePatientConditionsQuery(patientId) {
   return useQuery({
     queryKey: CAREGIVER_KEYS.patientConditions(patientId),
@@ -127,33 +221,86 @@ export function usePatientConditionsQuery(patientId) {
   });
 }
 
-// 6. Update Patient Medication (Caregiver)
-export function useUpdatePatientMedicationMutation(patientId) {
+/**
+ * Add a medical condition for a linked patient.
+ * Gate in UI with: relationship.permissions.canEditMedicalRecords
+ */
+export function useAddPatientConditionMutation(patientId) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ medicationId, payload }) => {
-      return await caregiverService.updateMedication(medicationId, payload);
-    },
+    mutationFn: async ({ patientId: pid, payload }) =>
+      caregiverService.addPatientCondition(pid ?? patientId, payload),
     onSuccess: () => {
-      if (patientId) {
-        queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
-        queryClient.invalidateQueries({ queryKey: ['caregiver', 'patient', patientId] });
-      }
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientConditions(patientId) });
     },
   });
 }
 
-// 7. Send Invitation (Caregiver)
-export function useSendCaregiverInvitationMutation() {
+/**
+ * Update a medical condition for a linked patient.
+ * Gate in UI with: relationship.permissions.canEditMedicalRecords
+ */
+export function useUpdatePatientConditionMutation(patientId) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ targetEmail, relation }) => {
-      return await caregiverService.sendInvitation(targetEmail, relation);
-    },
+    mutationFn: async ({ conditionId, payload }) =>
+      caregiverService.updatePatientCondition(conditionId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.relationships });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientConditions(patientId) });
+    },
+  });
+}
+
+/**
+ * Delete a medical condition for a linked patient.
+ * Gate in UI with: relationship.permissions.canEditMedicalRecords
+ */
+export function useDeletePatientConditionMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (conditionId) =>
+      caregiverService.deletePatientCondition(conditionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientConditions(patientId) });
+    },
+  });
+}
+
+// ─── Refill Orders ───────────────────────────────────────────────────────────
+
+/**
+ * List refill orders for a linked patient.
+ * Gate in UI with: relationship.permissions.canOrderRefills
+ */
+export function usePatientRefillOrdersQuery(patientId) {
+  return useQuery({
+    queryKey: CAREGIVER_KEYS.patientRefillOrders(patientId),
+    queryFn: async () => {
+      if (!patientId) return [];
+      const res = await caregiverService.getPatientRefillOrders(patientId);
+      return res?.success ? res.data : (Array.isArray(res) ? res : []);
+    },
+    enabled: Boolean(patientId),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+/**
+ * Create a refill order for a linked patient.
+ * Gate in UI with: relationship.permissions.canOrderRefills
+ */
+export function useCreatePatientRefillOrderMutation(patientId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ patientId: pid, payload }) =>
+      caregiverService.createRefillOrder(pid ?? patientId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientRefillOrders(patientId) });
+      queryClient.invalidateQueries({ queryKey: CAREGIVER_KEYS.patientMedications(patientId) });
     },
   });
 }
