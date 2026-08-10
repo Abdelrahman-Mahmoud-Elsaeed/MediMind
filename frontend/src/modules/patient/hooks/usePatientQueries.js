@@ -2,12 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { patientService } from '../services/patientService';
 
 export const PATIENT_KEYS = {
-  all: ['patient'],
-  profile: ['patient', 'profile'],
-  medications: ['patient', 'medications'],
-  doses: (dateStr) => ['patient', 'doses', dateStr],
+  all:           ['patient'],
+  profile:       ['patient', 'profile'],
+  medications:   ['patient', 'medications'],
+  doses:         (dateStr) => ['patient', 'doses', dateStr],
   relationships: ['patient', 'relationships'],
-  conditions: ['patient', 'conditions'],
+  conditions:    ['patient', 'conditions'],
+  refills:       ['patient', 'refills'],
 };
 
 // 1. Patient Profile
@@ -252,3 +253,49 @@ export function useDeleteConditionMutation() {
     },
   });
 }
+
+// 6. Refill Orders
+
+/** List this patient's own refill orders. */
+export function useRefillOrdersQuery() {
+  return useQuery({
+    queryKey: PATIENT_KEYS.refills,
+    queryFn: async () => {
+      const res = await patientService.getRefillOrders();
+      return res?.success ? res.data : (Array.isArray(res) ? res : []);
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+/** Submit a new refill order for one of the patient's medications. */
+export function useCreateRefillOrderMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload) => {
+      const res = await patientService.createRefillOrder(payload);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.refills });
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.medications });
+    },
+  });
+}
+
+/** Update a refill order's status (used by PHARMACIST / ADMIN roles). */
+export function useUpdateRefillStatusMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, payload }) => {
+      const res = await patientService.updateRefillStatus(id, payload);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PATIENT_KEYS.refills });
+    },
+  });
+}
+

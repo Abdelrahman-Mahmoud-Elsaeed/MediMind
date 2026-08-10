@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const noteController = require('../controllers/note.controller');
 const { createNoteSchema } = require('../validators/note.validator');
-const { authenticate } = require('../../../shared/middleware/auth.middleware');
+const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
 const validate = require('../../../shared/middleware/validation.middleware');
 
-router.post('/', authenticate, validate(createNoteSchema), noteController.create);
-router.get('/', authenticate, noteController.list);
-router.delete('/:id', authenticate, noteController.delete);
+// All clinical roles can create and view notes
+const NOTE_ROLES = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'PHARMACIST'];
+
+router.post('/', authenticate, authorize(...NOTE_ROLES), validate(createNoteSchema), noteController.create);
+router.get('/', authenticate, authorize(...NOTE_ROLES), noteController.list);
+router.delete('/:id', authenticate, authorize(...NOTE_ROLES), noteController.delete);
 
 module.exports = router;

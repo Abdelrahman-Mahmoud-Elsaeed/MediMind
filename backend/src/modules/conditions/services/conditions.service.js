@@ -11,7 +11,7 @@ class ConditionsService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -35,12 +35,12 @@ class ConditionsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       if (!payload.patientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
       patientId = payload.patientId;
-      await this.validateAccess(userAccountId, userRole, patientId, 'canViewMedicalRecords');
+      await this.validateAccess(userAccountId, userRole, patientId, 'canEditMedicalRecords');
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
@@ -66,7 +66,7 @@ class ConditionsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
       if (!targetPatientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
@@ -95,7 +95,7 @@ class ConditionsService {
       throw new AppError('Medical condition not found', 404, 'CONDITION_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, condition.patientId, 'canViewMedicalRecords');
+    await this.validateAccess(userAccountId, userRole, condition.patientId, 'canEditMedicalRecords');
 
     if (updateData.isChronic !== undefined) {
       condition.isChronic = updateData.isChronic;
@@ -117,7 +117,7 @@ class ConditionsService {
       throw new AppError('Medical condition not found', 404, 'CONDITION_NOT_FOUND');
     }
 
-    await this.validateAccess(userAccountId, userRole, condition.patientId, 'canViewMedicalRecords');
+    await this.validateAccess(userAccountId, userRole, condition.patientId, 'canEditMedicalRecords');
 
     await MedicalCondition.deleteOne({ _id: conditionId });
   }
