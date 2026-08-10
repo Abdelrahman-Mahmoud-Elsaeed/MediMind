@@ -20,11 +20,15 @@ import {
   useUpdateRelationshipStatusMutation 
 } from '@/modules/caregiver/hooks/useCaregiverQueries';
 
+import { useSocketNotifications } from '@/shared/hooks';
+
 export default function CaregiverNotifications() {
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
 
   const [activeFilter, setActiveFilter] = useState('ALL');
+
+  const { notifications: dbNotifications = [], markAsRead } = useSocketNotifications();
 
   // Fetch pending invitations & relationships
   const { data: relationships = [], isLoading } = useCaregiverRelationshipsQuery();
@@ -202,43 +206,38 @@ export default function CaregiverNotifications() {
           </h2>
 
           <div className="space-y-3">
-            <AppCard className="p-4 border border-outline-variant/30 rounded-2xl flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-on-surface text-xs">
-                    {isAr ? 'تنبيه مخزون دواء ليزينوبريل' : 'Low Stock Alert for Lisinopril'}
-                  </h4>
-                  <p className="text-[11px] text-on-surface-variant mt-0.5">
-                    {isAr ? 'تبقى 8 أقراص فقط في خزانة المريض Sarah Jenkins' : 'Only 8 tablets left for patient Sarah Jenkins'}
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold text-on-surface-variant font-mono shrink-0">
-                10:30 AM
-              </span>
-            </AppCard>
-
-            <AppCard className="p-4 border border-outline-variant/30 rounded-2xl flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-on-surface text-xs">
-                    {isAr ? 'تم تأكيد تناول جرعة أتوفاستاتين' : 'Dose Confirmed for Atorvastatin'}
-                  </h4>
-                  <p className="text-[11px] text-on-surface-variant mt-0.5">
-                    {isAr ? 'تم تسجيل الجرعة بنجاح للمريض Sarah Jenkins' : 'Recorded dose successfully for Sarah Jenkins'}
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold text-on-surface-variant font-mono shrink-0">
-                08:15 AM
-              </span>
-            </AppCard>
+            {dbNotifications.length === 0 ? (
+              <AppCard className="p-6 text-center border border-outline-variant/30 rounded-2xl text-xs font-semibold text-on-surface-variant">
+                {isAr ? 'لا توجد إشعارات مسجلة في النظام بعد' : 'No system notifications recorded yet.'}
+              </AppCard>
+            ) : (
+              dbNotifications.map((notif) => (
+                <AppCard
+                  key={notif.id || notif.notificationId}
+                  onClick={() => !notif.isRead && markAsRead(notif.id || notif.notificationId)}
+                  className={`p-4 border border-outline-variant/30 rounded-2xl flex items-center justify-between gap-4 cursor-pointer transition-colors ${
+                    !notif.isRead ? 'bg-teal-500/5 font-bold' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-on-surface text-xs">
+                        {isAr && notif.titleAr ? notif.titleAr : notif.title}
+                      </h4>
+                      <p className="text-[11px] text-on-surface-variant mt-0.5">
+                        {isAr && notif.messageAr ? notif.messageAr : notif.message}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-semibold text-on-surface-variant font-mono shrink-0">
+                    {notif.createdAt ? new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                  </span>
+                </AppCard>
+              ))
+            )}
           </div>
         </div>
       </div>

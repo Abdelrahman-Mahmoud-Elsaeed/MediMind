@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { useSocketNotifications } from "@/shared/hooks/useSocketNotifications";
 import {
   usePatientMedicationsQuery,
   usePatientDosesQuery,
@@ -10,12 +11,27 @@ export function usePatientNotifications() {
   const { locale } = useTranslation();
   const dateStr = useMemo(() => new Date().toISOString().split("T")[0], []);
 
+  const { notifications: dbNotifications = [], loading: loadingSocketNotifs } = useSocketNotifications();
   const { data: medications = [], isLoading: loadingMeds, error: errorMeds, refetch: refetchMeds } = usePatientMedicationsQuery();
   const { data: doses = [], isLoading: loadingDoses, error: errorDoses, refetch: refetchDoses } = usePatientDosesQuery(dateStr);
   const { data: relationships = [], isLoading: loadingRels, error: errorRels, refetch: refetchRels } = usePatientRelationshipsQuery();
 
   const alerts = useMemo(() => {
     const items = [];
+
+    // 0. Real-time DB Socket Notifications
+    dbNotifications.forEach((notif) => {
+      items.push({
+        id: notif.id || notif.notificationId,
+        type: notif.type,
+        title: locale === "ar" && notif.titleAr ? notif.titleAr : notif.title,
+        description: locale === "ar" && notif.messageAr ? notif.messageAr : notif.message,
+        time: notif.createdAt ? new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now",
+        icon: "notifications",
+        color: "text-primary bg-primary/10",
+        isRead: notif.isRead,
+      });
+    });
 
     // 1. Stock Refills
     medications.forEach((med) => {

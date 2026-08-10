@@ -1,5 +1,7 @@
+const http = require('http');
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
+const { socketService } = require('./src/modules/socket');
 const { logger } = require('./src/shared/utils/logger');
 const { PORT } = require('./src/config/env');
 
@@ -8,7 +10,12 @@ const port = PORT || 8080;
 const startServer = async () => {
   await connectDB();
 
-  const server = app.listen(port, () => {
+  const server = http.createServer(app);
+
+  // Initialize Socket.IO server instance
+  socketService.initSocket(server);
+
+  server.listen(port, () => {
     logger.info(`Platform server successfully bound and listening on port: ${port}`);
   });
 

@@ -8,9 +8,7 @@ import { LanguageToggler } from '@/shared/components/LanguageToggler';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, } from '@/shared/components/ui/dropdown-menu';
 
-// ==========================================
-// SUB-COMPONENT: NOTIFICATION POPOVER MENU
-// ==========================================
+import { useSocketNotifications } from '@/shared/hooks';
 import { 
   usePatientRelationshipsQuery, 
   useUpdateRelationshipStatusMutation as useUpdatePatientStatusMutation 
@@ -29,6 +27,8 @@ function NotificationPopover({ locale, t }) {
   const menuRef = useRef(null);
   const { user } = useAuth();
 
+  const { notifications = [], unreadCount: notifUnreadCount, markAsRead, markAllAsRead } = useSocketNotifications();
+
   const isCaregiverRole = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(user?.role);
 
   const { data: patientRels = [] } = usePatientRelationshipsQuery();
@@ -41,7 +41,7 @@ function NotificationPopover({ locale, t }) {
     ? caregiverRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT')
     : patientRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
 
-  const unreadCount = pendingIncoming.length;
+  const totalUnread = pendingIncoming.length + notifUnreadCount;
 
   const handleResponse = (relationshipId, status) => {
     if (isCaregiverRole) {
@@ -73,7 +73,7 @@ function NotificationPopover({ locale, t }) {
         title="Notifications"
       >
         <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant group-hover:text-on-surface group-hover:scale-110 transition-transform"/>
-        {unreadCount > 0 && (
+        {totalUnread > 0 && (
           <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-background animate-pulse"></span>
         )}
       </button>
@@ -87,68 +87,107 @@ function NotificationPopover({ locale, t }) {
               <h3 className="font-extrabold text-sm text-on-surface">
                 {isRtl ? "الإشعارات وطلبات الربط" : "Notifications & Invites"}
               </h3>
-              {unreadCount > 0 && (
+              {totalUnread > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-400 text-xs font-black">
-                  {unreadCount} {isRtl ? "جديد" : "new"}
+                  {totalUnread} {isRtl ? "جديد" : "new"}
                 </span>
               )}
             </div>
+            {notifUnreadCount > 0 && (
+              <button
+                onClick={() => markAllAsRead()}
+                className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
+              >
+                {isRtl ? "تحديد الكل كقروء" : "Mark all read"}
+              </button>
+            )}
           </div>
 
           <div className="max-h-80 overflow-y-auto divide-y divide-outline-variant/10">
-            {pendingIncoming.length === 0 ? (
+            {pendingIncoming.length === 0 && notifications.length === 0 ? (
               <div className="p-8 text-center text-on-surface-variant text-xs font-medium">
-                {isRtl ? "لا توجد طلبات ربط جديدة معلقة" : "No new connection requests"}
+                {isRtl ? "لا توجد إشعارات أو طلبات ربط جديدة" : "No new notifications or connection requests"}
               </div>
             ) : (
-              pendingIncoming.map((n) => {
-                const partnerName = isCaregiverRole
-                  ? (n.patientId ? `${n.patientId.firstName || ''} ${n.patientId.lastName || ''}`.trim() || n.patientId.email : (isRtl ? 'مريض' : 'Patient'))
-                  : (n.caregiverId ? `${n.caregiverId.firstName || ''} ${n.caregiverId.lastName || ''}`.trim() || n.caregiverId.email : (isRtl ? 'مقدم رعاية' : 'Caregiver'));
+              <>
+                {/* 1. Pending Relationship Requests */}
+                {pendingIncoming.map((n) => {
+                  const partnerName = isCaregiverRole
+                    ? (n.patientId ? `${n.patientId.firstName || ''} ${n.patientId.lastName || ''}`.trim() || n.patientId.email : (isRtl ? 'مريض' : 'Patient'))
+                    : (n.caregiverId ? `${n.caregiverId.firstName || ''} ${n.caregiverId.lastName || ''}`.trim() || n.caregiverId.email : (isRtl ? 'مقدم رعاية' : 'Caregiver'));
 
-                const isPendingMut = isCaregiverRole ? caregiverUpdateStatus.isPending : patientUpdateStatus.isPending;
+                  const isPendingMut = isCaregiverRole ? caregiverUpdateStatus.isPending : patientUpdateStatus.isPending;
 
-                return (
+                  return (
+                    <div
+                      key={n.relationshipId}
+                      className="p-4 hover:bg-surface-container/60 transition-colors flex flex-col gap-2.5 relative bg-primary-container/10"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
+                          <Bell className="w-4 h-4" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-extrabold text-on-surface truncate">
+                            {partnerName}
+                          </h4>
+                          <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                            {isRtl
+                              ? `طلب ربط حساب جديد - صلة القرابة: ${n.relation || 'عائلة'}`
+                              : `New connection request - Relation: ${n.relation || 'Family'}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          onClick={() => handleResponse(n.relationshipId, 'ACCEPTED')}
+                          disabled={isPendingMut}
+                          className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {isRtl ? "قبول" : "Accept"}
+                        </button>
+                        <button
+                          onClick={() => handleResponse(n.relationshipId, 'REJECTED')}
+                          disabled={isPendingMut}
+                          className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 hover:text-rose-600 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {isRtl ? "رفض" : "Decline"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* 2. Real-Time Persisted DB Notifications */}
+                {notifications.slice(0, 10).map((notif) => (
                   <div
-                    key={n.relationshipId}
-                    className="p-4 hover:bg-surface-container/60 transition-colors flex flex-col gap-2.5 relative bg-primary-container/10"
+                    key={notif.id || notif.notificationId}
+                    onClick={() => !notif.isRead && markAsRead(notif.id || notif.notificationId)}
+                    className={`p-3.5 hover:bg-surface-container/60 transition-colors flex items-start gap-3 relative ${
+                      !notif.isRead ? 'bg-teal-500/5' : ''
+                    }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
-                        <Bell className="w-4 h-4" />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-extrabold text-on-surface truncate">
-                          {partnerName}
-                        </h4>
-                        <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                          {isRtl
-                            ? `طلب ربط حساب جديد - صلة القرابة: ${n.relation || 'عائلة'}`
-                            : `New connection request - Relation: ${n.relation || 'Family'}`}
-                        </p>
-                      </div>
+                    <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
+                      <Bell className="w-3.5 h-3.5" />
                     </div>
 
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        onClick={() => handleResponse(n.relationshipId, 'ACCEPTED')}
-                        disabled={isPendingMut}
-                        className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        {isRtl ? "قبول" : "Accept"}
-                      </button>
-                      <button
-                        onClick={() => handleResponse(n.relationshipId, 'REJECTED')}
-                        disabled={isPendingMut}
-                        className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 hover:text-rose-600 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        {isRtl ? "رفض" : "Decline"}
-                      </button>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-bold text-on-surface truncate">
+                        {isRtl && notif.titleAr ? notif.titleAr : notif.title}
+                      </h4>
+                      <p className="text-[11px] text-on-surface-variant leading-snug line-clamp-2 mt-0.5">
+                        {isRtl && notif.messageAr ? notif.messageAr : notif.message}
+                      </p>
                     </div>
+
+                    {!notif.isRead && (
+                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1" />
+                    )}
                   </div>
-                );
-              })
+                ))}
+              </>
             )}
           </div>
 

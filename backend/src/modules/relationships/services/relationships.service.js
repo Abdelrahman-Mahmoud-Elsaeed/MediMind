@@ -122,6 +122,42 @@ class RelationshipsService {
     });
 
     await relationship.save();
+
+    // Trigger Notification & Real-Time Socket Delivery
+    try {
+      const notificationsService = require('../../notifications/services/notifications.service');
+      const socketService = require('../../socket/services/socket.service');
+
+      const senderName = userRole === 'PATIENT'
+        ? `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Patient'
+        : `${caregiver.firstName || ''} ${caregiver.lastName || ''}`.trim() || 'Caregiver';
+
+      await notificationsService.createNotification({
+        recipientId: targetAccount._id,
+        senderId: userAccountId,
+        type: 'RELATIONSHIP_REQUEST',
+        title: userRole === 'PATIENT' ? 'Care Circle Connection Request' : 'Caregiver Connection Request',
+        titleAr: userRole === 'PATIENT' ? 'طلب ربط من مريض' : 'طلب ربط من مقدم رعاية',
+        message: `${senderName} sent you a connection request.`,
+        messageAr: `أرسل لك ${senderName} طلب ربط للانضمام لدائرة الرعاية.`,
+        data: {
+          relationshipId: relationship._id.toString(),
+          patientId: patient._id.toString(),
+          caregiverId: caregiver._id.toString(),
+          status: 'PENDING',
+          initiatedBy: initiatedByRole,
+        },
+      });
+
+      socketService.sendToUser(targetAccount._id.toString(), 'relationship:updated', {
+        relationshipId: relationship._id.toString(),
+        status: 'PENDING',
+        initiatedBy: initiatedByRole,
+      });
+    } catch (err) {
+      logger.error('Error delivering real-time relationship notification:', err);
+    }
+
     return relationship;
   }
 
@@ -215,15 +251,20 @@ class RelationshipsService {
    */
   async updateStatus(userAccountId, userRole, relationshipId, status) {
     let relationship;
+    let patient;
+    let caregiver;
 
     if (userRole === 'PATIENT') {
-      const patient = await Patient.findOne({ accountId: userAccountId });
+      patient = await Patient.findOne({ accountId: userAccountId });
       if (!patient) {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       relationship = await Relationship.findOne({ _id: relationshipId, patientId: patient._id, deletedAt: null });
+      if (relationship) {
+        caregiver = await Caregiver.findById(relationship.caregiverId);
+      }
     } else {
-      let caregiver = await Caregiver.findOne({ accountId: userAccountId });
+      caregiver = await Caregiver.findOne({ accountId: userAccountId });
       if (!caregiver) {
         const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
         caregiver = await ProfessionalCaregiver.findOne({ accountId: userAccountId });
@@ -240,6 +281,9 @@ class RelationshipsService {
         throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
       }
       relationship = await Relationship.findOne({ _id: relationshipId, caregiverId: caregiver._id, deletedAt: null });
+      if (relationship) {
+        patient = await Patient.findById(relationship.patientId);
+      }
     }
 
     if (!relationship) {
@@ -263,6 +307,60 @@ class RelationshipsService {
 
     relationship.status = status;
     await relationship.save();
+
+    // Trigger Notification & Real-Time Socket Delivery to Original Request Sender
+    try {
+      const notificationsService = require('../../notifications/services/notifications.service');
+      const socketService = require('../../socket/services/socket.service');
+
+      if (!patient && relationship.patientId) {
+        patient = await Patient.findById(relationship.patientId);
+      }
+      if (!caregiver && relationship.caregiverId) {
+        const CaregiverModel = require('mongoose').model(relationship.caregiverType || 'FamilyCaregiver');
+        caregiver = await CaregiverModel.findById(relationship.caregiverId);
+      }
+
+      const isAccepted = status === 'ACCEPTED';
+      const originalSenderAccountId = relationship.initiatedBy === 'PATIENT' ? patient?.accountId : caregiver?.accountId;
+      const responderName = userRole === 'PATIENT'
+        ? `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() || 'Patient'
+        : `${caregiver?.firstName || ''} ${caregiver?.lastName || ''}`.trim() || 'Caregiver';
+
+      if (originalSenderAccountId) {
+        await notificationsService.createNotification({
+          recipientId: originalSenderAccountId,
+          senderId: userAccountId,
+          type: isAccepted ? 'RELATIONSHIP_ACCEPTED' : 'RELATIONSHIP_REJECTED',
+          title: isAccepted ? 'Connection Request Accepted' : 'Connection Request Declined',
+          titleAr: isAccepted ? 'تم قبول طلب الربط' : 'تم رفض طلب الربط',
+          message: `${responderName} ${isAccepted ? 'accepted your connection request.' : 'declined your connection request.'}`,
+          messageAr: `${isAccepted ? 'قبل' : 'رفض'} ${responderName} طلب الربط الخاص بك.`,
+          data: {
+            relationshipId: relationship._id.toString(),
+            status,
+            initiatedBy: relationship.initiatedBy,
+          },
+        });
+      }
+
+      // Broadcast socket event to BOTH parties so real-time UIs update instantly
+      if (patient?.accountId) {
+        socketService.sendToUser(patient.accountId.toString(), 'relationship:updated', {
+          relationshipId: relationship._id.toString(),
+          status,
+        });
+      }
+      if (caregiver?.accountId) {
+        socketService.sendToUser(caregiver.accountId.toString(), 'relationship:updated', {
+          relationshipId: relationship._id.toString(),
+          status,
+        });
+      }
+    } catch (err) {
+      logger.error('Error delivering relationship status update notification:', err);
+    }
+
     return relationship;
   }
 

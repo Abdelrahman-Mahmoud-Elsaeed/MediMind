@@ -33,6 +33,7 @@ export default function CareCircleComponent() {
     loading,
     error,
     submitting,
+    updatingStatus,
     emailInput,
     setEmailInput,
     canManageMeds,
@@ -40,8 +41,11 @@ export default function CareCircleComponent() {
     canViewRecords,
     setCanViewRecords,
     activeCaregivers,
+    pendingIncoming,
+    pendingOutgoing,
     pendingInvitations,
     sendInvitation,
+    respondToRequest,
     revokeRelationship,
     validationError
   } = useCareCircle();
