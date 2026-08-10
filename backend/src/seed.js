@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 
 // Models
 const Account = require("./modules/auth/models/Account.model");
+const Admin = require("./modules/auth/models/Admin.model");
 const Patient = require("./modules/auth/models/Patient.model");
 const FamilyCaregiver = require("./modules/auth/models/FamilyCaregiver.model");
 const Pharmacist = require("./modules/auth/models/Pharmacist.model");
@@ -23,6 +24,30 @@ async function seed() {
   for (const acc of existingAccounts) {
     acc.passwordHash = defaultPassword;
     await acc.save();
+  }
+
+  // 0. Create Super Admin Account
+  let adminAccount = await Account.findOne({ email: "admin@medimind.io" });
+  if (!adminAccount) {
+    adminAccount = await Account.create({
+      email: "admin@medimind.io",
+      passwordHash: defaultPassword,
+      role: "ADMIN",
+      isEmailVerified: true,
+      isActive: true,
+    });
+  }
+
+  let adminProfile = await Admin.findOne({ accountId: adminAccount._id });
+  if (!adminProfile) {
+    await Admin.create({
+      accountId: adminAccount._id,
+      firstName: "Super",
+      lastName: "Admin",
+      adminType: "super_admin",
+      department: "Operations",
+      permissions: ["*"],
+    });
   }
 
   // 1. Create Default Pharmacist (for Refill Orders)
@@ -56,6 +81,66 @@ async function seed() {
       pharmacyPhone: "+20 100 123 4567",
       offersDelivery: true,
     });
+  }
+
+  // 1.1 Create Additional Partner Pharmacies
+  const partnerPharmaciesSeed = [
+    {
+      email: "elezaby@medimind.io",
+      pharmacyName: "El-Ezaby Pharmacy (Mohandessin)",
+      ownerName: "Dr. Ahmed El-Ezaby",
+      licenseNumber: "PH-88412",
+      address: { governorate: "Giza", city: "Mohandessin", street: "Shehab Street" },
+      location: { type: "Point", coordinates: [31.2007, 30.0524] },
+      pharmacyPhone: "+20 19777",
+      offersDelivery: true,
+    },
+    {
+      email: "seif@medimind.io",
+      pharmacyName: "Seif Pharmacy (Smouha)",
+      ownerName: "Dr. Mohamed Seif",
+      licenseNumber: "PH-77309",
+      address: { governorate: "Alexandria", city: "Smouha", street: "Victor Emanuel St" },
+      location: { type: "Point", coordinates: [29.9553, 31.2156] },
+      pharmacyPhone: "+20 19199",
+      offersDelivery: true,
+    },
+    {
+      email: "carecure@medimind.io",
+      pharmacyName: "Care & Cure Pharmacy (Maadi)",
+      ownerName: "Dr. Mona El-Shazly",
+      licenseNumber: "PH-66104",
+      address: { governorate: "Cairo", city: "Maadi", street: "Road 9" },
+      location: { type: "Point", coordinates: [31.2585, 29.9602] },
+      pharmacyPhone: "+20 102 999 8877",
+      offersDelivery: false,
+    },
+  ];
+
+  for (const pSeed of partnerPharmaciesSeed) {
+    let pAcc = await Account.findOne({ email: pSeed.email });
+    if (!pAcc) {
+      pAcc = await Account.create({
+        email: pSeed.email,
+        passwordHash: defaultPassword,
+        role: "PHARMACIST",
+        isEmailVerified: true,
+        isActive: true,
+      });
+    }
+    let pProfile = await Pharmacist.findOne({ accountId: pAcc._id });
+    if (!pProfile) {
+      await Pharmacist.create({
+        accountId: pAcc._id,
+        pharmacyName: pSeed.pharmacyName,
+        ownerName: pSeed.ownerName,
+        licenseNumber: pSeed.licenseNumber,
+        address: pSeed.address,
+        location: pSeed.location,
+        pharmacyPhone: pSeed.pharmacyPhone,
+        offersDelivery: pSeed.offersDelivery,
+      });
+    }
   }
 
   // 2. Create 2 Caregivers (for Relationships)
@@ -443,23 +528,37 @@ async function seed() {
       }
     }
 
-    // Seed Refill Orders if inventory is low
+    // Seed Refill Orders with realistic status distribution
+    const statuses = ["SUBMITTED", "APPROVED", "DISPENSED", "READY_FOR_PICKUP", "COMPLETED"];
+    let statusIdx = 0;
+
     for (const med of createdMeds) {
-      if (med.inventory.currentQuantity <= med.inventory.refillThreshold) {
-        const existingRefill = await RefillOrder.findOne({ patientId: patient._id, medicationId: med._id });
-        if (!existingRefill) {
-          await RefillOrder.create({
-            patientId: patient._id,
-            medicationId: med._id,
-            requestedBy: account._id,
-            targetPharmacyId: pharmacist._id,
-            orderStatus: "SUBMITTED",
-            fulfillmentType: "DELIVERY",
-            deliveryAddress: { street: "123 Health Ave", city: "Cairo", zipCode: "11511" },
-            quantityRequested: med.inventory.initialQuantity,
-            pharmacistNotes: "Urgent refill requested due to low stock.",
-          });
-        }
+      const existingRefill = await RefillOrder.findOne({ patientId: patient._id, medicationId: med._id });
+      if (!existingRefill) {
+        const currentStatus = statuses[statusIdx % statuses.length];
+        statusIdx++;
+
+        const isDelivery = statusIdx % 2 === 0;
+        await RefillOrder.create({
+          patientId: patient._id,
+          medicationId: med._id,
+          requestedBy: account._id,
+          targetPharmacyId: pharmacist._id,
+          orderStatus: currentStatus,
+          fulfillmentType: isDelivery ? "DELIVERY" : "PICKUP",
+          deliveryAddress: { street: "123 Health Ave, Building 4", city: "Cairo", zipCode: "11511" },
+          quantityRequested: med.inventory.initialQuantity || 30,
+          pharmacistNotes:
+            currentStatus === "APPROVED"
+              ? "تم التأكد من الوصفة وتخصيص العبوة للصرف."
+              : currentStatus === "DISPENSED"
+              ? "تم صرف الدواء وتغليفه بنجاح."
+              : currentStatus === "READY_FOR_PICKUP"
+              ? "الطلب جاهز للاستلام من الفرع الرئيسي."
+              : currentStatus === "COMPLETED"
+              ? "تم توصيل وتأكيد استلام المريض وتحديث الرصيد."
+              : "طلب تعبئة جديد بانتظام الدواء.",
+        });
       }
     }
   }

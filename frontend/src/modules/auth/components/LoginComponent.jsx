@@ -26,7 +26,11 @@ export default function LoginComponent() {
     useEffect(() => {
         if (!loading && isAuthenticated) {
             const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
-            router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+            if (role === "PHARMACIST") {
+                router.replace("/pharmacy");
+            } else {
+                router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+            }
         }
     }, [isAuthenticated, loading, user, router]);
     const [loginInput, setLoginInput] = useState("");

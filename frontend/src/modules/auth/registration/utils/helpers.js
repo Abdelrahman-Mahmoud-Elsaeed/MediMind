@@ -34,7 +34,12 @@ export function extractNationalNumber(phoneValue, defaultCallingCode = "20") {
 export function formatRegistrationPayload(formData, registrationData, isPhoneInput, locale, callingCode = "20") {
   const isPhoneReg = isPhoneInput || (formData.loginInput && /^[0-9+\s()-]+$/.test(formData.loginInput.trim()));
 
-  const role = formData.role === "caregiver" ? "FAMILY_CAREGIVER" : "PATIENT";
+  const role =
+    formData.role === "caregiver"
+      ? "FAMILY_CAREGIVER"
+      : formData.role === "pharmacist"
+      ? "PHARMACIST"
+      : "PATIENT";
 
   const credentials = {
     password: formData.password,
@@ -78,6 +83,19 @@ export function formatRegistrationPayload(formData, registrationData, isPhoneInp
       whatsappOptIn: Boolean(formData.whatsappOptIn),
       preferredLanguage: locale || "ar",
       alertSettings: formData.alertSettings || {},
+    };
+  }
+
+  if (role === "PHARMACIST") {
+    return {
+      ...basePayload,
+      firstName: formData.firstName ? formData.firstName.trim() : "",
+      lastName: formData.lastName ? formData.lastName.trim() : "",
+      pharmacyName: formData.pharmacyName ? formData.pharmacyName.trim() : "",
+      licenseNumber: formData.licenseNumber ? formData.licenseNumber.trim() : "",
+      pharmacyPhone: formData.pharmacyPhone ? formData.pharmacyPhone.trim() : undefined,
+      whatsappOptIn: Boolean(formData.whatsappOptIn),
+      preferredLanguage: locale || "ar",
     };
   }
 
