@@ -48,6 +48,8 @@ export function CaregiverPatientsListComponent() {
   });
 
   const activePatients = relationships.filter((r) => r.status === 'ACCEPTED');
+  const pendingIncoming = relationships.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT');
+  const pendingOutgoing = relationships.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
   const pendingRequests = relationships.filter((r) => r.status === 'PENDING');
 
   return (
@@ -107,42 +109,55 @@ export function CaregiverPatientsListComponent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pendingRequests.map((req) => (
-              <div 
-                key={req.relationshipId}
-                className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between gap-4"
-              >
-                <div>
-                  <h3 className="font-bold text-on-surface">
-                    {req.patientId?.firstName} {req.patientId?.lastName}
-                  </h3>
-                  <p className="text-xs text-on-surface-variant mt-0.5">
-                    {isAr ? 'العلاقة: ' : 'Relation: '} 
-                    <span className="font-semibold text-primary">{req.relation || 'Family'}</span>
-                  </p>
-                </div>
+            {pendingRequests.map((req) => {
+              const isIncoming = req.initiatedBy === 'PATIENT';
+              const patientName = `${req.patientId?.firstName || ''} ${req.patientId?.lastName || ''}`.trim() || req.patientId?.email || 'Patient';
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handleStatusUpdate(req.relationshipId, 'ACCEPTED')}
-                    disabled={updateStatusMutation.isPending}
-                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>{isAr ? 'قبول' : 'Accept'}</span>
-                  </button>
+              return (
+                <div 
+                  key={req.relationshipId}
+                  className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <h3 className="font-bold text-on-surface">
+                      {patientName}
+                    </h3>
+                    <p className="text-xs text-on-surface-variant mt-0.5">
+                      {isAr ? 'العلاقة: ' : 'Relation: '} 
+                      <span className="font-semibold text-primary">{req.relation || 'Family'}</span>
+                    </p>
+                  </div>
 
-                  <button
-                    onClick={() => handleStatusUpdate(req.relationshipId, 'REJECTED')}
-                    disabled={updateStatusMutation.isPending}
-                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-surface-container-lowest dark:bg-surface-container-low hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-400 active:scale-95 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <XCircle className="w-4 h-4 shrink-0" />
-                    <span>{isAr ? 'رفض' : 'Reject'}</span>
-                  </button>
+                  {isIncoming ? (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleStatusUpdate(req.relationshipId, 'ACCEPTED')}
+                        disabled={updateStatusMutation.isPending}
+                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>{isAr ? 'قبول' : 'Accept'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleStatusUpdate(req.relationshipId, 'REJECTED')}
+                        disabled={updateStatusMutation.isPending}
+                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-surface-container-lowest dark:bg-surface-container-low hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-400 active:scale-95 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <XCircle className="w-4 h-4 shrink-0" />
+                        <span>{isAr ? 'رفض' : 'Reject'}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="shrink-0">
+                      <AppBadge variant="warning">
+                        {isAr ? 'بانتظار موافقة المريض' : 'Awaiting Patient Acceptance'}
+                      </AppBadge>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

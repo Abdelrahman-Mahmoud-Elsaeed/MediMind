@@ -5,12 +5,14 @@ import {
   usePatientRelationshipsQuery,
   useInviteCaregiverMutation,
   useRevokeRelationshipMutation,
+  useUpdateRelationshipStatusMutation,
 } from "@/modules/patient/hooks/usePatientQueries";
 
 export function useCareCircle() {
   const { data: relationships = [], isLoading, error: queryError } = usePatientRelationshipsQuery();
   const inviteCaregiverMutation = useInviteCaregiverMutation();
   const revokeRelationshipMutation = useRevokeRelationshipMutation();
+  const updateStatusMutation = useUpdateRelationshipStatusMutation();
 
   const [emailInput, setEmailInput] = useState("");
   const [canManageMeds, setCanManageMeds] = useState(true);
@@ -19,6 +21,12 @@ export function useCareCircle() {
 
   const activeCaregivers = relationships.filter(
     (r) => r.status === "ACCEPTED" || r.status === "ACTIVE"
+  );
+  const pendingIncoming = relationships.filter(
+    (r) => r.status === "PENDING" && r.initiatedBy === "CAREGIVER"
+  );
+  const pendingOutgoing = relationships.filter(
+    (r) => r.status === "PENDING" && r.initiatedBy === "PATIENT"
   );
   const pendingInvitations = relationships.filter(
     (r) => r.status === "PENDING"
@@ -43,9 +51,17 @@ export function useCareCircle() {
     try {
       await inviteCaregiverMutation.mutateAsync({
         caregiverEmail: emailInput,
+        targetEmail: emailInput,
         permissions: {
-          canManageMedications: canManageMeds,
+          canAddMedication: canManageMeds,
+          canEditMedication: canManageMeds,
+          canDeleteMedication: canManageMeds,
           canViewMedicalRecords: canViewRecords,
+          canEditMedicalRecords: false,
+          canViewDoseSchedule: true,
+          canConfirmDose: canManageMeds,
+          canOrderRefills: canManageMeds,
+          canReceiveNotifications: true,
         },
       });
 
@@ -53,7 +69,15 @@ export function useCareCircle() {
       setCanManageMeds(true);
       setCanViewRecords(false);
     } catch (err) {
-      setValidationError("Failed to send invitation. Please verify caregiver email.");
+      setValidationError(err?.response?.data?.message || "Failed to send invitation. Please verify caregiver email.");
+    }
+  };
+
+  const respondToRequest = async (relationshipId, status) => {
+    try {
+      await updateStatusMutation.mutateAsync({ relationshipId, status });
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to update request status");
     }
   };
 
@@ -69,6 +93,7 @@ export function useCareCircle() {
     loading: isLoading,
     error: queryError ? queryError.message : null,
     submitting: inviteCaregiverMutation.isPending,
+    updatingStatus: updateStatusMutation.isPending,
     emailInput,
     setEmailInput,
     canManageMeds,
@@ -76,8 +101,11 @@ export function useCareCircle() {
     canViewRecords,
     setCanViewRecords,
     activeCaregivers,
+    pendingIncoming,
+    pendingOutgoing,
     pendingInvitations,
     sendInvitation,
+    respondToRequest,
     revokeRelationship,
     validationError,
   };

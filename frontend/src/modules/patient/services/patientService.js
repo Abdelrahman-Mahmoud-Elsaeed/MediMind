@@ -1,7 +1,8 @@
 import apiClient from "@/shared/lib/apiClient";
 
 export const patientService = {
-  // Medications
+  // ─── Medications ────────────────────────────────────────────────────────────
+
   getMedications: async () => {
     const res = await apiClient.get("/medications");
     return res.data;
@@ -12,12 +13,50 @@ export const patientService = {
     return res.data;
   },
 
+  updateMedication: async (id, payload) => {
+    const res = await apiClient.put(`/medications/${id}`, payload);
+    return res.data;
+  },
+
+  deleteMedication: async (id) => {
+    const res = await apiClient.delete(`/medications/${id}`);
+    return res.data;
+  },
+
   scanPrescription: async (imageBase64) => {
     const res = await apiClient.post("/medications/scan", { imageBase64 });
     return res.data;
   },
 
-  // Doses
+  // ─── Refill Orders ──────────────────────────────────────────────────────────
+
+  /** List this patient's own refill orders (PATIENT role). */
+  getRefillOrders: async () => {
+    const res = await apiClient.get("/medications/refills");
+    return res.data;
+  },
+
+  /**
+   * Submit a new refill order.
+   * @param {{ medicationId, targetPharmacyId, quantityRequested, fulfillmentType, deliveryAddress? }} payload
+   */
+  createRefillOrder: async (payload) => {
+    const res = await apiClient.post("/medications/refills", payload);
+    return res.data;
+  },
+
+  /**
+   * Update a refill order's status (PHARMACIST / ADMIN only via backend).
+   * @param {string} id
+   * @param {{ orderStatus, pharmacistNotes? }} payload
+   */
+  updateRefillStatus: async (id, payload) => {
+    const res = await apiClient.patch(`/medications/refills/${id}/status`, payload);
+    return res.data;
+  },
+
+  // ─── Doses ──────────────────────────────────────────────────────────────────
+
   getDoses: async (dateStr) => {
     const res = await apiClient.get(`/doses?date=${dateStr}`);
     return res.data;
@@ -33,7 +72,8 @@ export const patientService = {
     return res.data;
   },
 
-  // Caregivers & Relationships
+  // ─── Relationships ──────────────────────────────────────────────────────────
+
   getRelationships: async () => {
     const res = await apiClient.get("/relationships");
     return res.data;
@@ -54,7 +94,8 @@ export const patientService = {
     return res.data;
   },
 
-  // Profiles
+  // ─── Profile ────────────────────────────────────────────────────────────────
+
   getProfile: async () => {
     const res = await apiClient.get("/profiles/patient/me");
     return res.data;
@@ -65,17 +106,8 @@ export const patientService = {
     return res.data;
   },
 
-  updateMedication: async (id, payload) => {
-    const res = await apiClient.put(`/medications/${id}`, payload);
-    return res.data;
-  },
+  // ─── Conditions ─────────────────────────────────────────────────────────────
 
-  deleteMedication: async (id) => {
-    const res = await apiClient.delete(`/medications/${id}`);
-    return res.data;
-  },
-
-  // Conditions
   getConditions: async () => {
     const res = await apiClient.get("/conditions");
     return res.data;
@@ -94,5 +126,6 @@ export const patientService = {
   deleteCondition: async (conditionId) => {
     const res = await apiClient.delete(`/conditions/${conditionId}`);
     return res.data;
-  }
+  },
 };
+
