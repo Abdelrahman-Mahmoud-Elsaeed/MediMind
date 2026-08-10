@@ -1,5 +1,4 @@
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../../../config/env');
+const { verifyToken } = require('../../../shared/utils/jwt.util');
 const Account = require('../../auth/models/Account.model');
 const { logger } = require('../../../shared/utils/logger');
 
@@ -20,13 +19,13 @@ async function socketAuthMiddleware(socket, next) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = verifyToken(token);
     } catch (err) {
       logger.warn(`Socket JWT verification failed: ${err.message}`);
       return next(new Error('Authentication error: Invalid or expired token.'));
     }
 
-    const accountId = decoded.id || decoded.accountId || decoded.sub;
+    const accountId = decoded.accountId || decoded.id || decoded.sub;
     if (!accountId) {
       return next(new Error('Authentication error: Invalid token payload.'));
     }
