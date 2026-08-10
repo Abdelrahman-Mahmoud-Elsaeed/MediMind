@@ -14,10 +14,19 @@ export default function PatientNotificationsComponent() {
   const { data: relationships = [], isLoading: loadingRels } = usePatientRelationshipsQuery();
   const updateStatusMutation = useUpdateRelationshipStatusMutation();
 
-  // Pending connection requests sent to this patient by caregivers
-  const pendingInvites = relationships.filter(
-    (r) => r.status === "PENDING" && r.initiatedBy === "CAREGIVER"
-  );
+  // Pending connection requests sent to this patient by caregivers.
+  // Some existing records may not carry initiatedBy explicitly, so we also
+  // surface pending relationships as caregiver invitations in that fallback case.
+  const pendingInvites = relationships.filter((r) => {
+    if (r.status !== "PENDING") return false;
+
+    const initiatedBy = String(r.initiatedBy || "").toUpperCase();
+    if (initiatedBy) {
+      return ["CAREGIVER", "FAMILY_CAREGIVER", "PROFESSIONAL_CAREGIVER", "DOCTOR", "PHARMACIST"].includes(initiatedBy);
+    }
+
+    return true;
+  });
 
   const handleResponse = (relationshipId, status) => {
     updateStatusMutation.mutate({ relationshipId, status });
@@ -57,7 +66,7 @@ export default function PatientNotificationsComponent() {
 
                 return (
                   <div
-                    key={invite.relationshipId}
+                    key={invite.relationshipId || invite._id || invite.id}
                     className="p-5 border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl flex flex-col justify-between gap-4 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
