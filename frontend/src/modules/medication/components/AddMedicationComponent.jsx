@@ -5,12 +5,30 @@ import { useRouter } from "next/navigation";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useAddMedication } from "../hooks/useAddMedication";
-import { Card, Button, Badge } from "@/shared/components/ui";
-import { ArrowLeft, Camera, CheckCircle2, AlertTriangle, Sparkles } from "lucide-react";
+import { Card, Button, Badge, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui";
+import {
+  ArrowLeft,
+  Camera,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  Pill,
+  Clock,
+  PackageCheck,
+  FileText,
+  Lock,
+  Plus,
+  ShieldCheck,
+  Calendar,
+  AlertCircle,
+  ChevronDown
+} from "lucide-react";
 
 export default function AddMedicationComponent() {
   const router = useRouter();
   const { t, locale } = useTranslation();
+  const isAr = locale === "ar";
+
   const {
     form,
     setForm,
@@ -30,6 +48,20 @@ export default function AddMedicationComponent() {
   } = useAddMedication(() => {
     router.push("/medications");
   });
+
+  const getFormUnit = (type) => {
+    switch (type) {
+      case "CAPSULE": return isAr ? "كبسولة" : "capsules";
+      case "TABLET": return isAr ? "قرص" : "tablets";
+      case "SYRUP": return isAr ? "مل" : "mL";
+      case "INJECTION": return isAr ? "حقنة / مل" : "mL/vials";
+      case "DROP": return isAr ? "قطرة" : "drops";
+      case "CREAM": return isAr ? "استخدام" : "applications";
+      default: return isAr ? "وحدة" : "units";
+    }
+  };
+
+  const formUnit = getFormUnit(form.type);
 
   if (isScanning) {
     return (
@@ -78,14 +110,14 @@ export default function AddMedicationComponent() {
           {/* Shutter controls */}
           <div className="mt-auto mb-4 w-full max-w-md flex items-center justify-evenly">
             <Button variant="ghost" onClick={() => captureScan(true)} className="text-xs text-red-400 font-bold hover:bg-red-500/10">
-              {locale === "ar" ? "فشل" : "FAIL"}
+              {isAr ? "فشل" : "FAIL"}
             </Button>
             <button onClick={() => captureScan(false)} className="group relative flex items-center justify-center w-20 h-20">
               <div className="absolute inset-0 rounded-full border-4 border-white/20 scale-110"></div>
               <div className="w-16 h-16 bg-white rounded-full shadow-lg active:scale-95 transition-transform"></div>
             </button>
             <Button variant="ghost" onClick={() => captureScan(false)} className="text-xs text-emerald-400 font-bold hover:bg-emerald-500/10">
-              {locale === "ar" ? "نجاح" : "PASS"}
+              {isAr ? "نجاح" : "PASS"}
             </Button>
           </div>
         </main>
@@ -146,17 +178,29 @@ export default function AddMedicationComponent() {
   return (
     <MainLayout activePath="/medications">
       <div className="max-w-[1000px] mx-auto space-y-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild className="rounded-full">
-            <Link href="/medications">
-              <ArrowLeft className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+        
+        {/* Top Header Card */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/90 p-6 sm:p-7 rounded-[28px] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/medications"
+              className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/60 text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 flex items-center justify-center transition-all cursor-pointer shrink-0"
+            >
+              <span className="material-symbols-outlined text-xl rtl:rotate-180">arrow_back</span>
             </Link>
-          </Button>
-          <h1 className="text-2xl font-bold text-on-surface">{t("patient.add.title")}</h1>
+            <div>
+              <span className="text-[11px] font-extrabold text-teal-700 dark:text-teal-400 uppercase tracking-widest block mb-0.5">
+                {isAr ? "إدارة الأدوية والعلاجات" : "MEDICATION MANAGEMENT"}
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                {t("patient.add.title")}
+              </h1>
+            </div>
+          </div>
         </div>
 
         {/* AI OCR Scanner Entry Card */}
-        <Card onClick={() => router.push('/ocr-scan')} className="bg-gradient-to-r from-teal-500/10 to-teal-600/5 dark:from-teal-950/40 dark:to-slate-900 border border-teal-500/20 hover:border-teal-500/40 transition-all p-6 rounded-2xl text-center cursor-pointer group shadow-none">
+        <Card onClick={() => router.push('/ocr-scan')} className="bg-gradient-to-r from-teal-500/10 to-teal-600/5 dark:from-teal-950/40 dark:to-slate-900 border border-teal-500/20 hover:border-teal-500/40 transition-all p-6 sm:p-7 rounded-[28px] text-center cursor-pointer group shadow-none">
           <div className="flex flex-col items-center gap-2">
             <div className="w-14 h-14 rounded-full bg-teal-600/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
               <Camera className="w-7 h-7" />
@@ -171,37 +215,35 @@ export default function AddMedicationComponent() {
           </div>
         </Card>
 
-        {/* Regular Form */}
-        <Card className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 p-8 rounded-2xl shadow-xs">
+        {/* Main Form Form */}
+        <form onSubmit={submitForm} className="space-y-6">
+          
           {validationError && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center text-xs font-bold mb-6">
-              {validationError}
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-600 p-4 rounded-2xl text-center text-xs font-bold flex items-center justify-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{validationError}</span>
             </div>
           )}
 
-          <form onSubmit={submitForm} className="space-y-6">
-            {conditions.length > 0 && (
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {t("patient.add.medCondition")}
-                </label>
-                <select
-                  value={selectedConditionId}
-                  onChange={(e) => setSelectedConditionId(e.target.value)}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                >
-                  {conditions.map((cond) => (
-                    <option key={cond._id || cond.conditionId} value={cond._id || cond.conditionId}>
-                      {cond.diseaseName}
-                    </option>
-                  ))}
-                </select>
+          {/* Section 1: General Information */}
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center">
+                <Pill className="w-5 h-5" />
               </div>
-            )}
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? "معلومات الدواء الأساسية" : "Basic Medication Details"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {isAr ? "الاسم التجاري، النموذج الطبي، والحالة المرتبطة" : "Medication brand name, form factor, and linked medical condition."}
+                </p>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
                   {t("patient.add.medName")}
                 </label>
                 <input
@@ -209,28 +251,74 @@ export default function AddMedicationComponent() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium placeholder:text-on-surface-variant/40"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm placeholder:text-slate-400"
                   placeholder="e.g. Lipitor / Amoxicillin"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "الاسم العلمي (البراند)" : "Generic / Scientific Name"}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {t("patient.add.formFactor")}
                 </label>
-                <input
-                  type="text"
-                  value={form.genericName}
-                  onChange={(e) => setForm({ ...form, genericName: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium placeholder:text-on-surface-variant/40"
-                  placeholder="e.g. Atorvastatin"
-                />
+                <Select value={form.type} onValueChange={(val) => setForm({ ...form, type: val })}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 h-auto text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm cursor-pointer shadow-2xs">
+                    <SelectValue placeholder={isAr ? "اختر الشكل الصيدلاني" : "Select Form Factor"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50">
+                    <SelectItem value="CAPSULE">{isAr ? "كبسولة (Capsule)" : "Capsule"}</SelectItem>
+                    <SelectItem value="TABLET">{isAr ? "قرص (Tablet)" : "Tablet"}</SelectItem>
+                    <SelectItem value="SYRUP">{isAr ? "شراب / سائل (Liquid / Syrup)" : "Liquid / Syrup"}</SelectItem>
+                    <SelectItem value="INJECTION">{isAr ? "حقنة (Injection)" : "Injection"}</SelectItem>
+                    <SelectItem value="DROP">{isAr ? "قطرات (Drops)" : "Drops"}</SelectItem>
+                    <SelectItem value="CREAM">{isAr ? "دهان / كريم (Cream)" : "Cream"}</SelectItem>
+                    <SelectItem value="OTHER">{isAr ? "غير ذلك (Other)" : "Other"}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                {t("patient.add.medCondition")} <span className="text-slate-400 font-normal">({isAr ? "اختياري" : "Optional"})</span>
+              </label>
+              <Select
+                value={selectedConditionId || "none"}
+                onValueChange={(val) => setSelectedConditionId(val === "none" ? "" : val)}
+              >
+                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 h-auto text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm cursor-pointer shadow-2xs">
+                  <SelectValue placeholder={isAr ? "اختر الحالة الطبية" : "Select Condition"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50">
+                  <SelectItem value="none">{isAr ? "بدون حالة طبية (اختياري)" : "None / Unspecified (Optional)"}</SelectItem>
+                  {conditions.map((cond) => (
+                    <SelectItem key={cond._id || cond.conditionId} value={cond._id || cond.conditionId}>
+                      {cond.diseaseName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </section>
+
+          {/* Section 2: Dosing & Schedule */}
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center">
+                <Clock className="w-5 h-5" />
+              </div>
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? "مواعيد الجرعات والجدول" : "Dosage Strength & Intake Schedule"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {isAr ? "حدد تركيز الدواء، تكرار الجرعات، والعلاقة بالوجبات" : "Configure dosage strength, daily frequency, and meal relations."}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
                   {t("patient.add.dosageStrength")}
                 </label>
                 <input
@@ -238,63 +326,65 @@ export default function AddMedicationComponent() {
                   required
                   value={form.strength}
                   onChange={(e) => setForm({ ...form, strength: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium placeholder:text-on-surface-variant/40"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm placeholder:text-slate-400"
                   placeholder="e.g. 500mg"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {t("patient.add.formFactor")}
-                </label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                >
-                  <option value="CAPSULE">{locale === "ar" ? "كبسولة" : "Capsule"}</option>
-                  <option value="TABLET">{locale === "ar" ? "قرص" : "Tablet"}</option>
-                  <option value="SYRUP">{locale === "ar" ? "شراب / سائل" : "Liquid / Syrup"}</option>
-                  <option value="INJECTION">{locale === "ar" ? "حقنة" : "Injection"}</option>
-                  <option value="DROP">{locale === "ar" ? "قطرات" : "Drops"}</option>
-                  <option value="CREAM">{locale === "ar" ? "دهان / كريم" : "Cream"}</option>
-                  <option value="OTHER">{locale === "ar" ? "غير ذلك" : "Other"}</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
                   {t("patient.add.frequency")}
                 </label>
-                <select
-                  value={form.frequency}
-                  onChange={(e) => setForm({ ...form, frequency: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                >
-                  <option value="DAILY_1">{locale === "ar" ? "مرة واحدة يومياً (كل 24 ساعة)" : "1x Daily (Every 24 Hours)"}</option>
-                  <option value="DAILY_2">{locale === "ar" ? "مرتين يومياً (كل 12 ساعة)" : "2x Daily (Every 12 Hours)"}</option>
-                  <option value="DAILY_3">{locale === "ar" ? "3 مرات يومياً (كل 8 ساعات)" : "3x Daily (Every 8 Hours)"}</option>
-                  <option value="DAILY_4">{locale === "ar" ? "4 مرات يومياً (كل 6 ساعات)" : "4x Daily (Every 6 Hours)"}</option>
-                  <option value="WEEKLY">{locale === "ar" ? "أسبوعياً (كل 7 أيام)" : "Weekly (Every 7 Days)"}</option>
-                  <option value="AS_NEEDED">{locale === "ar" ? "عند الحاجة (PRN)" : "As Needed (PRN)"}</option>
-                </select>
+                <Select value={form.frequency} onValueChange={(val) => setForm({ ...form, frequency: val })}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 h-auto text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm cursor-pointer shadow-2xs">
+                    <SelectValue placeholder={isAr ? "اختر النمط والتكرار" : "Select Frequency"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50">
+                    <SelectItem value="DAILY_1">{isAr ? "مرة واحدة يومياً (كل 24 ساعة)" : "1x Daily (Every 24 Hours)"}</SelectItem>
+                    <SelectItem value="DAILY_2">{isAr ? "مرتين يومياً (كل 12 ساعة)" : "2x Daily (Every 12 Hours)"}</SelectItem>
+                    <SelectItem value="DAILY_3">{isAr ? "3 مرات يومياً (كل 8 ساعات)" : "3x Daily (Every 8 Hours)"}</SelectItem>
+                    <SelectItem value="DAILY_4">{isAr ? "4 مرات يومياً (كل 6 ساعات)" : "4x Daily (Every 6 Hours)"}</SelectItem>
+                    <SelectItem value="WEEKLY">{isAr ? "أسبوعياً (كل 7 أيام)" : "Weekly (Every 7 Days)"}</SelectItem>
+                    <SelectItem value="AS_NEEDED">{isAr ? "عند الحاجة (PRN)" : "As Needed (PRN)"}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              {form.frequency === "AS_NEEDED" ? (
+                <div>
+                  <label className="text-xs font-extrabold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-2 block">
+                    {isAr ? "الحد الأقصى للجرعات يومياً (PRN)" : "Max Doses Allowed Per Day"}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="24"
+                    required
+                    value={form.maxDosesPerDay || 1}
+                    onChange={(e) => setForm({ ...form, maxDosesPerDay: e.target.value })}
+                    className="w-full bg-teal-500/5 dark:bg-slate-800/60 border border-teal-500/40 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-extrabold transition-all text-xs sm:text-sm"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                    {t("patient.add.doseTime")}
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={form.time}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {t("patient.add.doseTime")}
-                </label>
-                <input
-                  type="time"
-                  required
-                  value={form.time}
-                  onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "كمية الجرعة الواحدة" : "Dose Amount per Intake"}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {isAr ? `كمية الجرعة الواحدة (بالـ ${formUnit})` : `Dose Amount per Intake (in ${formUnit})`}
                 </label>
                 <input
                   type="number"
@@ -302,168 +392,196 @@ export default function AddMedicationComponent() {
                   required
                   value={form.doseAmount}
                   onChange={(e) => setForm({ ...form, doseAmount: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {t("patient.add.relationToMeals")}
+                </label>
+                <Select value={form.relationToMeals} onValueChange={(val) => setForm({ ...form, relationToMeals: val })}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 h-auto text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm cursor-pointer shadow-2xs">
+                    <SelectValue placeholder={isAr ? "العلاقة بالوجبات" : "Relation to Meals"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50">
+                    <SelectItem value="NONE">{isAr ? "لا يوجد علاقة بالوجبات" : "None"}</SelectItem>
+                    <SelectItem value="BEFORE_MEALS">{isAr ? "قبل الوجبات" : "Before Meals"}</SelectItem>
+                    <SelectItem value="AFTER_MEALS">{isAr ? "بعد الوجبات" : "After Meals"}</SelectItem>
+                    <SelectItem value="WITH_FOOD">{isAr ? "مع الطعام" : "With Food"}</SelectItem>
+                    <SelectItem value="ON_EMPTY_STOMACH">{isAr ? "على معدة فارغة" : "On Empty Stomach"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 3: Stock & Inventory */}
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center">
+                <PackageCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? "إدارة المخزون والتاريخ" : "Stock Inventory & Dates"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {isAr ? "تتبع الكميات المتوفرة، حد التنبيه، وتاريخ الانتهاء" : "Track initial stock quantity, refill notifications, and expiration dates."}
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {t("patient.add.relationToMeals")}
-                </label>
-                <select
-                  value={form.relationToMeals}
-                  onChange={(e) => setForm({ ...form, relationToMeals: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                >
-                  <option value="NONE">{locale === "ar" ? "لا يوجد" : "None"}</option>
-                  <option value="BEFORE_MEALS">{locale === "ar" ? "قبل الوجبات" : "Before Meals"}</option>
-                  <option value="AFTER_MEALS">{locale === "ar" ? "بعد الوجبات" : "After Meals"}</option>
-                  <option value="WITH_FOOD">{locale === "ar" ? "مع الطعام" : "With Food"}</option>
-                  <option value="ON_EMPTY_STOMACH">{locale === "ar" ? "على معدة فارغة" : "On Empty Stomach"}</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {t("patient.add.totalDoses")}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {t("patient.add.totalDoses")} ({formUnit})
                 </label>
                 <input
                   type="number"
                   required
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value, currentStock: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium placeholder:text-on-surface-variant/40"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm placeholder:text-slate-400"
                   placeholder="e.g. 60"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "حد إشعار التعبئة" : "Refill Threshold"}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {isAr ? "حد إشعار التعبئة (Refill Threshold)" : "Refill Threshold"}
                 </label>
                 <input
                   type="number"
                   required
                   value={form.refillThreshold}
                   onChange={(e) => setForm({ ...form, refillThreshold: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm"
                   placeholder="e.g. 5"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "تاريخ البدء" : "Start Date"}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {isAr ? "تاريخ البدء" : "Start Date"}
                 </label>
                 <input
                   type="date"
                   required
                   value={form.startDate}
                   onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "تاريخ الانتهاء (اختياري)" : "End Date (Optional)"}
-                </label>
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "تاريخ انتهاء الصلاحية" : "Expiration Date"}
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  {isAr ? "تاريخ انتهاء الصلاحية" : "Expiration Date"}
                 </label>
                 <input
                   type="date"
                   required
                   value={form.expirationDate}
                   onChange={(e) => setForm({ ...form, expirationDate: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium transition-all text-xs sm:text-sm"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "الطبيب المعالج" : "Prescribing Doctor"}
-                </label>
-                <input
-                  type="text"
-                  value={form.prescribingDoctor}
-                  onChange={(e) => setForm({ ...form, prescribingDoctor: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                  placeholder="e.g. Dr. Ahmed Hassan"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "الصيدلية" : "Pharmacy"}
-                </label>
-                <input
-                  type="text"
-                  value={form.pharmacyName}
-                  onChange={(e) => setForm({ ...form, pharmacyName: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                  placeholder="e.g. El-Ezaby Pharmacy"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                  {locale === "ar" ? "رقم الوصفة (Rx Number)" : "Rx Number"}
-                </label>
-                <input
-                  type="text"
-                  value={form.rxNumber}
-                  onChange={(e) => setForm({ ...form, rxNumber: e.target.value })}
-                  className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                  placeholder="e.g. RX-992014"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                {locale === "ar" ? "الملاحظات والتعليمات الخاصّة" : "Instructions & Special Notes"}
-              </label>
-              <textarea
-                rows={3}
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                className="w-full bg-surface-container-low dark:bg-slate-900 border border-outline-variant/30 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 transition-all outline-none text-on-surface text-sm font-medium"
-                placeholder={locale === "ar" ? "أدخل أي تعليمات خاصة للاستخدام أو تحذيرات..." : "Enter specific usage instructions, dosage notes or warnings..."}
-              />
-            </div>
-
-            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center gap-3.5 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-800">
               <input
                 type="checkbox"
                 id="isChronic"
                 checked={form.isChronic}
                 onChange={(e) => setForm({ ...form, isChronic: e.target.checked })}
-                className="w-5 h-5 accent-teal-600 rounded cursor-pointer"
+                className="w-5 h-5 accent-teal-600 rounded-lg cursor-pointer shrink-0"
               />
-              <label htmlFor="isChronic" className="text-sm font-bold text-on-surface cursor-pointer select-none">
-                {locale === "ar" ? "علاج مزمن (استخدام مستمر)" : "Chronic Medication (Ongoing long-term treatment)"}
+              <label htmlFor="isChronic" className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 cursor-pointer select-none">
+                {isAr ? "علاج مزمن (استخدام مستمر طويل الأجل)" : "Chronic Medication (Ongoing long-term treatment)"}
               </label>
             </div>
+          </section>
 
-            <Button
+          {/* Section 4: Metadata & Special Notes */}
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 flex items-center justify-center">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? "التعليمات والملاحظات الإضافية" : "Special Instructions & Provider Notes"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {isAr ? "إرشادات الاستخدام المخصصة ومعلومات الطبيب والصيدلية" : "Enter specific dosage instructions, warnings, or specialist notes."}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span>{isAr ? "الطبيب المعالج" : "Prescribing Doctor"}</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                    <Lock className="w-3 h-3" />
+                    {isAr ? "قراءة فقط" : "Read Only"}
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={form.prescribingDoctor}
+                  className="w-full bg-slate-100/90 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed text-xs sm:text-sm rounded-2xl px-4 py-3.5 font-medium outline-none"
+                  placeholder={isAr ? "سيتم تفعيلها في تحديث قادم..." : "Will be implemented in a future update"}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span>{isAr ? "الصيدلية المزودة" : "Dispensing Pharmacy"}</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                    <Lock className="w-3 h-3" />
+                    {isAr ? "قراءة فقط" : "Read Only"}
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={form.pharmacyName}
+                  className="w-full bg-slate-100/90 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed text-xs sm:text-sm rounded-2xl px-4 py-3.5 font-medium outline-none"
+                  placeholder={isAr ? "سيتم تفعيلها في تحديث قادم..." : "Will be implemented in a future update"}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                {isAr ? "الملاحظات والتعليمات الخاصة" : "Instructions & Special Notes"}
+              </label>
+              <textarea
+                rows={3}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 rounded-2xl px-4 py-3.5 outline-none text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm placeholder:text-slate-400 transition-all resize-none"
+                placeholder={isAr ? "أدخل أي تعليمات خاصة للاستخدام أو تحذيرات طارئة..." : "Enter specific usage instructions, dosage notes or warnings..."}
+              />
+            </div>
+          </section>
+
+          {/* Action Buttons */}
+          <div className="pt-2">
+            <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-600/20 transition-all mt-8 h-auto text-base"
+              className="w-full py-4 bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold rounded-2xl shadow-lg shadow-teal-500/25 transition-all duration-200 text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {submitting ? t("patient.add.submitting") : t("patient.add.submit")}
-            </Button>
-          </form>
-        </Card>
+              <Plus className="w-5 h-5" />
+              <span>{submitting ? (isAr ? "جاري الإضافة..." : "Adding Medication...") : t("patient.add.submit")}</span>
+            </button>
+          </div>
+        </form>
       </div>
     </MainLayout>
   );

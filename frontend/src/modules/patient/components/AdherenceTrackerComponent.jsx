@@ -140,7 +140,7 @@ export default function AdherenceTrackerComponent() {
       const isSkipped = d.status === "SKIPPED";
       const isMissed = d.status === "MISSED";
       const timeFormatted = d.scheduledFor
-        ? new Date(d.scheduledFor).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        ? new Date(d.scheduledFor).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })
         : "08:00 AM";
 
       return {
@@ -149,7 +149,7 @@ export default function AdherenceTrackerComponent() {
         timeFrameLabel: isAr ? "اليوم" : "Today",
         scheduled: timeFormatted,
         takenAt: isTaken
-          ? (d.takenAt ? new Date(d.takenAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : timeFormatted)
+          ? (d.takenAt ? new Date(d.takenAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) : timeFormatted)
           : isSkipped ? (isAr ? "تم التخطي" : "Skipped") : "—",
         status: isTaken ? "On Time" : isSkipped ? "Skipped" : isMissed ? "Missed" : "Scheduled",
         rawStatus: d.status,

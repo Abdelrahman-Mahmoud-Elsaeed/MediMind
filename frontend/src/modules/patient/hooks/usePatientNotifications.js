@@ -38,7 +38,7 @@ export function usePatientNotifications() {
     doses.forEach((dose) => {
       if (dose.status === "MISSED") {
         const timeFormatted = dose.scheduledFor
-          ? new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          ? new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
           : "today";
         items.push({
           id: `missed-${dose.doseEventId || dose.id}`,

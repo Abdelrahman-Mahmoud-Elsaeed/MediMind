@@ -24,10 +24,10 @@ export function useAddMedication(onSuccess) {
 
   const [form, setForm] = useState({
     name: "",
-    genericName: "",
     strength: "500mg",
-    frequency: "DAILY",
+    frequency: "DAILY_1",
     dosesPerDay: 1,
+    maxDosesPerDay: 1,
     time: "08:00",
     stock: "60",
     currentStock: "60",
@@ -41,15 +41,8 @@ export function useAddMedication(onSuccess) {
     notes: "",
     prescribingDoctor: "",
     pharmacyName: "",
-    rxNumber: "",
     isChronic: true
   });
-
-  useEffect(() => {
-    if (conditions.length > 0 && !selectedConditionId) {
-      setSelectedConditionId(conditions[0]._id || conditions[0].conditionId);
-    }
-  }, [conditions, selectedConditionId]);
 
   const triggerScan = () => {
     setIsScanning(true);
@@ -101,7 +94,7 @@ export function useAddMedication(onSuccess) {
       name: form.name,
       strength: form.strength,
       formType: form.type,
-      frequency: form.frequency === "2x Daily" ? "DAILY" : form.frequency,
+      frequency: (form.frequency?.startsWith("DAILY") || form.frequency === "2x Daily") ? "DAILY" : form.frequency,
       firstDoseTime: form.time,
       relationToMeals: form.relationToMeals,
       initialQuantity: parseInt(form.stock) || 60,
@@ -110,23 +103,13 @@ export function useAddMedication(onSuccess) {
 
     const validResult = addMedicationSchema.safeParse(rawData);
     if (!validResult.success) {
-      setValidationError(validResult.error.errors[0].message);
+      const errMsg = validResult.error?.issues?.[0]?.message || validResult.error?.errors?.[0]?.message || "Validation failed";
+      setValidationError(errMsg);
       return;
     }
 
     try {
-      let conditionId = selectedConditionId;
-      if (!conditionId) {
-        // Create default condition
-        const condRes = await addConditionMutation.mutateAsync({
-          diseaseName: locale === "ar" ? "رعاية صحية عامة" : "General Health Care",
-          isChronic: true
-        });
-        const condData = condRes?.data || condRes;
-        if (condData?.conditionId) {
-          conditionId = condData.conditionId;
-        }
-      }
+      const conditionId = selectedConditionId || undefined;
 
       let dosesCount = parseInt(form.dosesPerDay) || 1;
       let freq = "DAILY";
@@ -148,7 +131,7 @@ export function useAddMedication(onSuccess) {
         dosesCount = 1;
       } else if (form.frequency === "AS_NEEDED") {
         freq = "AS_NEEDED";
-        dosesCount = 1;
+        dosesCount = parseInt(form.maxDosesPerDay) || 1;
       }
 
       // Compute dose times array automatically
@@ -165,7 +148,6 @@ export function useAddMedication(onSuccess) {
       const payload = {
         conditionId,
         name: form.name,
-        genericName: form.genericName,
         formType: form.type,
         isChronic: Boolean(form.isChronic),
         inventory: {
@@ -178,8 +160,7 @@ export function useAddMedication(onSuccess) {
           relationToMeals: form.relationToMeals,
           notes: form.notes || form.strength,
           prescribingDoctor: form.prescribingDoctor,
-          pharmacyName: form.pharmacyName,
-          rxNumber: form.rxNumber
+          pharmacyName: form.pharmacyName
         },
         schedule: {
           frequency: freq,

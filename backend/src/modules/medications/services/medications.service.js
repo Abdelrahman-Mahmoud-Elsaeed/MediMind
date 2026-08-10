@@ -61,10 +61,12 @@ class MedicationsService {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    // Verify condition exists
-    const condition = await MedicalCondition.findOne({ _id: payload.conditionId, patientId });
-    if (!condition) {
-      throw new AppError('Medical condition not found for this patient', 404, 'CONDITION_NOT_FOUND');
+    // Verify condition exists if provided
+    if (payload.conditionId) {
+      const condition = await MedicalCondition.findOne({ _id: payload.conditionId, patientId });
+      if (!condition) {
+        throw new AppError('Medical condition not found for this patient', 404, 'CONDITION_NOT_FOUND');
+      }
     }
 
     // Validate chronic / endDate logic
@@ -82,7 +84,7 @@ class MedicationsService {
 
     const medication = new Medication({
       patientId,
-      conditionId: payload.conditionId,
+      conditionId: payload.conditionId || null,
       addedBy: userAccountId,
       name: payload.name,
       imageURL: payload.imageURL,

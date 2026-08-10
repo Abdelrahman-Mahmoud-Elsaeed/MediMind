@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { AppDialog } from '@/shared/components/ui/AppDialog';
 import { AppButton } from '@/shared/components/ui/AppButton';
 import { AppInput } from '@/shared/components/ui/AppInput';
+import { AppSelect } from '@/shared/components/ui/AppSelect';
+import { Controller } from 'react-hook-form';
 const addMedicationSchema = z.object({
     name: z.string().min(1, 'Medication name is required'),
     formType: z.enum(['TABLET', 'CAPSULE', 'SYRUP', 'INJECTION', 'DROP', 'CREAM', 'OTHER']),
@@ -23,7 +25,7 @@ const addMedicationSchema = z.object({
     expirationDate: z.string().min(1, 'Expiration date is required'),
 });
 export const AddMedicationModal = ({ isOpen, onClose, onAddMedication, }) => {
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting }, } = useForm({
+    const { register, control, handleSubmit, reset, formState: { errors, isSubmitting }, } = useForm({
         resolver: zodResolver(addMedicationSchema),
         defaultValues: {
             name: '',
@@ -96,20 +98,26 @@ export const AddMedicationModal = ({ isOpen, onClose, onAddMedication, }) => {
 
         {/* Form Type & Chronic Toggle */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="w-full space-y-1.5 text-start">
-            <label className="block text-xs font-bold text-on-surface-variant">
-              Form Type
-            </label>
-            <select {...register('formType')} className="w-full h-11 px-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest dark:bg-surface-container-low text-sm font-semibold text-on-surface focus:ring-2 focus:ring-primary focus:outline-hidden transition-colors cursor-pointer">
-              <option value="TABLET">Tablet</option>
-              <option value="CAPSULE">Capsule</option>
-              <option value="SYRUP">Syrup</option>
-              <option value="INJECTION">Injection</option>
-              <option value="DROP">Drop</option>
-              <option value="CREAM">Cream</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
+          <Controller
+            name="formType"
+            control={control}
+            render={({ field }) => (
+              <AppSelect
+                label="Form Type"
+                value={field.value}
+                onValueChange={field.onChange}
+                options={[
+                  { value: 'TABLET', label: 'Tablet' },
+                  { value: 'CAPSULE', label: 'Capsule' },
+                  { value: 'SYRUP', label: 'Syrup' },
+                  { value: 'INJECTION', label: 'Injection' },
+                  { value: 'DROP', label: 'Drop' },
+                  { value: 'CREAM', label: 'Cream' },
+                  { value: 'OTHER', label: 'Other' },
+                ]}
+              />
+            )}
+          />
 
           <div className="flex items-center gap-3 pt-6">
             <input type="checkbox" id="isChronic" {...register('isChronic')} className="w-5 h-5 rounded-lg text-primary border-outline-variant focus:ring-primary cursor-pointer"/>
@@ -128,34 +136,46 @@ export const AddMedicationModal = ({ isOpen, onClose, onAddMedication, }) => {
 
         {/* Instructions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="w-full space-y-1.5 text-start">
-            <label className="block text-xs font-bold text-on-surface-variant">
-              Relation To Meals
-            </label>
-            <select {...register('relationToMeals')} className="w-full h-11 px-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest dark:bg-surface-container-low text-sm font-semibold text-on-surface focus:ring-2 focus:ring-primary focus:outline-hidden transition-colors cursor-pointer">
-              <option value="AFTER_MEALS">After Meals</option>
-              <option value="BEFORE_MEALS">Before Meals</option>
-              <option value="WITH_FOOD">With Food</option>
-              <option value="ON_EMPTY_STOMACH">On Empty Stomach</option>
-              <option value="NONE">None / No Preference</option>
-            </select>
-          </div>
+          <Controller
+            name="relationToMeals"
+            control={control}
+            render={({ field }) => (
+              <AppSelect
+                label="Relation To Meals"
+                value={field.value}
+                onValueChange={field.onChange}
+                options={[
+                  { value: 'AFTER_MEALS', label: 'After Meals' },
+                  { value: 'BEFORE_MEALS', label: 'Before Meals' },
+                  { value: 'WITH_FOOD', label: 'With Food' },
+                  { value: 'ON_EMPTY_STOMACH', label: 'On Empty Stomach' },
+                  { value: 'NONE', label: 'None / No Preference' },
+                ]}
+              />
+            )}
+          />
 
           <AppInput label="Instructions / Notes" placeholder="e.g. Take after meals" {...register('notes')}/>
         </div>
 
         {/* Schedule */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="w-full space-y-1.5 text-start">
-            <label className="block text-xs font-bold text-on-surface-variant">
-              Frequency
-            </label>
-            <select {...register('frequency')} className="w-full h-11 px-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest dark:bg-surface-container-low text-xs font-semibold text-on-surface cursor-pointer">
-              <option value="DAILY">Daily</option>
-              <option value="WEEKLY">Weekly</option>
-              <option value="AS_NEEDED">As Needed</option>
-            </select>
-          </div>
+          <Controller
+            name="frequency"
+            control={control}
+            render={({ field }) => (
+              <AppSelect
+                label="Frequency"
+                value={field.value}
+                onValueChange={field.onChange}
+                options={[
+                  { value: 'DAILY', label: 'Daily' },
+                  { value: 'WEEKLY', label: 'Weekly' },
+                  { value: 'AS_NEEDED', label: 'As Needed' },
+                ]}
+              />
+            )}
+          />
 
           <AppInput label="Doses Per Day" type="number" step="1" min="1" max="24" placeholder="e.g. 2" {...register('dosesPerDay', { valueAsNumber: true })} error={errors.dosesPerDay?.message}/>
 

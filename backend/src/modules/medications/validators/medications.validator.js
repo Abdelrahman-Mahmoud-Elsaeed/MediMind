@@ -4,7 +4,7 @@ const timeRegex = /^([0-1]\d|2[0-3]):[0-5]\d$/;
 
 const createMedicationSchema = z.object({
   patientId: z.string().optional(),
-  conditionId: z.string().min(1, 'conditionId is required'),
+  conditionId: z.string().optional().nullable(),
   name: z.string().min(1, 'Medication name is required'),
   imageURL: z.string().url().optional().nullable(),
   formType: z.enum(['TABLET', 'CAPSULE', 'SYRUP', 'INJECTION', 'DROP', 'CREAM', 'OTHER']),

@@ -3,12 +3,35 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { WelcomeBanner, TimelineCard, HealthSummary, CaregiverCard, QuickActions, } from '@/modules/dashboard';
 import { DashboardMedicationCabinet as MedicationCabinet } from '@/modules/medication';
+import { usePatientDashboard } from '@/modules/patient/hooks/usePatientDashboard';
 import { useTranslation } from '@/shared/lib/i18nContext';
 
 export function PlantGrowthTimeline() {
   const { locale } = useTranslation();
   const isRtl = locale === 'ar';
-  const [activeStep, setActiveStep] = useState(2);
+  const { doses = [], takenDoses = 0, totalDoses = 0 } = usePatientDashboard();
+
+  // Compute total adherence days count based purely on taken doses
+  const adherenceDays = React.useMemo(() => {
+    if (!doses || doses.length === 0 || takenDoses === 0) return 0;
+    let takenCount = 0;
+    for (const d of doses) {
+      if (d.status === "TAKEN") takenCount++;
+    }
+    return takenCount;
+  }, [doses, takenDoses]);
+
+  // Compute milestone step based purely on DAYS count
+  const realStep = React.useMemo(() => {
+    if (adherenceDays >= 90) return 4; // Day 90+
+    if (adherenceDays >= 60) return 3; // Day 60
+    if (adherenceDays >= 30) return 2; // Day 30
+    if (adherenceDays >= 1) return 1;  // Day 7 (Initial day/week)
+    return 0;                           // Day 0
+  }, [adherenceDays]);
+
+  const [userSelectedStep, setUserSelectedStep] = useState(null);
+  const activeStep = userSelectedStep !== null ? userSelectedStep : realStep;
   const [celebrate, setCelebrate] = useState(false);
 
   const milestones = [
@@ -77,7 +100,7 @@ export function PlantGrowthTimeline() {
   const current = milestones[activeStep];
 
   const handleStepClick = (stepIndex) => {
-    setActiveStep(stepIndex);
+    setUserSelectedStep(stepIndex);
     setCelebrate(true);
     setTimeout(() => setCelebrate(false), 1500);
   };
