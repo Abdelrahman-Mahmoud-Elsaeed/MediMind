@@ -58,12 +58,16 @@ export function ToastNotification({ toast, isClosing, onClose }) {
     'pointer-events-auto w-[min(92vw,24rem)] overflow-hidden rounded-2xl border shadow-[0_18px_45px_rgba(15,23,42,0.14)] backdrop-blur-xl',
     style.borderClassName,
     style.bgClassName,
-    isClosing ? 'translate-y-2 opacity-0' : isVisible ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0',
+    isClosing ? 'translate-y-4 opacity-0' : isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
     'transition-all duration-250 ease-out',
   ].join(' ');
 
+  const positionWrapperClassName = toast.isRtl
+    ? 'fixed bottom-5 left-5 z-120 flex justify-start pointer-events-none'
+    : 'fixed bottom-5 right-5 z-120 flex justify-end pointer-events-none';
+
   return (
-    <div className="fixed inset-x-0 top-3 z-120 flex justify-center px-3 sm:justify-end sm:right-4 sm:left-auto sm:top-5 sm:px-0">
+    <div className={positionWrapperClassName}>
       <div className={containerClassName} dir={toast.isRtl ? 'rtl' : 'ltr'} role={toast.type === 'error' ? 'alert' : 'status'} aria-live={toast.type === 'error' ? 'assertive' : 'polite'}>
         <div className="flex items-start gap-3 px-4 py-3.5 sm:px-4.5 sm:py-4">
           <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50/80 dark:bg-slate-800/70 ${style.iconClassName}`}>

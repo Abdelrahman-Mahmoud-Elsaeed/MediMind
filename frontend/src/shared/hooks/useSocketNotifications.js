@@ -36,13 +36,21 @@ export function useSocketNotifications() {
 
     if (!socket) return;
 
-    // Listener for new incoming real-time notifications
     const handleNewNotification = (newNotif) => {
-      // Show real-time Toast notification popup
+      const isAr =
+        typeof document !== 'undefined' &&
+        (document.documentElement.dir === 'rtl' ||
+          document.dir === 'rtl' ||
+          document.documentElement.getAttribute('lang') === 'ar');
+
+      const title = isAr && newNotif.titleAr ? newNotif.titleAr : newNotif.title;
+      const message = isAr && newNotif.messageAr ? newNotif.messageAr : newNotif.message;
+
       showNotification({
-        title: newNotif.title,
-        message: newNotif.message,
+        title,
+        message,
         type: newNotif.type === 'RELATIONSHIP_REJECTED' ? 'warning' : 'info',
+        isRtl: isAr,
       });
 
       // Prepend new notification into React Query cache immediately
