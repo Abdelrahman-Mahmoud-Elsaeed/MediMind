@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/shared/lib/apiClient';
 import { getSocket } from '@/shared/lib/socketClient';
+import { showNotification } from '@/shared/components/ui/toast';
 
 export const NOTIFICATION_KEYS = {
   all: ['notifications'],
@@ -37,6 +38,13 @@ export function useSocketNotifications() {
 
     // Listener for new incoming real-time notifications
     const handleNewNotification = (newNotif) => {
+      // Show real-time Toast notification popup
+      showNotification({
+        title: newNotif.title,
+        message: newNotif.message,
+        type: newNotif.type === 'RELATIONSHIP_REJECTED' ? 'warning' : 'info',
+      });
+
       // Prepend new notification into React Query cache immediately
       queryClient.setQueryData(NOTIFICATION_KEYS.all, (oldData = []) => {
         const list = Array.isArray(oldData) ? oldData : [];

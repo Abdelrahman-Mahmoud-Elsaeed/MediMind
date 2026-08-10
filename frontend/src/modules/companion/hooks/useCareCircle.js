@@ -77,7 +77,7 @@ export function useCareCircle() {
     try {
       await updateStatusMutation.mutateAsync({ relationshipId, status });
     } catch (err) {
-      alert(err?.response?.data?.message || "Failed to update request status");
+      showError(err?.response?.data?.message || "Failed to update request status", "Error");
     }
   };
 
