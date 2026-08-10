@@ -30,7 +30,8 @@ export default function CaregiverNotifications() {
   const { data: relationships = [], isLoading } = useCaregiverRelationshipsQuery();
   const updateStatusMutation = useUpdateRelationshipStatusMutation();
 
-  const pendingInvites = relationships.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT');
+  const pendingIncoming = relationships.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT');
+  const pendingOutgoing = relationships.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
   const activePatients = relationships.filter((r) => r.status === 'ACCEPTED');
 
   const handleResponse = (relationshipId, status) => {
@@ -72,9 +73,9 @@ export default function CaregiverNotifications() {
               }`}
             >
               <span>{isAr ? 'طلبات الربط' : 'Invites'}</span>
-              {pendingInvites.length > 0 && (
+              {pendingIncoming.length > 0 && (
                 <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold">
-                  {pendingInvites.length}
+                  {pendingIncoming.length}
                 </span>
               )}
             </button>
@@ -91,7 +92,7 @@ export default function CaregiverNotifications() {
 
             {isLoading ? (
               <div className="p-8 bg-surface-container-low animate-pulse rounded-3xl" />
-            ) : pendingInvites.length === 0 ? (
+            ) : pendingIncoming.length === 0 && pendingOutgoing.length === 0 ? (
               <AppCard className="p-6 text-center border border-outline-variant/30 rounded-3xl">
                 <ShieldCheck className="w-10 h-10 text-emerald-500 mx-auto mb-2 opacity-80" />
                 <p className="text-sm font-semibold text-on-surface-variant">
@@ -100,9 +101,10 @@ export default function CaregiverNotifications() {
               </AppCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {pendingInvites.map((invite) => {
+                {/* Incoming Requests */}
+                {pendingIncoming.map((invite) => {
                   const patientName = invite.patientId 
-                    ? `${invite.patientId.firstName || ''} ${invite.patientId.lastName || ''}`.trim()
+                    ? `${invite.patientId.firstName || ''} ${invite.patientId.lastName || ''}`.trim() || invite.patientId.email
                     : (isAr ? 'مريض جديد' : 'New Patient');
                   const phone = invite.patientId?.phone || '';
 
@@ -128,7 +130,7 @@ export default function CaregiverNotifications() {
                         </div>
 
                         <AppBadge variant="warning">
-                          {isAr ? 'معلق' : 'Pending'}
+                          {isAr ? 'طلب جديد' : 'Incoming Request'}
                         </AppBadge>
                       </div>
 
@@ -149,6 +151,40 @@ export default function CaregiverNotifications() {
                           <UserX className="w-4 h-4" />
                           <span>{isAr ? 'رفض' : 'Decline'}</span>
                         </button>
+                      </div>
+                    </AppCard>
+                  );
+                })}
+
+                {/* Outgoing Requests */}
+                {pendingOutgoing.map((invite) => {
+                  const patientName = invite.patientId 
+                    ? `${invite.patientId.firstName || ''} ${invite.patientId.lastName || ''}`.trim() || invite.patientId.email
+                    : (isAr ? 'مريض' : 'Patient');
+
+                  return (
+                    <AppCard 
+                      key={invite.relationshipId}
+                      className="p-5 border border-outline-variant/30 bg-surface-container-low/40 rounded-3xl flex flex-col justify-between gap-4 shadow-xs"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                            <Clock className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-on-surface text-base">
+                              {patientName}
+                            </h3>
+                            <p className="text-xs text-on-surface-variant font-medium">
+                              {isAr ? 'تم إرسال دعوة للمريض' : 'Invitation sent to patient'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <AppBadge variant="warning">
+                          {isAr ? 'بانتظار موافقة المريض' : 'Pending Patient Confirmation'}
+                        </AppBadge>
                       </div>
                     </AppCard>
                   );

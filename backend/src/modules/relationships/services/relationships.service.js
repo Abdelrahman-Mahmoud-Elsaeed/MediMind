@@ -25,6 +25,10 @@ class RelationshipsService {
         throw new AppError('Account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
       }
 
+      if (targetAccount._id.toString() === userAccountId.toString()) {
+        throw new AppError('Cannot send a connection request to yourself', 400, 'SELF_RELATIONSHIP_NOT_ALLOWED');
+      }
+
       if (targetAccount.role === 'CAREGIVER' || targetAccount.role === 'FAMILY_CAREGIVER') {
         caregiver = await Caregiver.findOne({ accountId: targetAccount._id });
         caregiverType = 'FamilyCaregiver';
@@ -64,6 +68,10 @@ class RelationshipsService {
         throw new AppError('Patient account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
       }
 
+      if (targetAccount._id.toString() === userAccountId.toString()) {
+        throw new AppError('Cannot send a connection request to yourself', 400, 'SELF_RELATIONSHIP_NOT_ALLOWED');
+      }
+
       patient = await Patient.findOne({ accountId: targetAccount._id });
       if (!patient) {
         throw new AppError('Patient profile not found for target account', 404, 'PATIENT_NOT_FOUND');
@@ -80,20 +88,23 @@ class RelationshipsService {
       deletedAt: null
     });
 
+    const initiatedByRole = userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER';
+
     if (existing) {
       if (existing.status === 'PENDING') {
-        return existing;
+        throw new AppError('A connection request is already pending between this patient and caregiver', 400, 'PENDING_REQUEST_EXISTS');
       }
       if (existing.status === 'ACCEPTED') {
-        throw new AppError('Relationship already active', 400, 'RELATIONSHIP_EXISTS');
+        throw new AppError('An active relationship already exists between this patient and caregiver', 400, 'RELATIONSHIP_EXISTS');
       }
 
       const allowedTransitions = ALLOWED_STATUS_TRANSITIONS[existing.status];
       if (allowedTransitions && allowedTransitions.includes('PENDING')) {
         existing.status = 'PENDING';
-        existing.relation = relation;
-        existing.initiatedBy = userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER';
+        existing.relation = relation || existing.relation || (userRole === 'PATIENT' ? 'Family Member' : 'Patient');
+        existing.initiatedBy = initiatedByRole;
         existing.permissions = permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType];
+        existing.deletedAt = null;
         await existing.save();
         return existing;
       }
@@ -104,9 +115,9 @@ class RelationshipsService {
       patientId: patient._id,
       caregiverId: caregiver._id,
       caregiverType,
-      relation,
+      relation: relation || (userRole === 'PATIENT' ? 'Family Member' : 'Patient'),
       status: 'PENDING',
-      initiatedBy: userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER',
+      initiatedBy: initiatedByRole,
       permissions: permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType]
     });
 
@@ -115,7 +126,7 @@ class RelationshipsService {
   }
 
   /**
-   * Lists all active relationships filtered by role and status.
+   * Lists all active or pending relationships filtered by role and status.
    */
   async listRelationships(accountId, role, status) {
     let query = { deletedAt: null };
@@ -153,22 +164,54 @@ class RelationshipsService {
     }
 
     const list = await Relationship.find(query)
-      .populate({ path: 'patientId', select: 'firstName lastName phone' })
-      .populate({ path: 'caregiverId', select: 'firstName lastName phone' });
+      .populate({
+        path: 'patientId',
+        select: 'firstName lastName phone accountId',
+        populate: { path: 'accountId', select: 'email role' }
+      })
+      .populate({
+        path: 'caregiverId',
+        select: 'firstName lastName phone accountId',
+        populate: { path: 'accountId', select: 'email role' }
+      });
 
-    return list.map(item => ({
-      relationshipId: item._id,
-      patientId: item.patientId,
-      caregiverId: item.caregiverId,
-      relation: item.relation,
-      status: item.status,
-      permissions: item.permissions,
-      initiatedBy: item.initiatedBy || 'PATIENT'
-    }));
+    return list.map(item => {
+      const patientObj = item.patientId ? {
+        _id: item.patientId._id,
+        id: item.patientId._id,
+        firstName: item.patientId.firstName,
+        lastName: item.patientId.lastName,
+        phone: item.patientId.phone,
+        email: item.patientId.accountId?.email || ''
+      } : null;
+
+      const caregiverObj = item.caregiverId ? {
+        _id: item.caregiverId._id,
+        id: item.caregiverId._id,
+        firstName: item.caregiverId.firstName,
+        lastName: item.caregiverId.lastName,
+        phone: item.caregiverId.phone,
+        email: item.caregiverId.accountId?.email || ''
+      } : null;
+
+      return {
+        relationshipId: item._id,
+        id: item._id,
+        patientId: patientObj,
+        caregiverId: caregiverObj,
+        caregiverType: item.caregiverType,
+        relation: item.relation,
+        status: item.status,
+        permissions: item.permissions,
+        initiatedBy: item.initiatedBy || 'PATIENT',
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      };
+    });
   }
 
   /**
-   * Updates status of an invitation (e.g. Caregiver or Patient accepting/rejecting request).
+   * Updates status of an invitation (Recipient accepting/rejecting request).
    */
   async updateStatus(userAccountId, userRole, relationshipId, status) {
     let relationship;
@@ -201,6 +244,16 @@ class RelationshipsService {
 
     if (!relationship) {
       throw new AppError('Relationship not found', 404, 'RELATIONSHIP_NOT_FOUND');
+    }
+
+    // Verify recipient permissions: only the recipient of the request can Accept or Reject
+    if (['ACCEPTED', 'REJECTED'].includes(status) && relationship.status === 'PENDING') {
+      if (relationship.initiatedBy === 'PATIENT' && userRole === 'PATIENT') {
+        throw new AppError('Only the recipient caregiver can accept or reject this request', 403, 'FORBIDDEN');
+      }
+      if (relationship.initiatedBy === 'CAREGIVER' && userRole !== 'PATIENT') {
+        throw new AppError('Only the recipient patient can accept or reject this request', 403, 'FORBIDDEN');
+      }
     }
 
     const allowed = ALLOWED_STATUS_TRANSITIONS[relationship.status];
@@ -240,6 +293,8 @@ class RelationshipsService {
 
   /**
    * Helper to check access permissions in other modules.
+   * Reads the permission key directly from the Relationship document.
+   * Returns false if no active relationship exists or the permission is not granted.
    */
   async checkCaregiverAccess(patientId, caregiverAccountId, requiredPermission) {
     let caregiver = await Caregiver.findOne({ accountId: caregiverAccountId });
@@ -265,15 +320,11 @@ class RelationshipsService {
     });
 
     if (!relationship) return false;
-    
-    if (relationship.permissions && relationship.permissions[requiredPermission] !== undefined) {
-      return !!relationship.permissions[requiredPermission];
-    }
-    if (['canEditMedication', 'canDeleteMedication', 'canOrderRefills'].includes(requiredPermission)) {
-      return !!(relationship.permissions && relationship.permissions.canAddMedication);
-    }
 
-    return true;
+    // Read the permission key directly — all 10 keys are now explicit in the schema.
+    // If the key is missing for any reason, default to denied (false).
+    const value = relationship.permissions?.[requiredPermission];
+    return value === true;
   }
 }
 

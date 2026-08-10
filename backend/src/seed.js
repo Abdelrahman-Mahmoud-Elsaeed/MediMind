@@ -423,7 +423,18 @@ async function seed() {
           caregiverType: "FamilyCaregiver",
           relation: "Family Member",
           status: "ACCEPTED",
-          permissions: { canAddMedication: true, canEditMedication: true, canDeleteMedication: true, canViewMedicalRecords: true, canOrderRefills: true },
+          permissions: {
+            canViewMedications:      true,
+            canAddMedication:        true,
+            canEditMedication:       true,
+            canDeleteMedication:     true,
+            canViewMedicalRecords:   true,
+            canEditMedicalRecords:   false,
+            canViewDoseSchedule:     true,
+            canConfirmDose:          true,
+            canOrderRefills:         true,
+            canReceiveNotifications: true,
+          },
         });
       }
 
@@ -437,7 +448,18 @@ async function seed() {
             caregiverType: "FamilyCaregiver",
             relation: "Primary Caregiver",
             status: "PENDING",
-            permissions: { canAddMedication: true, canEditMedication: true, canDeleteMedication: true, canViewMedicalRecords: false, canOrderRefills: true },
+            permissions: {
+              canViewMedications:      true,
+              canAddMedication:        false,
+              canEditMedication:       false,
+              canDeleteMedication:     false,
+              canViewMedicalRecords:   true,
+              canEditMedicalRecords:   false,
+              canViewDoseSchedule:     true,
+              canConfirmDose:          false,
+              canOrderRefills:         false,
+              canReceiveNotifications: true,
+            },
           });
         }
       }

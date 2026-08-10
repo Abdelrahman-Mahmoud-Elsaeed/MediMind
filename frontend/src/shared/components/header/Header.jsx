@@ -11,55 +11,44 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 // ==========================================
 // SUB-COMPONENT: NOTIFICATION POPOVER MENU
 // ==========================================
+import { 
+  usePatientRelationshipsQuery, 
+  useUpdateRelationshipStatusMutation as useUpdatePatientStatusMutation 
+} from '@/modules/patient/hooks/usePatientQueries';
+import { 
+  useCaregiverRelationshipsQuery, 
+  useUpdateRelationshipStatusMutation as useUpdateCaregiverStatusMutation 
+} from '@/modules/caregiver/hooks/useCaregiverQueries';
+
+// ==========================================
+// SUB-COMPONENT: NOTIFICATION POPOVER MENU
+// ==========================================
 function NotificationPopover({ locale, t }) {
   const isRtl = locale === 'ar';
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const { user } = useAuth();
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      titleEn: "Medication Due Soon",
-      titleAr: "موعد دواء قادم",
-      descEn: "Glucophage 500mg is scheduled for 8:00 PM",
-      descAr: "Glucophage 500mg مجدول في الساعة 8:00 مساءً",
-      timeEn: "In 15 mins",
-      timeAr: "خلال 15 دقيقة",
-      type: "reminder",
-      unread: true
-    },
-    {
-      id: 2,
-      titleEn: "Low Stock Warning",
-      titleAr: "تنبيه مخزون منخفض",
-      descEn: "Concor 5mg has only 4 doses remaining",
-      descAr: "Concor 5mg متبقي 4 جرعات فقط",
-      timeEn: "2 hours ago",
-      timeAr: "منذ ساعتين",
-      type: "warning",
-      unread: true
-    },
-    {
-      id: 3,
-      titleEn: "Caregiver Update",
-      titleAr: "تحديث من مقدم الرعاية",
-      descEn: "Dr. James Wilson reviewed your adherence report",
-      descAr: "قام د. جيمس ويلسون بمراجعة تقرير الالتزام الخاص بك",
-      timeEn: "Yesterday",
-      timeAr: "أمس",
-      type: "info",
-      unread: true
+  const isCaregiverRole = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(user?.role);
+
+  const { data: patientRels = [] } = usePatientRelationshipsQuery();
+  const patientUpdateStatus = useUpdatePatientStatusMutation();
+
+  const { data: caregiverRels = [] } = useCaregiverRelationshipsQuery();
+  const caregiverUpdateStatus = useUpdateCaregiverStatusMutation();
+
+  const pendingIncoming = isCaregiverRole
+    ? caregiverRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT')
+    : patientRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
+
+  const unreadCount = pendingIncoming.length;
+
+  const handleResponse = (relationshipId, status) => {
+    if (isCaregiverRole) {
+      caregiverUpdateStatus.mutate({ relationshipId, status });
+    } else {
+      patientUpdateStatus.mutate({ relationshipId, status });
     }
-  ]);
-
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-  };
-
-  const markItemRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
   };
 
   useEffect(() => {
@@ -96,7 +85,7 @@ function NotificationPopover({ locale, t }) {
           <div className="p-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container/40">
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-sm text-on-surface">
-                {isRtl ? "الإشعارات" : "Notifications"}
+                {isRtl ? "الإشعارات وطلبات الربط" : "Notifications & Invites"}
               </h3>
               {unreadCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-400 text-xs font-black">
@@ -104,54 +93,59 @@ function NotificationPopover({ locale, t }) {
                 </span>
               )}
             </div>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
-              >
-                {isRtl ? "تحديد الكل كقروء" : "Mark all as read"}
-              </button>
-            )}
           </div>
 
           <div className="max-h-80 overflow-y-auto divide-y divide-outline-variant/10">
-            {notifications.length === 0 ? (
+            {pendingIncoming.length === 0 ? (
               <div className="p-8 text-center text-on-surface-variant text-xs font-medium">
-                {isRtl ? "لا توجد إشعارات جديدة" : "No notifications yet"}
+                {isRtl ? "لا توجد طلبات ربط جديدة معلقة" : "No new connection requests"}
               </div>
             ) : (
-              notifications.map((n) => {
-                const title = isRtl ? n.titleAr : n.titleEn;
-                const desc = isRtl ? n.descAr : n.descEn;
-                const time = isRtl ? n.timeAr : n.timeEn;
+              pendingIncoming.map((n) => {
+                const partnerName = isCaregiverRole
+                  ? (n.patientId ? `${n.patientId.firstName || ''} ${n.patientId.lastName || ''}`.trim() || n.patientId.email : (isRtl ? 'مريض' : 'Patient'))
+                  : (n.caregiverId ? `${n.caregiverId.firstName || ''} ${n.caregiverId.lastName || ''}`.trim() || n.caregiverId.email : (isRtl ? 'مقدم رعاية' : 'Caregiver'));
+
+                const isPendingMut = isCaregiverRole ? caregiverUpdateStatus.isPending : patientUpdateStatus.isPending;
 
                 return (
                   <div
-                    key={n.id}
-                    onClick={() => markItemRead(n.id)}
-                    className={`p-4 hover:bg-surface-container/60 transition-colors flex items-start gap-3.5 cursor-pointer relative ${
-                      n.unread ? "bg-primary-container/10" : ""
-                    }`}
+                    key={n.relationshipId}
+                    className="p-4 hover:bg-surface-container/60 transition-colors flex flex-col gap-2.5 relative bg-primary-container/10"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                      <Bell className="w-4 h-4" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <h4 className="text-xs font-bold text-on-surface truncate">
-                          {title}
-                        </h4>
-                        <span className="text-[10px] text-on-surface-variant shrink-0 font-medium">{time}</span>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
+                        <Bell className="w-4 h-4" />
                       </div>
-                      <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
-                        {desc}
-                      </p>
+
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-extrabold text-on-surface truncate">
+                          {partnerName}
+                        </h4>
+                        <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                          {isRtl
+                            ? `طلب ربط حساب جديد - صلة القرابة: ${n.relation || 'عائلة'}`
+                            : `New connection request - Relation: ${n.relation || 'Family'}`}
+                        </p>
+                      </div>
                     </div>
 
-                    {n.unread && (
-                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1.5"></span>
-                    )}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => handleResponse(n.relationshipId, 'ACCEPTED')}
+                        disabled={isPendingMut}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {isRtl ? "قبول" : "Accept"}
+                      </button>
+                      <button
+                        onClick={() => handleResponse(n.relationshipId, 'REJECTED')}
+                        disabled={isPendingMut}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 hover:text-rose-600 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {isRtl ? "رفض" : "Decline"}
+                      </button>
+                    </div>
                   </div>
                 );
               })

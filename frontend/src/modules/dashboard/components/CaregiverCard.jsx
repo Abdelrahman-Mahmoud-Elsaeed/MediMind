@@ -11,7 +11,9 @@ export const CaregiverCard = () => {
     const isAr = locale === 'ar';
     const { data: relationships = [], isLoading } = usePatientRelationshipsQuery();
 
-    const caregivers = relationships.map((rel) => {
+    const activeCaregivers = relationships.filter((rel) => rel.status === 'ACCEPTED');
+
+    const caregivers = activeCaregivers.map((rel) => {
       const cg = rel.caregiverId || {};
       const name = cg.firstName && cg.lastName ? `${cg.firstName} ${cg.lastName}` : (rel.relation || 'Caregiver');
       return {
@@ -19,7 +21,7 @@ export const CaregiverCard = () => {
         name,
         role: rel.relation || (isAr ? 'مقدم رعاية' : 'Caregiver'),
         avatar: cg.profilePictureUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-        online: rel.status === 'ACCEPTED',
+        online: true,
         phone: cg.phone || '+15550123456',
       };
     });
