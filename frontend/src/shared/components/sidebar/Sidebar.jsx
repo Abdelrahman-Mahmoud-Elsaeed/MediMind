@@ -4,7 +4,8 @@ import { LayoutGrid, Pill, TrendingUp, Users, User, HeartPulse, } from 'lucide-r
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
-export const Sidebar = ({ activePath = '/dashboard' }) => {
+import Link from 'next/link';
+export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim }) => {
     const { locale } = useTranslation();
     const [mounted, setMounted] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -40,22 +41,67 @@ export const Sidebar = ({ activePath = '/dashboard' }) => {
         },
     ];
     return (<>
-      <aside className="hidden lg:flex w-[280px] shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l p-6 flex-col justify-between z-30 transition-colors duration-300" suppressHydrationWarning>
+      <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 transition-all duration-300 ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
         <div className="space-y-8">
-          {/* Brand Header */}
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary shadow-md shadow-primary/20">
-              <HeartPulse className="w-6 h-6"/>
+          {/* Brand Header & Toggle Button */}
+          {!isSidebarSlim ? (
+            <div className="flex items-center gap-2 w-full transition-all duration-300">
+              {setIsSidebarSlim && (
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarSlim(!isSidebarSlim)}
+                  className="hidden lg:flex p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer items-center justify-center shrink-0"
+                  aria-label="Toggle Sidebar"
+                  title="Toggle Sidebar"
+                >
+                  <span className="material-symbols-outlined !text-[24px]">
+                    {isAr ? "menu_open" : "menu_open"}
+                  </span>
+                </button>
+              )}
+
+              <Link href="/home" className="flex items-center gap-3 group cursor-pointer overflow-hidden transition-all duration-300">
+                <img
+                  src="/images/logo.png"
+                  alt="MediMind Logo"
+                  className="w-10 h-10 object-contain rounded-2xl shadow-md group-hover:scale-105 transition-transform shrink-0"
+                />
+                <div>
+                  <h1 className="text-xl font-black tracking-tight leading-tight whitespace-nowrap">
+                    <span className="text-[#0047ba] dark:text-[#3b82f6]">Medi</span>
+                    <span className="text-[#00a396] dark:text-[#14b8a6]">Mind</span>
+                  </h1>
+                  <p className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+                    {isAr ? 'منصة الرعاية الصحية' : 'Healthcare Dashboard'}
+                  </p>
+                </div>
+              </Link>
             </div>
-            <div>
-              <h1 className="text-xl font-extrabold tracking-tight text-on-surface leading-tight">
-                MediMind
-              </h1>
-              <p className="text-xs font-semibold text-on-surface-variant">
-                {isAr ? 'منصة الرعاية الصحية' : 'Healthcare Dashboard'}
-              </p>
+          ) : (
+            <div className="flex flex-col items-center gap-4 w-full transition-all duration-300">
+              {setIsSidebarSlim && (
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarSlim(!isSidebarSlim)}
+                  className="hidden lg:flex p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer items-center justify-center shrink-0"
+                  aria-label="Toggle Sidebar"
+                  title="Toggle Sidebar"
+                >
+                  <span className="material-symbols-outlined !text-[24px]">
+                    {isAr ? "menu" : "menu"}
+                  </span>
+                </button>
+              )}
+
+              <Link href="/home" className="flex items-center justify-center group cursor-pointer" title="MediMind">
+                <img
+                  src="/images/logo.png"
+                  alt="MediMind Logo"
+                  className="w-10 h-10 object-contain rounded-2xl shadow-md group-hover:scale-105 transition-transform shrink-0"
+                />
+              </Link>
             </div>
-          </div>
+          )}
 
           <nav className="space-y-1.5">
             {navItems.map((item) => {
@@ -73,6 +119,7 @@ export const Sidebar = ({ activePath = '/dashboard' }) => {
                   label={item.label}
                   href={item.href}
                   active={isActive}
+                  isSidebarSlim={isSidebarSlim}
                 />
               );
             })}
@@ -80,7 +127,7 @@ export const Sidebar = ({ activePath = '/dashboard' }) => {
         </div>
 
         {/* Sidebar Footer */}
-        <SidebarFooter />
+        <SidebarFooter isSidebarSlim={isSidebarSlim} />
       </aside>
     </>);
 };

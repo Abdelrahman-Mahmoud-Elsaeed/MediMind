@@ -8,27 +8,7 @@ import { useTheme } from "next-themes";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { AppButton } from "@/shared/components/ui/AppButton";
 import { AppProgressBar } from "@/shared/components/ui/AppProgressBar";
-import { TimelineItem } from "@/modules/dashboard/components/TimelineItem";
-// ==========================================
-// SUB-COMPONENT: WELCOME BANNER
-// ==========================================
-function WelcomeBanner({ userName, currentDateFormatted }) {
-    return (<div className="p-6 lg:p-10 flex flex-col gap-8">
-      <header className="relative w-full h-48 rounded-3xl overflow-hidden shadow-lg border border-outline-variant/10">
-        {/* Banner Background Image */}
-        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2000" alt="Medical background" className="absolute inset-0 w-full h-full object-cover grayscale opacity-90 dark:opacity-40"/>
-        {/* Dark Overlay for Readability */}
-        <div className="absolute inset-0 bg-slate-900/70"></div>
-
-        {/* Header Content */}
-        <div className="relative z-10 p-10 flex flex-col justify-center h-full text-white">
-          <span className="text-sm font-bold tracking-widest uppercase opacity-80 mb-2">Dashboard</span>
-          <h2 className="text-3xl lg:text-4xl font-bold mb-1 leading-tight">Welcome back, {userName}</h2>
-          <p className="text-blue-100/90 text-base lg:text-lg">{currentDateFormatted}</p>
-        </div>
-      </header>
-    </div>);
-}
+import { WelcomeBanner } from "@/modules/dashboard";
 // ==========================================
 // SUB-COMPONENT: ACTIVE TIMELINE (Matching Image 1)
 // ==========================================

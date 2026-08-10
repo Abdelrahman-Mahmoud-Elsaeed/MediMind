@@ -8,7 +8,7 @@ import { LanguageToggler } from '@/shared/components/LanguageToggler';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
 
-export const SidebarFooter = () => {
+export const SidebarFooter = ({ isSidebarSlim = false }) => {
   const { locale } = useTranslation();
   const { user, logout } = useAuth();
   const { data: patientProfile } = usePatientProfileQuery();
@@ -25,6 +25,30 @@ export const SidebarFooter = () => {
   const userRole = isAr ? 'مريض' : 'Patient';
   const userInitial = userName.charAt(0).toUpperCase();
   const avatarSrc = patientProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+
+  if (isSidebarSlim) {
+    return (
+      <div className="pt-4 border-t border-outline-variant/30 flex flex-col items-center gap-3" suppressHydrationWarning>
+        <Link href="/profile" title={userName} className="group">
+          <Avatar className="w-10 h-10 border-2 border-primary/30 group-hover:border-primary transition-colors">
+            {avatarSrc ? <AvatarImage src={avatarSrc} alt={userName} className="object-cover" /> : null}
+            <AvatarFallback className="bg-teal-600 text-white font-bold">{userInitial}</AvatarFallback>
+          </Avatar>
+        </Link>
+        {logout && (
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="w-10 h-10 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs"
+            title={isAr ? 'تسجيل الخروج' : 'Sign Out'}
+            aria-label="Sign Out"
+          >
+            <LogOut className="w-4 h-4"/>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="pt-4 border-t border-outline-variant/30 space-y-3.5" suppressHydrationWarning>

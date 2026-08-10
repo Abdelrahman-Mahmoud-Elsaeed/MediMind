@@ -67,11 +67,16 @@ export default function LandingHeader() {
   return (
     <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm" suppressHydrationWarning>
       <div className="flex justify-between items-center px-4 sm:px-8 md:px-12 h-20 max-w-[1440px] mx-auto">
-        <Link href="/" className="text-2xl font-extrabold text-teal-700 dark:text-teal-400 flex items-center gap-2">
-          <span className="material-symbols-outlined text-teal-600 dark:text-teal-400 text-3xl" style={{ fontVariationSettings: '"FILL" 1' }}>
-            medical_services
+        <Link href="/" className="text-2xl font-black flex items-center gap-2.5 group">
+          <img
+            src="/images/logo.png"
+            alt="MediMind Logo"
+            className="h-10 w-auto object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform"
+          />
+          <span className="tracking-tight">
+            <span className="text-[#0047ba] dark:text-[#60a5fa]">Medi</span>
+            <span className="text-[#00a396] dark:text-[#34d399]">Mind</span>
           </span>
-          <span>MediMind</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

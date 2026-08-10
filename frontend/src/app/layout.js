@@ -19,6 +19,11 @@ export const metadata = {
     default: 'MediMind | Medication Management',
   },
   description: "Your digital companion for medication adherence and trusted caregiver connections.",
+  icons: {
+    icon: '/images/logo.png',
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
+  },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
 };
 
@@ -30,6 +35,11 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang={locale} dir={dir} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/images/logo.png" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/images/logo.png" />
+        <link rel="apple-touch-icon" href="/images/logo.png" />
+      </head>
       <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
         <Providers locale={locale} >
           {children}
