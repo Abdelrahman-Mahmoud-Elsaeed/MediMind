@@ -11,6 +11,7 @@ import {
   useDeleteConditionMutation
 } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui";
+import { showSuccess, showError } from "@/shared/components/ui/toast";
 import { Save, Trash2, Activity, AlertCircle } from "lucide-react";
 
 export default function EditConditionPage({ params }) {
@@ -63,7 +64,7 @@ export default function EditConditionPage({ params }) {
       { conditionId, payload },
       {
         onSuccess: () => {
-          alert(isAr ? "تم تحديث البيانات بنجاح!" : "Condition updated successfully!");
+          showSuccess(isAr ? "تم تحديث البيانات بنجاح!" : "Condition updated successfully!", isAr ? "تم بنجاح" : "Success");
           router.push("/medical-records/conditions");
         },
         onError: (err) => {

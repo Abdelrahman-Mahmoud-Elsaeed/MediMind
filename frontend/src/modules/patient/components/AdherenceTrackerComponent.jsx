@@ -6,6 +6,7 @@ import { useTranslation } from "@/shared/lib/i18nContext";
 import { useMedications } from "@/modules/medication/hooks/useMedicationHooks";
 import { usePatientDosesQuery, useConfirmDoseMutation, useSkipDoseMutation } from "../hooks/usePatientQueries";
 import { Card, Badge, Button, ProgressBar } from "@/shared/components/ui";
+import { showInfo } from "@/shared/components/ui/toast";
 import {
   CheckCircle2,
   Zap,
@@ -479,7 +480,7 @@ export default function AdherenceTrackerComponent() {
                       )}
                     </td>
                     <td className="py-4 text-right pr-2">
-                      <Button variant="ghost" size="iconSm" onClick={() => alert(`Details for ${log.medication}`)}>
+                      <Button variant="ghost" size="iconSm" onClick={() => showInfo(isAr ? `تفاصيل ${log.medication}` : `Details for ${log.medication}`, isAr ? 'معلومة' : 'Information')}>
                         <MoreHorizontal className="w-4 h-4 text-slate-400" />
                       </Button>
                     </td>

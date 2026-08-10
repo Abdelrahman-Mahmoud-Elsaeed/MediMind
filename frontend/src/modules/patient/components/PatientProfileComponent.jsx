@@ -8,6 +8,7 @@ import { useTranslation } from "@/shared/lib/i18nContext";
 import { usePatientProfile } from "../hooks/usePatientProfile";
 import { usePatientConditionsQuery } from "../hooks/usePatientQueries";
 import { Card, Badge, Button } from "@/shared/components/ui";
+import { showSuccess, showError, showInfo } from "@/shared/components/ui/toast";
 import {
   Share2,
   Download,
@@ -130,12 +131,12 @@ export default function PatientProfileComponent() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert(isAr ? "يرجى اختيار ملف صورة صالح (PNG, JPEG, WebP)" : "Please select a valid image file (PNG, JPEG, WebP)");
+      showError(isAr ? "يرجى اختيار ملف صورة صالح (PNG, JPEG, WebP)" : "Please select a valid image file (PNG, JPEG, WebP)", isAr ? "حدث خطأ" : "Error");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert(isAr ? "يجب أن يكون حجم الصورة أقل من ١٠ ميجابايت" : "Image file size must be less than 10MB");
+      showError(isAr ? "يجب أن يكون حجم الصورة أقل من ١٠ ميجابايت" : "Image file size must be less than 10MB", isAr ? "حدث خطأ" : "Error");
       return;
     }
 
@@ -172,10 +173,10 @@ export default function PatientProfileComponent() {
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
         try {
           await updateProfile({ profilePictureUrl: compressedBase64 });
-          triggerToast(isAr ? "تم تحديث الصورة الشخصية بنجاح! 🎉" : "Profile picture updated successfully! 🎉");
+          showSuccess(isAr ? "تم تحديث الصورة الشخصية بنجاح! 🎉" : "Profile picture updated successfully! 🎉", isAr ? "تم بنجاح" : "Success");
         } catch (err) {
           console.error("Failed to upload profile image:", err);
-          alert(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture");
+          showError(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture", isAr ? "حدث خطأ" : "Error");
         } finally {
           setIsUploadingImage(false);
         }
@@ -683,7 +684,7 @@ export default function PatientProfileComponent() {
                       <div className="text-[10px] text-teal-600 font-bold">✓ Active</div>
                     </div>
                   </div>
-                  <Button variant="link" onClick={() => alert("2FA management dialog opened")} className="text-xs font-bold text-teal-600 p-0 h-auto">
+                  <Button variant="link" onClick={() => showInfo(isAr ? "تم فتح إدارة التحقق بخطوتين" : "2FA management dialog opened", isAr ? "معلومة" : "Information")} className="text-xs font-bold text-teal-600 p-0 h-auto">
                     {isAr ? "إدارة" : "Manage"}
                   </Button>
                 </div>
@@ -922,7 +923,7 @@ export default function PatientProfileComponent() {
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(`MediMind Medical ID: ${displayName}, Blood Type: ${bloodType}, Emergency: ${emergencyContacts[0]?.phone || displayPhone}`);
-                  alert(isAr ? "تم نسخ رابط الهوية الطبية!" : "Medical ID details copied to clipboard!");
+                  showSuccess(isAr ? "تم نسخ رابط الهوية الطبية!" : "Medical ID details copied to clipboard!", isAr ? "تم بنجاح" : "Success");
                 }}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-2.5"
               >

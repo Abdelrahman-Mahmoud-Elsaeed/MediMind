@@ -7,6 +7,7 @@ import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { useAddConditionMutation } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui";
+import { showSuccess, showError } from "@/shared/components/ui/toast";
 import { Plus, Save, Activity, AlertCircle } from "lucide-react";
 
 export default function AddConditionPage() {
@@ -37,7 +38,7 @@ export default function AddConditionPage() {
 
     addConditionMutation.mutate(payload, {
       onSuccess: () => {
-        alert(isAr ? "تمت إضافة الحالة الطبية بنجاح!" : "Medical condition added successfully!");
+        showSuccess(isAr ? "تمت إضافة الحالة الطبية بنجاح!" : "Medical condition added successfully!", isAr ? "تم بنجاح" : "Success");
         router.push("/medical-records/conditions");
       },
       onError: (err) => {

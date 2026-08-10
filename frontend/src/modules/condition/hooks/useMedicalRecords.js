@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { showError } from "@/shared/components/ui/toast";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { conditionSchema } from "@/modules/patient/validation/patientValidation";
 import {
@@ -80,7 +81,7 @@ export function useMedicalRecords() {
     try {
       await deleteConditionMutation.mutateAsync(conditionId);
     } catch (err) {
-      alert("Failed to delete condition");
+      showError("Failed to delete condition", "Error");
     }
   };
 

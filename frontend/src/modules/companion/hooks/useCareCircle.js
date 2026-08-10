@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { showError } from "@/shared/components/ui/toast";
 import { inviteCaregiverSchema } from "@/modules/patient/validation/patientValidation";
 import {
   usePatientRelationshipsQuery,
@@ -84,7 +85,7 @@ export function useCareCircle() {
     try {
       await revokeRelationshipMutation.mutateAsync(relationshipId);
     } catch (err) {
-      alert("Failed to revoke relationship");
+      showError("Failed to revoke relationship", "Error");
     }
   };
 

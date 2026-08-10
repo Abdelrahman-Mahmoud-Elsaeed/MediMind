@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { showError } from "@/shared/components/ui/toast";
 import { useTranslation } from "@/shared/lib/i18nContext";
 import { addMedicationSchema } from "@/modules/patient/validation/patientValidation";
 import {
@@ -179,7 +180,7 @@ export function useAddMedication(onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      alert("Failed to add medication");
+      showError("Failed to add medication", "Error");
     }
   };
 

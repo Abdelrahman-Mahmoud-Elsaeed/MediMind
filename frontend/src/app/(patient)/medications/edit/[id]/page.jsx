@@ -9,6 +9,7 @@ import {
   useUpdateMedication
 } from '@/modules/medication/hooks/useMedicationHooks';
 import { Card, Button } from '@/shared/components/ui';
+import { showToast } from '@/shared/components/ui/toast';
 import { ArrowLeft, Save, Pill } from 'lucide-react';
 
 export default function EditMedicationPage({ params }) {
@@ -91,12 +92,21 @@ export default function EditMedicationPage({ params }) {
       },
       {
         onSuccess: () => {
-          alert(isAr ? 'تم تحديث الدواء بنجاح!' : 'Medication updated successfully!');
+          showToast({
+            title: isAr ? 'تم بنجاح' : 'Success',
+            message: isAr ? 'تم تحديث الدواء بنجاح!' : 'Medication updated successfully!',
+            type: 'success',
+            isRtl: isAr,
+          });
           router.push('/medications');
         },
         onError: () => {
-          alert(isAr ? 'تم تحديث الدواء بنجاح!' : 'Medication updated successfully!');
-          router.push('/medications');
+          showToast({
+            title: isAr ? 'خطأ' : 'Error',
+            message: isAr ? 'تعذر تحديث الدواء. يرجى المحاولة مرة أخرى.' : 'Unable to update medication. Please try again.',
+            type: 'error',
+            isRtl: isAr,
+          });
         },
       }
     );
@@ -131,7 +141,7 @@ export default function EditMedicationPage({ params }) {
 
   return (
     <MainLayout activePath="/medications">
-      <div className="max-w-[1000px] mx-auto space-y-8">
+      <div className="max-w-250 mx-auto space-y-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild className="rounded-full">
             <Link href="/medications">

@@ -5,6 +5,7 @@ import { Phone, MessageSquare, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { usePatientRelationshipsQuery } from '@/modules/patient/hooks/usePatientQueries';
+import { showInfo } from '@/shared/components/ui/toast';
 
 export const CaregiverCard = () => {
     const { locale } = useTranslation();
@@ -27,10 +28,10 @@ export const CaregiverCard = () => {
     });
 
     const handleCall = (name, phone) => {
-        alert(isAr ? `جاري الاتصال بـ ${name} (${phone})...` : `Calling ${name} (${phone})...`);
+        showInfo(isAr ? `جاري الاتصال بـ ${name} (${phone})...` : `Calling ${name} (${phone})...`, isAr ? 'معلومة' : 'Information');
     };
     const handleMessage = (name) => {
-        alert(isAr ? `إرسال رسالة إلى ${name}...` : `Messaging ${name}...`);
+        showInfo(isAr ? `إرسال رسالة إلى ${name}...` : `Messaging ${name}...`, isAr ? 'معلومة' : 'Information');
     };
 
     return (<AppCard className="hover:shadow-lg transition-shadow">

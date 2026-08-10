@@ -18,3 +18,5 @@ export { AppBadge } from './AppBadge';
 export { AppProgressBar } from './AppProgressBar';
 export { AppDialog } from './AppDialog';
 export { AppSelect } from './AppSelect';
+export { ToastNotification } from './ToastNotification';
+export { showNotification, showSuccess, showError, showWarning, showInfo, dismissToast, showToast } from './toast';

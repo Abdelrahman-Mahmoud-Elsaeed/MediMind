@@ -6,6 +6,7 @@ import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useCreateMedication, useScanMedication } from '@/modules/medication/hooks/useMedicationHooks';
 import { Card, Badge, Button, ProgressBar } from '@/shared/components/ui';
+import { showSuccess, showError } from '@/shared/components/ui/toast';
 import { ArrowLeft, Camera, UploadCloud, Sparkles, CheckCircle2, RefreshCw, Pill, ShieldCheck, Zap } from 'lucide-react';
 
 export default function PatientOcrScanPage() {
@@ -47,11 +48,11 @@ export default function PatientOcrScanPage() {
       },
       {
         onSuccess: () => {
-          alert(isAr ? `تمت إضافة ${extractedMed.name} إلى الخزانة بنجاح!` : `Added ${extractedMed.name} to cabinet successfully!`);
+          showSuccess(isAr ? `تمت إضافة ${extractedMed.name} إلى الخزانة بنجاح!` : `Added ${extractedMed.name} to cabinet successfully!`, isAr ? 'تم بنجاح' : 'Success');
           router.push('/medications');
         },
         onError: () => {
-          alert(isAr ? `تمت إضافة ${extractedMed.name} إلى الخزانة بنجاح!` : `Added ${extractedMed.name} to cabinet successfully!`);
+          showError(isAr ? `تعذر إضافة ${extractedMed.name} إلى الخزانة. حاول مرة أخرى.` : `Unable to add ${extractedMed.name} to the cabinet. Please try again.`, isAr ? 'حدث خطأ' : 'Error');
           router.push('/medications');
         },
       }

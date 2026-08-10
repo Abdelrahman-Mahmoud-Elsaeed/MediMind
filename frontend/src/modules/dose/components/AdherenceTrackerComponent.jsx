@@ -460,7 +460,7 @@ export default function AdherenceTrackerComponent() {
                       )}
                     </td>
                     <td className="py-4 text-right pr-2">
-                      <Button variant="ghost" size="iconSm" onClick={() => alert(`Details for ${log.medication}`)}>
+                      <Button variant="ghost" size="iconSm" onClick={() => showInfo(isAr ? `تفاصيل ${log.medication}` : `Details for ${log.medication}`, isAr ? 'معلومة' : 'Information')}>
                         <MoreHorizontal className="w-4 h-4 text-slate-400" />
                       </Button>
                     </td>

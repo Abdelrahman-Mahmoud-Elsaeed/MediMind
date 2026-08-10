@@ -178,7 +178,7 @@ function CabinetQuickView({ medications, t }) {
                   {/* Refill Action Button with Arrow Right Icon */}
                   <AppButton type="button" variant={isCritical ? 'errorContainer' : 'primaryContainer'} size="sm" onClick={(e) => {
                     e.stopPropagation();
-                    alert(t('patient.home.refillRequested', { name: med.name }));
+                    showInfo(t('patient.home.refillRequested', { name: med.name }), isAr ? 'معلومة' : 'Information');
                 }} rightIcon={<svg className="w-3.5 h-3.5 rtl:rotate-180 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
                       </svg>}/>
