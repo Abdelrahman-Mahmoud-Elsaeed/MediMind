@@ -58,10 +58,14 @@ async function seed() {
     });
   }
 
-  // 2. Create 2 Caregivers (for Relationships)
+  // 2. Create 6 caregivers, with a mix of linked and standalone profiles
   const caregiverData = [
     { email: "caregiver1@medimind.io", firstName: "Nour", lastName: "Al-Sayed" },
     { email: "caregiver2@medimind.io", firstName: "Hassan", lastName: "Ibrahim" },
+    { email: "caregiver3@medimind.io", firstName: "Mona", lastName: "Farouk" },
+    { email: "caregiver4@medimind.io", firstName: "Ola", lastName: "Kamal" },
+    { email: "caregiver5@medimind.io", firstName: "Khaled", lastName: "Rahman" },
+    { email: "caregiver6@medimind.io", firstName: "Salma", lastName: "Yousef" },
   ];
 
   const caregiverDocs = [];
@@ -412,54 +416,58 @@ async function seed() {
       }
     }
 
-    // Seed Relationships
-    if (caregiverDocs.length > 0) {
-      const cg1 = caregiverDocs[0];
-      const rel1 = await Relationship.findOne({ patientId: patient._id, caregiverId: cg1._id });
-      if (!rel1) {
-        await Relationship.create({
-          patientId: patient._id,
-          caregiverId: cg1._id,
-          caregiverType: "FamilyCaregiver",
-          relation: "Family Member",
-          status: "ACCEPTED",
-          permissions: {
-            canViewMedications:      true,
-            canAddMedication:        true,
-            canEditMedication:       true,
-            canDeleteMedication:     true,
-            canViewMedicalRecords:   true,
-            canEditMedicalRecords:   false,
-            canViewDoseSchedule:     true,
-            canConfirmDose:          true,
-            canOrderRefills:         true,
-            canReceiveNotifications: true,
-          },
-        });
-      }
+    // Seed Relationships for patient1, patient2, and patient3
+    const linkedPatientEmails = [
+      "patient1@medimind.io",
+      "patient2@medimind.io",
+      "patient3@medimind.io",
+    ];
 
-      if (caregiverDocs.length > 1) {
-        const cg2 = caregiverDocs[1];
-        const rel2 = await Relationship.findOne({ patientId: patient._id, caregiverId: cg2._id });
-        if (!rel2) {
+    if (linkedPatientEmails.includes(info.email) && caregiverDocs.length > 0) {
+      // Connect to first 2 caregivers (1 ACCEPTED, 1 PENDING)
+      const patientCaregivers = caregiverDocs.slice(0, 2);
+      for (let i = 0; i < patientCaregivers.length; i++) {
+        const caregiverProfile = patientCaregivers[i];
+        const existingRelation = await Relationship.findOne({
+          patientId: patient._id,
+          caregiverId: caregiverProfile._id,
+          deletedAt: null,
+        });
+
+        if (!existingRelation) {
+          const isAccepted = i === 0;
           await Relationship.create({
             patientId: patient._id,
-            caregiverId: cg2._id,
+            caregiverId: caregiverProfile._id,
             caregiverType: "FamilyCaregiver",
-            relation: "Primary Caregiver",
-            status: "PENDING",
-            permissions: {
-              canViewMedications:      true,
-              canAddMedication:        false,
-              canEditMedication:       false,
-              canDeleteMedication:     false,
-              canViewMedicalRecords:   true,
-              canEditMedicalRecords:   false,
-              canViewDoseSchedule:     true,
-              canConfirmDose:          false,
-              canOrderRefills:         false,
-              canReceiveNotifications: true,
-            },
+            relation: isAccepted ? "Family Member" : "Primary Caregiver",
+            status: isAccepted ? "ACCEPTED" : "PENDING",
+            initiatedBy: isAccepted ? "CAREGIVER" : "PATIENT",
+            permissions: isAccepted
+              ? {
+                canViewMedications: true,
+                canAddMedication: true,
+                canEditMedication: true,
+                canDeleteMedication: true,
+                canViewMedicalRecords: true,
+                canEditMedicalRecords: false,
+                canViewDoseSchedule: true,
+                canConfirmDose: true,
+                canOrderRefills: true,
+                canReceiveNotifications: true,
+              }
+              : {
+                canViewMedications: true,
+                canAddMedication: false,
+                canEditMedication: false,
+                canDeleteMedication: false,
+                canViewMedicalRecords: true,
+                canEditMedicalRecords: false,
+                canViewDoseSchedule: true,
+                canConfirmDose: false,
+                canOrderRefills: false,
+                canReceiveNotifications: true,
+              },
           });
         }
       }
@@ -486,7 +494,7 @@ async function seed() {
     }
   }
 
-  console.log("SUCCESS! Seeded 10 complete patient accounts with all related entities.");
+  console.log("SUCCESS! Seeded 10 complete patient accounts and 6 caregiver profiles, with multiple linked relationships and several standalone caregivers.");
   await mongoose.disconnect();
   process.exit(0);
 }

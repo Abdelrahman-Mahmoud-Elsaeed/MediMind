@@ -84,11 +84,11 @@ export default function CareCircleComponent() {
   const activityFeed = useMemo(() => {
     const list = [];
     if (activeCaregivers && activeCaregivers.length > 0) {
-      activeCaregivers.forEach((r) => {
+      activeCaregivers.forEach((r, idx) => {
         const cg = r.caregiverId || {};
         const name = cg.firstName && cg.lastName ? `${cg.firstName} ${cg.lastName}` : (r.relation || "Caregiver");
         list.push({
-          id: `act-${r._id || r.id}`,
+          id: `act-${r.relationshipId || r._id || r.id || `fallback-${idx}`}`,
           actor: name,
           action: isAr ? "انضم إلى" : "joined the",
           target: isAr ? "دائرة الرعاية الصحية" : "Care Circle",
@@ -97,10 +97,10 @@ export default function CareCircleComponent() {
       });
     }
     if (pendingInvitations && pendingInvitations.length > 0) {
-      pendingInvitations.forEach((r) => {
+      pendingInvitations.forEach((r, idx) => {
         const name = r.caregiverEmail || "Caregiver";
         list.push({
-          id: `act-p-${r._id || r.id}`,
+          id: `act-p-${r.relationshipId || r._id || r.id || `fallback-${idx}`}`,
           actor: name,
           action: isAr ? "تم إرسال دعوة معلقة إلى" : "Invitation pending for",
           target: isAr ? "دائرة الرعاية" : "Care Circle",
