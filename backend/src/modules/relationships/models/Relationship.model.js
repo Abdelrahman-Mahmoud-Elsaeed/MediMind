@@ -53,12 +53,25 @@ const RelationshipSchema = new mongoose.Schema({
     default: 'PATIENT'
   },
   /**
-   * Presets granted to the caregiver according to db.md specifications.
+   * Fine-grained caregiver permissions scoped to this patient relationship.
+   * All keys default to false — each must be explicitly granted.
    */
   permissions: {
-    canAddMedication: { type: Boolean, default: true },
-    canViewMedicalRecords: { type: Boolean, default: false },
-    canOrderRefills: { type: Boolean, default: true }
+    // Medication permissions
+    canViewMedications:     { type: Boolean, default: false },
+    canAddMedication:       { type: Boolean, default: false },
+    canEditMedication:      { type: Boolean, default: false },
+    canDeleteMedication:    { type: Boolean, default: false },
+    // Medical records (conditions, history)
+    canViewMedicalRecords:  { type: Boolean, default: false },
+    canEditMedicalRecords:  { type: Boolean, default: false },
+    // Dose tracking
+    canViewDoseSchedule:    { type: Boolean, default: false },
+    canConfirmDose:         { type: Boolean, default: false },
+    // Pharmacy
+    canOrderRefills:        { type: Boolean, default: false },
+    // Notifications
+    canReceiveNotifications: { type: Boolean, default: false },
   },
   /**
    * Soft delete timestamp.

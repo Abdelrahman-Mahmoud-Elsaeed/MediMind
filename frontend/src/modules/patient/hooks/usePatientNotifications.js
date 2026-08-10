@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { useSocketNotifications } from "@/shared/hooks/useSocketNotifications";
 import {
   usePatientMedicationsQuery,
   usePatientDosesQuery,
@@ -10,12 +11,27 @@ export function usePatientNotifications() {
   const { locale } = useTranslation();
   const dateStr = useMemo(() => new Date().toISOString().split("T")[0], []);
 
+  const { notifications: dbNotifications = [], loading: loadingSocketNotifs } = useSocketNotifications();
   const { data: medications = [], isLoading: loadingMeds, error: errorMeds, refetch: refetchMeds } = usePatientMedicationsQuery();
   const { data: doses = [], isLoading: loadingDoses, error: errorDoses, refetch: refetchDoses } = usePatientDosesQuery(dateStr);
   const { data: relationships = [], isLoading: loadingRels, error: errorRels, refetch: refetchRels } = usePatientRelationshipsQuery();
 
   const alerts = useMemo(() => {
     const items = [];
+
+    // 0. Real-time DB Socket Notifications
+    dbNotifications.forEach((notif) => {
+      items.push({
+        id: notif.id || notif.notificationId,
+        type: notif.type,
+        title: locale === "ar" && notif.titleAr ? notif.titleAr : notif.title,
+        description: locale === "ar" && notif.messageAr ? notif.messageAr : notif.message,
+        time: notif.createdAt ? new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now",
+        icon: "notifications",
+        color: "text-primary bg-primary/10",
+        isRead: notif.isRead,
+      });
+    });
 
     // 1. Stock Refills
     medications.forEach((med) => {
@@ -54,10 +70,10 @@ export function usePatientNotifications() {
       }
     });
 
-    // 3. Relationships
+    // 3. Relationships & Connection Requests
     relationships.forEach((rel) => {
       const cg = rel.caregiverId;
-      const cgName = cg ? `${cg.firstName || ''} ${cg.lastName || ''}`.trim() || "Caregiver" : "Caregiver";
+      const cgName = cg ? `${cg.firstName || ''} ${cg.lastName || ''}`.trim() || cg.email || "Caregiver" : "Caregiver";
       if (rel.status === "ACCEPTED") {
         items.push({
           id: `rel-active-${rel.relationshipId || rel.id}`,
@@ -71,17 +87,34 @@ export function usePatientNotifications() {
           color: "text-secondary bg-secondary/10"
         });
       } else if (rel.status === "PENDING") {
-        items.push({
-          id: `rel-pending-${rel.relationshipId || rel.id}`,
-          type: "caregiver",
-          title: locale === "ar" ? "تم إرسال الدعوة" : "Invitation Sent",
-          description: locale === "ar"
-            ? `دعوة ${cgName} للانضمام لدائرة الرعاية معلقة بانتظار قبول مقدم الرعاية.`
-            : `Invitation sent to ${cgName} is pending caregiver acceptance.`,
-          time: locale === "ar" ? "معلقة" : "Pending",
-          icon: "hourglass_top",
-          color: "text-primary bg-primary/10"
-        });
+        if (rel.initiatedBy === "CAREGIVER") {
+          items.push({
+            id: `rel-request-${rel.relationshipId || rel.id}`,
+            type: "request",
+            title: locale === "ar" ? "طلب ربط من مقدم رعاية" : "Caregiver Connection Request",
+            description: locale === "ar"
+              ? `طلب ${cgName} الانضمام لدائرة الرعاية الخاصة بك لمتابعة خطتك العلاجية.`
+              : `${cgName} sent a connection request to join your care circle.`,
+            time: locale === "ar" ? "طلب جديد" : "New Request",
+            icon: "person_add",
+            color: "text-amber-600 bg-amber-500/10",
+            relationshipId: rel.relationshipId || rel.id,
+            initiatedBy: "CAREGIVER",
+            isActionable: true,
+          });
+        } else {
+          items.push({
+            id: `rel-pending-${rel.relationshipId || rel.id}`,
+            type: "caregiver",
+            title: locale === "ar" ? "تم إرسال الدعوة" : "Invitation Sent",
+            description: locale === "ar"
+              ? `دعوة ${cgName} للانضمام لدائرة الرعاية معلقة بانتظار قبول مقدم الرعاية.`
+              : `Invitation sent to ${cgName} is pending caregiver acceptance.`,
+            time: locale === "ar" ? "معلقة" : "Pending",
+            icon: "hourglass_top",
+            color: "text-primary bg-primary/10"
+          });
+        }
       }
     });
 

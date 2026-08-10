@@ -12,47 +12,55 @@ const STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED', 'REVOKED'];
 const ALLOWED_STATUS_TRANSITIONS = {
   PENDING: ['ACCEPTED', 'REJECTED'],
   ACCEPTED: ['REVOKED'],
-  REJECTED: [],
+  REJECTED: ['PENDING'],
   REVOKED: ['PENDING']
 };
 
+/**
+ * Default permission presets applied when a new Relationship is created.
+ * All keys must match the Relationship.model.js permissions schema exactly.
+ *
+ * Pharmacist is intentionally omitted — Pharmacist accounts do not have
+ * a patient Relationship document; they manage refill orders via their
+ * own Pharmacist profile reference.
+ */
 const DEFAULT_PERMISSIONS_BY_MODEL = {
   FamilyCaregiver: {
-    canAddMedication: true,
-    canEditMedication: true,
-    canDeleteMedication: true,
-    canViewMedicalRecords: true,
-    canEditMedicalRecords: false,
-    canManageAppointments: true,
-    canReceiveNotifications: true
+    canViewMedications:      true,
+    canAddMedication:        true,
+    canEditMedication:       true,
+    canDeleteMedication:     true,
+    canViewMedicalRecords:   true,
+    canEditMedicalRecords:   false,
+    canViewDoseSchedule:     true,
+    canConfirmDose:          true,
+    canOrderRefills:         true,
+    canReceiveNotifications: true,
   },
   Doctor: {
-    canAddMedication: true,
-    canEditMedication: true,
-    canDeleteMedication: true,
-    canViewMedicalRecords: true,
-    canEditMedicalRecords: true,
-    canManageAppointments: true,
-    canReceiveNotifications: true
-  },
-  Pharmacist: {
-    canAddMedication: false,
-    canEditMedication: false,
-    canDeleteMedication: false,
-    canViewMedicalRecords: false,
-    canEditMedicalRecords: false,
-    canManageAppointments: false,
-    canReceiveNotifications: true
+    canViewMedications:      true,
+    canAddMedication:        true,
+    canEditMedication:       true,
+    canDeleteMedication:     true,
+    canViewMedicalRecords:   true,
+    canEditMedicalRecords:   true,
+    canViewDoseSchedule:     true,
+    canConfirmDose:          false,
+    canOrderRefills:         true,
+    canReceiveNotifications: true,
   },
   ProfessionalCaregiver: {
-    canAddMedication: true,
-    canEditMedication: false,
-    canDeleteMedication: false,
-    canViewMedicalRecords: true,
-    canEditMedicalRecords: false,
-    canManageAppointments: true,
-    canReceiveNotifications: true
-  }
+    canViewMedications:      true,
+    canAddMedication:        true,
+    canEditMedication:       false,
+    canDeleteMedication:     false,
+    canViewMedicalRecords:   true,
+    canEditMedicalRecords:   false,
+    canViewDoseSchedule:     true,
+    canConfirmDose:          true,
+    canOrderRefills:         false,
+    canReceiveNotifications: true,
+  },
 };
 
 module.exports = {
