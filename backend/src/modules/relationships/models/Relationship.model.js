@@ -45,6 +45,14 @@ const RelationshipSchema = new mongoose.Schema({
     default: 'PENDING'
   },
   /**
+   * Tracks which role initiated the invitation ('PATIENT' or 'CAREGIVER').
+   */
+  initiatedBy: {
+    type: String,
+    enum: ['PATIENT', 'CAREGIVER'],
+    default: 'PATIENT'
+  },
+  /**
    * Presets granted to the caregiver according to db.md specifications.
    */
   permissions: {

@@ -5,9 +5,9 @@ const { createRelationshipSchema, updateStatusSchema } = require('../validators/
 const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
 const validate = require('../../../shared/middleware/validation.middleware');
 
-router.post('/', authenticate, authorize('PATIENT'), validate(createRelationshipSchema), relationshipsController.initiate);
+router.post('/', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), validate(createRelationshipSchema), relationshipsController.initiate);
 router.get('/', authenticate, relationshipsController.list);
-router.patch('/:relationshipId/status', authenticate, authorize('CAREGIVER'), validate(updateStatusSchema), relationshipsController.updateStatus);
-router.delete('/:relationshipId', authenticate, authorize('PATIENT'), relationshipsController.revoke);
+router.patch('/:relationshipId/status', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), validate(updateStatusSchema), relationshipsController.updateStatus);
+router.delete('/:relationshipId', authenticate, authorize('PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'), relationshipsController.revoke);
 
 module.exports = router;

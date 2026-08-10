@@ -212,12 +212,17 @@ export default function LoginComponent() {
       <div className="flex flex-col min-h-screen px-6 py-6 md:px-12 md:py-8 justify-between overflow-y-auto">
         {/* Header */}
         <header className="flex justify-between items-center w-full mb-6">
-          <div className="flex items-center gap-2 select-none">
-            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>medical_services</span>
-            </div>
-            <span className="font-bold text-lg tracking-tight text-on-surface">MedTech Pro</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2.5 select-none group cursor-pointer">
+            <img
+              src="/images/logo.png"
+              alt="MediMind Logo"
+              className="h-9 w-auto object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform"
+            />
+            <span className="font-black text-xl tracking-tight">
+              <span className="text-[#0047ba] dark:text-[#3b82f6]">Medi</span>
+              <span className="text-[#00a396] dark:text-[#14b8a6]">Mind</span>
+            </span>
+          </Link>
 
           <div className="flex items-center gap-3">
             {/* Language Toggle Pill */}

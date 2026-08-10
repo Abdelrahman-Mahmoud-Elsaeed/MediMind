@@ -23,7 +23,7 @@ export default function NotificationsPage() {
     if (!isAuthenticated) {
         return null;
     }
-    if (user?.role === "CAREGIVER") {
+    if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role)) {
         return <CaregiverNotifications />;
     }
     // Default to Patient

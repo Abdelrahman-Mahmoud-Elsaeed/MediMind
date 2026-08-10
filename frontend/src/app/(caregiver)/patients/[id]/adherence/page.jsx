@@ -1,5 +1,17 @@
+'use client';
+
+import React from 'react';
+import { use } from 'react';
+import { MainLayout } from '@/shared/components/layout/MainLayout';
+import { CaregiverPatientAdherenceComponent } from '@/modules/caregiver/components/CaregiverPatientAdherenceComponent';
+
 export default function CaregiverPatientAdherencePage({ params }) {
-    return (<main className="p-8">
-      <h1 className="text-2xl font-semibold">Patient Adherence Log</h1>
-    </main>);
+  const resolvedParams = params && typeof params.then === 'function' ? use(params) : params;
+  const patientId = resolvedParams?.id;
+
+  return (
+    <MainLayout activePath="/patients">
+      <CaregiverPatientAdherenceComponent patientId={patientId} />
+    </MainLayout>
+  );
 }

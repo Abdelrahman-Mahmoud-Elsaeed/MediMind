@@ -12,7 +12,7 @@ class DosesService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (userRole === 'CAREGIVER') {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -36,7 +36,7 @@ class DosesService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (userRole === 'CAREGIVER') {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
       if (!queryPatientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
@@ -61,12 +61,15 @@ class DosesService {
       if (med.schedule.startDate > endOfDay) continue;
       if (med.schedule.endDate && med.schedule.endDate < startOfDay) continue;
 
-      // Frequency check (DAILY or weekly day check)
-      // For DAILY, we can generate doses for this day
-      if (med.schedule.frequency === 'DAILY') {
-        for (const timeStr of med.schedule.timesOfDay) {
+      // Frequency check (DAILY, AS_NEEDED, or WEEKLY)
+      if (med.schedule?.frequency) {
+        const timesList = (med.schedule.timesOfDay && med.schedule.timesOfDay.length > 0)
+          ? med.schedule.timesOfDay
+          : [med.schedule.firstDoseTime || "08:00"];
+
+        for (const timeStr of timesList) {
           const [hours, minutes] = timeStr.split(':').map(Number);
-          const scheduledTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes, 0, 0));
+          const scheduledTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours || 0, minutes || 0, 0, 0));
           
           // Check if dose event already exists for this scheduled time
           const existing = await DoseEvent.findOne({

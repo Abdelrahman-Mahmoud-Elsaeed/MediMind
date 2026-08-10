@@ -4,7 +4,8 @@ const { RELATIONS } = require('../constants/relationship.constants');
 const ALL_RELATIONS = Object.values(RELATIONS).flat();
 
 const createRelationshipSchema = z.object({
-  caregiverEmail: z.string().email('Invalid email address format'),
+  caregiverEmail: z.string().email('Invalid email address format').optional(),
+  targetEmail: z.string().email('Invalid email address format').optional(),
   relation: z.string().refine(val => ALL_RELATIONS.includes(val), {
     message: `Relation must be one of: ${ALL_RELATIONS.join(', ')}`
   }),
@@ -17,6 +18,9 @@ const createRelationshipSchema = z.object({
     canManageAppointments: z.boolean().default(false),
     canReceiveNotifications: z.boolean().default(false)
   }).optional()
+}).refine(data => data.caregiverEmail || data.targetEmail, {
+  message: 'Email address is required',
+  path: ['caregiverEmail']
 });
 
 const updateStatusSchema = z.object({

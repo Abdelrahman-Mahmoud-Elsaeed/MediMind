@@ -49,6 +49,11 @@ export const patientService = {
     return res.data;
   },
 
+  updateRelationshipStatus: async (relationshipId, status) => {
+    const res = await apiClient.patch(`/relationships/${relationshipId}/status`, { status });
+    return res.data;
+  },
+
   // Profiles
   getProfile: async () => {
     const res = await apiClient.get("/profiles/patient/me");

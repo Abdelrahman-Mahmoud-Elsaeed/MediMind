@@ -27,7 +27,7 @@ export default function ProfilePage() {
     if (user?.role === "ADMIN") {
         return <AdminProfile />;
     }
-    if (user?.role === "CAREGIVER") {
+    if (user?.role === "CAREGIVER" || user?.role === "FAMILY_CAREGIVER" || user?.role === "PROFESSIONAL_CAREGIVER") {
         return <CaregiverProfile />;
     }
     // Default to Patient

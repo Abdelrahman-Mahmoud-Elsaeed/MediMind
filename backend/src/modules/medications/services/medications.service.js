@@ -27,7 +27,7 @@ class MedicationsService {
         throw new AppError('Access denied to this patient profile', 403, 'FORBIDDEN');
       }
       return patient;
-    } else if (userRole === 'CAREGIVER') {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
       const hasPermission = await relationshipsService.checkCaregiverAccess(
         patientId,
         userAccountId,
@@ -51,7 +51,7 @@ class MedicationsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (userRole === 'CAREGIVER') {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
       if (!payload.patientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }
@@ -61,10 +61,12 @@ class MedicationsService {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    // Verify condition exists
-    const condition = await MedicalCondition.findOne({ _id: payload.conditionId, patientId });
-    if (!condition) {
-      throw new AppError('Medical condition not found for this patient', 404, 'CONDITION_NOT_FOUND');
+    // Verify condition exists if provided
+    if (payload.conditionId) {
+      const condition = await MedicalCondition.findOne({ _id: payload.conditionId, patientId });
+      if (!condition) {
+        throw new AppError('Medical condition not found for this patient', 404, 'CONDITION_NOT_FOUND');
+      }
     }
 
     // Validate chronic / endDate logic
@@ -82,7 +84,7 @@ class MedicationsService {
 
     const medication = new Medication({
       patientId,
-      conditionId: payload.conditionId,
+      conditionId: payload.conditionId || null,
       addedBy: userAccountId,
       name: payload.name,
       imageURL: payload.imageURL,
@@ -111,7 +113,7 @@ class MedicationsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (userRole === 'CAREGIVER') {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole)) {
       if (!targetPatientId) {
         throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
       }

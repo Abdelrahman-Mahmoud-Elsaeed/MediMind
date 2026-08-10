@@ -8,35 +8,18 @@ import { useTheme } from "next-themes";
 import { MainLayout } from "@/shared/components/layout/MainLayout";
 import { AppButton } from "@/shared/components/ui/AppButton";
 import { AppProgressBar } from "@/shared/components/ui/AppProgressBar";
-import { TimelineItem } from "@/modules/dashboard/components/TimelineItem";
-// ==========================================
-// SUB-COMPONENT: WELCOME BANNER
-// ==========================================
-function WelcomeBanner({ userName, currentDateFormatted }) {
-    return (<div className="p-6 lg:p-10 flex flex-col gap-8">
-      <header className="relative w-full h-48 rounded-3xl overflow-hidden shadow-lg border border-outline-variant/10">
-        {/* Banner Background Image */}
-        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2000" alt="Medical background" className="absolute inset-0 w-full h-full object-cover grayscale opacity-90 dark:opacity-40"/>
-        {/* Dark Overlay for Readability */}
-        <div className="absolute inset-0 bg-slate-900/70"></div>
-
-        {/* Header Content */}
-        <div className="relative z-10 p-10 flex flex-col justify-center h-full text-white">
-          <span className="text-sm font-bold tracking-widest uppercase opacity-80 mb-2">Dashboard</span>
-          <h2 className="text-3xl lg:text-4xl font-bold mb-1 leading-tight">Welcome back, {userName}</h2>
-          <p className="text-blue-100/90 text-base lg:text-lg">{currentDateFormatted}</p>
-        </div>
-      </header>
-    </div>);
-}
+import { WelcomeBanner } from "@/modules/dashboard";
 // ==========================================
 // SUB-COMPONENT: ACTIVE TIMELINE (Matching Image 1)
+// ==========================================
+// ==========================================
+// SUB-COMPONENT: ACTIVE TIMELINE
 // ==========================================
 function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, locale, t }) {
     const isRtl = locale === "ar";
     
-    // Sort doses with priority (DUE/PENDING first, then UPCOMING, then TAKEN) and limit to ONLY 3 items
-    const sampleDoses = React.useMemo(() => {
+    // Sort doses dynamically with priority: DUE/PENDING first, then UPCOMING, then TAKEN
+    const sortedDoses = React.useMemo(() => {
         const raw = doses && doses.length > 0 ? doses : [
             {
                 doseEventId: 'd1',
@@ -67,53 +50,72 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, locale, t }) {
             }
         ];
 
-        // Sort strictly chronologically by scheduled time (08:00 AM -> 11:00 AM -> 20:00) and limit to 3 items
-        const sorted = [...raw].sort((a, b) => {
+        return [...raw].sort((a, b) => {
+            const statusOrder = (s) => (s === 'DUE' || s === 'due' || s === 'PENDING' ? 0 : s === 'UPCOMING' || s === 'upcoming' ? 1 : 2);
+            const p1 = statusOrder(a.status);
+            const p2 = statusOrder(b.status);
+            if (p1 !== p2) return p1 - p2;
             const t1 = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
             const t2 = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
             return t1 - t2;
         });
-
-        return sorted.slice(0, 3);
     }, [doses, isRtl, t]);
 
     const formattedHeaderDate = new Date().toLocaleDateString(isRtl ? 'ar-EG' : 'en-US', {
         month: 'short',
         day: 'numeric'
     });
-    return (<section className="p-6 sm:p-8 bg-surface-container-lowest dark:bg-surface-container-low rounded-[2rem] border border-outline-variant/30 text-on-surface shadow-xs">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-on-surface tracking-tight">
-          {t('patient.home.activeTimeline')}
-        </h2>
-        <span className="text-xs font-semibold text-on-surface-variant font-mono">
-          {t('patient.home.todayDate', { date: formattedHeaderDate })}
-        </span>
-      </div>
 
-      {/* Timeline Items Container */}
-      <div className="space-y-0">
-        {sampleDoses.map((dose, idx) => {
-            const isTaken = dose.status === 'TAKEN' || dose.status === 'completed';
-            const isDue = dose.status === 'DUE' || (nextDose && nextDose.doseEventId === dose.doseEventId) || dose.status === 'due';
-            const status = isTaken ? 'completed' : isDue ? 'due' : 'upcoming';
-            const timeStr = dose.formattedTime || new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const itemData = {
-                id: dose.doseEventId || String(idx),
-                timeSlot: dose.timeSlotName || dose.medicationName,
-                medication: dose.subtext || (isTaken ? `${dose.medicationName} • Taken` : `${dose.medicationName} • 1 Tablet`),
-                time: timeStr,
-                status,
-                doseEventId: dose.doseEventId,
-                timeSlotName: dose.timeSlotName,
-                subtext: dose.subtext,
-                formattedTime: timeStr,
-            };
-            return (<TimelineItem key={dose.doseEventId || idx} item={itemData} isFirst={idx === 0} isLast={idx === sampleDoses.length - 1} onMarkAsTaken={(id) => confirmDose?.(id)} onSnooze={(id) => skipDose?.(id)}/>);
-        })}
-      </div>
-    </section>);
+    return (
+      <section className="p-6 sm:p-8 bg-surface-container-lowest dark:bg-surface-container-low rounded-[2rem] border border-outline-variant/30 text-on-surface shadow-xs">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-extrabold text-on-surface tracking-tight">
+              {t('patient.home.activeTimeline')}
+            </h2>
+            <span className="text-xs font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/80 px-3 py-1 rounded-full border border-teal-200/80 dark:border-teal-800/60">
+              {sortedDoses.length} {isRtl ? 'جرعات اليوم' : 'Doses Today'}
+            </span>
+          </div>
+          <span className="text-xs font-semibold text-on-surface-variant font-mono bg-slate-100 dark:bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-200/80 dark:border-slate-700/60">
+            {t('patient.home.todayDate', { date: formattedHeaderDate })}
+          </span>
+        </div>
+
+        {/* Timeline Items Scroll Container (Scales gracefully for 1 to 100+ items) */}
+        <div className="max-h-[580px] overflow-y-auto pr-1 space-y-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+          {sortedDoses.map((dose, idx) => {
+              const isTaken = dose.status === 'TAKEN' || dose.status === 'completed';
+              const isDue = dose.status === 'DUE' || (nextDose && nextDose.doseEventId === dose.doseEventId) || dose.status === 'due';
+              const status = isTaken ? 'completed' : isDue ? 'due' : 'upcoming';
+              const timeStr = dose.formattedTime || new Date(dose.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+              const itemData = {
+                  id: dose.doseEventId || String(idx),
+                  timeSlot: dose.timeSlotName || dose.medicationName,
+                  medication: dose.subtext || (isTaken ? `${dose.medicationName} • Taken` : `${dose.medicationName} • 1 Tablet`),
+                  time: timeStr,
+                  status,
+                  doseEventId: dose.doseEventId,
+                  timeSlotName: dose.timeSlotName,
+                  subtext: dose.subtext,
+                  formattedTime: timeStr,
+              };
+              return (
+                <TimelineItem
+                  key={dose.doseEventId || idx}
+                  item={itemData}
+                  index={idx}
+                  isFirst={idx === 0}
+                  isLast={idx === sortedDoses.length - 1}
+                  onMarkAsTaken={(id) => confirmDose?.(id)}
+                  onSnooze={(id) => skipDose?.(id)}
+                />
+              );
+          })}
+        </div>
+      </section>
+    );
 }
 // ==========================================
 // SUB-COMPONENT: MEDICATIONS CABINET (List View Matching Image 2)

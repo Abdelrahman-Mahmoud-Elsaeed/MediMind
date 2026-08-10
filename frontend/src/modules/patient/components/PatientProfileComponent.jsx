@@ -84,6 +84,34 @@ export default function PatientProfileComponent() {
   const [newAddrState, setNewAddrState] = useState("CA");
   const [newAddrZip, setNewAddrZip] = useState("94121");
 
+  // Security Modal State
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  // Toast Notification State
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    setPasswordSuccess(true);
+    setTimeout(() => {
+      setPasswordSuccess(false);
+      setIsSecurityOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      triggerToast(isAr ? "تم تحديث كلمة المرور بنجاح 🎉" : "Password updated successfully 🎉");
+    }, 1000);
+  };
+
   // Notifications & Data Sharing state
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [dataSharingOptIn, setDataSharingOptIn] = useState(true);
@@ -144,7 +172,7 @@ export default function PatientProfileComponent() {
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
         try {
           await updateProfile({ profilePictureUrl: compressedBase64 });
-          alert(isAr ? "تم تحديث الصورة الشخصية بنجاح!" : "Profile picture updated successfully!");
+          triggerToast(isAr ? "تم تحديث الصورة الشخصية بنجاح! 🎉" : "Profile picture updated successfully! 🎉");
         } catch (err) {
           console.error("Failed to upload profile image:", err);
           alert(isAr ? "تعذر تحديث الصورة الشخصية" : "Failed to update profile picture");
@@ -454,7 +482,7 @@ export default function PatientProfileComponent() {
               className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40"
             >
               <Plus className="w-3.5 h-3.5 mr-1" />
-              {isAr ? "إضافة جهة جديدة" : "+ Add New"}
+              {isAr ? "إضافة جهة جديدة" : " Add New"}
             </Button>
           </div>
 
@@ -569,7 +597,7 @@ export default function PatientProfileComponent() {
                 className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
-                {isAr ? "إضافة عنوان جديد" : "+ Add New"}
+                {isAr ? "إضافة عنوان جديد" : " Add New"}
               </Button>
             </div>
 
@@ -577,11 +605,10 @@ export default function PatientProfileComponent() {
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    addr.isPrimary
+                  className={`p-4 rounded-2xl border transition-all ${addr.isPrimary
                       ? "bg-teal-500/5 border-teal-500/40"
                       : "bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-800"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{addr.type}</h4>
@@ -643,7 +670,7 @@ export default function PatientProfileComponent() {
                       <div className="text-[10px] text-slate-400">Updated 2mo ago</div>
                     </div>
                   </div>
-                  <Button variant="link" onClick={() => alert("Password update dialog opened")} className="text-xs font-bold text-teal-600 p-0 h-auto">
+                  <Button variant="link" onClick={() => setIsSecurityOpen(true)} className="text-xs font-bold text-teal-600 p-0 h-auto">
                     {isAr ? "تحديث" : "Update"}
                   </Button>
                 </div>
@@ -1032,6 +1059,87 @@ export default function PatientProfileComponent() {
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* CHANGE PASSWORD & SECURITY MODAL */}
+      <AnimatePresence>
+        {isSecurityOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                  {isAr ? "تغيير كلمة المرور والأمان" : "Change Password & Security"}
+                </h3>
+                <Button variant="ghost" size="icon" onClick={() => setIsSecurityOpen(false)} className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {passwordSuccess && (
+                <div className="bg-teal-500/10 border border-teal-500/30 text-teal-700 dark:text-teal-400 p-3 rounded-xl text-center text-xs font-bold">
+                  {isAr ? "تمت عملية تغيير كلمة المرور بنجاح 🎉" : "Password changed successfully 🎉"}
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-4 text-xs font-bold">
+                <div>
+                  <label className="block mb-1.5 text-slate-700 dark:text-slate-300">
+                    {isAr ? "كلمة المرور الحالية" : "Current Password"}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-teal-500 rounded-xl px-3.5 py-2.5 outline-none text-slate-900 dark:text-slate-100 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1.5 text-slate-700 dark:text-slate-300">
+                    {isAr ? "كلمة المرور الجديدة" : "New Password"}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-teal-500 rounded-xl px-3.5 py-2.5 outline-none text-slate-900 dark:text-slate-100 font-medium"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setIsSecurityOpen(false)}>
+                    {isAr ? "إلغاء" : "Cancel"}
+                  </Button>
+                  <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
+                    {isAr ? "تحديث كلمة المرور" : "Update Password"}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* FLOATING TOAST FEEDBACK NOTIFICATION */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 bg-slate-900 dark:bg-slate-800 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 text-xs font-bold flex items-center gap-2.5 max-w-sm"
+          >
+            <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </motion.div>
         )}
       </AnimatePresence>
     </MainLayout>

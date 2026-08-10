@@ -9,39 +9,70 @@ class RelationshipsService {
   /**
    * Initiates a relationship connection between a patient and a caregiver/doctor/pharmacist.
    */
-  async initiateRelationship(patientAccountId, caregiverEmail, relation, permissions) {
-    const patient = await Patient.findOne({ accountId: patientAccountId });
-    if (!patient) {
-      throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
-    }
-
-    const caregiverAccount = await Account.findOne({ email: caregiverEmail });
-    if (!caregiverAccount) {
-      throw new AppError('Account not found', 404, 'ACCOUNT_NOT_FOUND');
-    }
-
+  async initiateRelationship(userAccountId, userRole, targetEmail, relation, permissions) {
+    let patient;
     let caregiver;
     let caregiverType;
 
-    // Dynamically resolve caregiver model
-    if (caregiverAccount.role === 'CAREGIVER' || caregiverAccount.role === 'FAMILY_CAREGIVER') {
-      caregiver = await Caregiver.findOne({ accountId: caregiverAccount._id });
-      caregiverType = 'FamilyCaregiver';
-    } else if (caregiverAccount.role === 'PROFESSIONAL_CAREGIVER') {
-      const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
-      caregiver = await ProfessionalCaregiver.findOne({ accountId: caregiverAccount._id });
-      caregiverType = 'ProfessionalCaregiver';
-    } else if (caregiverAccount.role === 'DOCTOR') {
-      const Doctor = require('../../auth/models/Doctor.model');
-      caregiver = await Doctor.findOne({ accountId: caregiverAccount._id });
-      caregiverType = 'Doctor';
+    if (userRole === 'PATIENT') {
+      patient = await Patient.findOne({ accountId: userAccountId });
+      if (!patient) {
+        throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
+      }
+
+      const targetAccount = await Account.findOne({ email: targetEmail });
+      if (!targetAccount) {
+        throw new AppError('Account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
+      }
+
+      if (targetAccount.role === 'CAREGIVER' || targetAccount.role === 'FAMILY_CAREGIVER') {
+        caregiver = await Caregiver.findOne({ accountId: targetAccount._id });
+        caregiverType = 'FamilyCaregiver';
+      } else if (targetAccount.role === 'PROFESSIONAL_CAREGIVER') {
+        const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
+        caregiver = await ProfessionalCaregiver.findOne({ accountId: targetAccount._id });
+        caregiverType = 'ProfessionalCaregiver';
+      } else if (targetAccount.role === 'DOCTOR') {
+        const Doctor = require('../../auth/models/Doctor.model');
+        caregiver = await Doctor.findOne({ accountId: targetAccount._id });
+        caregiverType = 'Doctor';
+      }
+
+      if (!caregiver) {
+        throw new AppError('Caregiver profile not found for target account', 404, 'CAREGIVER_NOT_FOUND');
+      }
+    } else if (['CAREGIVER', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'].includes(userRole)) {
+      if (userRole === 'CAREGIVER' || userRole === 'FAMILY_CAREGIVER') {
+        caregiver = await Caregiver.findOne({ accountId: userAccountId });
+        caregiverType = 'FamilyCaregiver';
+      } else if (userRole === 'PROFESSIONAL_CAREGIVER') {
+        const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
+        caregiver = await ProfessionalCaregiver.findOne({ accountId: userAccountId });
+        caregiverType = 'ProfessionalCaregiver';
+      } else if (userRole === 'DOCTOR') {
+        const Doctor = require('../../auth/models/Doctor.model');
+        caregiver = await Doctor.findOne({ accountId: userAccountId });
+        caregiverType = 'Doctor';
+      }
+
+      if (!caregiver) {
+        throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
+      }
+
+      const targetAccount = await Account.findOne({ email: targetEmail });
+      if (!targetAccount) {
+        throw new AppError('Patient account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
+      }
+
+      patient = await Patient.findOne({ accountId: targetAccount._id });
+      if (!patient) {
+        throw new AppError('Patient profile not found for target account', 404, 'PATIENT_NOT_FOUND');
+      }
+    } else {
+      throw new AppError('Invalid role for initiating relationship', 403, 'FORBIDDEN');
     }
 
-    if (!caregiver) {
-      throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
-    }
-
-    // Check if relationship already exists and is not soft deleted
+    // Check if relationship already exists
     const existing = await Relationship.findOne({
       patientId: patient._id,
       caregiverId: caregiver._id,
@@ -50,7 +81,6 @@ class RelationshipsService {
     });
 
     if (existing) {
-      // Prevent duplicate pending invitations
       if (existing.status === 'PENDING') {
         return existing;
       }
@@ -58,11 +88,11 @@ class RelationshipsService {
         throw new AppError('Relationship already active', 400, 'RELATIONSHIP_EXISTS');
       }
 
-      // Re-initiate relationship from REJECTED or REVOKED state
       const allowedTransitions = ALLOWED_STATUS_TRANSITIONS[existing.status];
       if (allowedTransitions && allowedTransitions.includes('PENDING')) {
         existing.status = 'PENDING';
         existing.relation = relation;
+        existing.initiatedBy = userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER';
         existing.permissions = permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType];
         await existing.save();
         return existing;
@@ -76,6 +106,7 @@ class RelationshipsService {
       caregiverType,
       relation,
       status: 'PENDING',
+      initiatedBy: userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER',
       permissions: permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType]
     });
 
@@ -131,37 +162,47 @@ class RelationshipsService {
       caregiverId: item.caregiverId,
       relation: item.relation,
       status: item.status,
-      permissions: item.permissions
+      permissions: item.permissions,
+      initiatedBy: item.initiatedBy || 'PATIENT'
     }));
   }
 
   /**
-   * Updates status of an invitation (e.g. Caregiver accepting/rejecting the request).
+   * Updates status of an invitation (e.g. Caregiver or Patient accepting/rejecting request).
    */
-  async updateStatus(caregiverAccountId, relationshipId, status) {
-    let caregiver = await Caregiver.findOne({ accountId: caregiverAccountId });
-    if (!caregiver) {
-      const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
-      caregiver = await ProfessionalCaregiver.findOne({ accountId: caregiverAccountId });
-    }
-    if (!caregiver) {
-      const Doctor = require('../../auth/models/Doctor.model');
-      caregiver = await Doctor.findOne({ accountId: caregiverAccountId });
-    }
-    if (!caregiver) {
-      const Pharmacist = require('../../auth/models/Pharmacist.model');
-      caregiver = await Pharmacist.findOne({ accountId: caregiverAccountId });
-    }
-    if (!caregiver) {
-      throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
+  async updateStatus(userAccountId, userRole, relationshipId, status) {
+    let relationship;
+
+    if (userRole === 'PATIENT') {
+      const patient = await Patient.findOne({ accountId: userAccountId });
+      if (!patient) {
+        throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
+      }
+      relationship = await Relationship.findOne({ _id: relationshipId, patientId: patient._id, deletedAt: null });
+    } else {
+      let caregiver = await Caregiver.findOne({ accountId: userAccountId });
+      if (!caregiver) {
+        const ProfessionalCaregiver = require('../../auth/models/ProfessionalCaregiver.model');
+        caregiver = await ProfessionalCaregiver.findOne({ accountId: userAccountId });
+      }
+      if (!caregiver) {
+        const Doctor = require('../../auth/models/Doctor.model');
+        caregiver = await Doctor.findOne({ accountId: userAccountId });
+      }
+      if (!caregiver) {
+        const Pharmacist = require('../../auth/models/Pharmacist.model');
+        caregiver = await Pharmacist.findOne({ accountId: userAccountId });
+      }
+      if (!caregiver) {
+        throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
+      }
+      relationship = await Relationship.findOne({ _id: relationshipId, caregiverId: caregiver._id, deletedAt: null });
     }
 
-    const relationship = await Relationship.findOne({ _id: relationshipId, caregiverId: caregiver._id, deletedAt: null });
     if (!relationship) {
       throw new AppError('Relationship not found', 404, 'RELATIONSHIP_NOT_FOUND');
     }
 
-    // Validate state transition machine
     const allowed = ALLOWED_STATUS_TRANSITIONS[relationship.status];
     if (!allowed || !allowed.includes(status)) {
       throw new AppError(`Invalid status transition from ${relationship.status} to ${status}`, 400, 'INVALID_TRANSITION');
@@ -224,7 +265,15 @@ class RelationshipsService {
     });
 
     if (!relationship) return false;
-    return !!relationship.permissions[requiredPermission];
+    
+    if (relationship.permissions && relationship.permissions[requiredPermission] !== undefined) {
+      return !!relationship.permissions[requiredPermission];
+    }
+    if (['canEditMedication', 'canDeleteMedication', 'canOrderRefills'].includes(requiredPermission)) {
+      return !!(relationship.permissions && relationship.permissions.canAddMedication);
+    }
+
+    return true;
   }
 }
 

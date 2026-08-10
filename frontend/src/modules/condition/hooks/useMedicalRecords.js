@@ -54,7 +54,8 @@ export function useMedicalRecords() {
 
     const validResult = conditionSchema.safeParse(rawData);
     if (!validResult.success) {
-      setValidationError(validResult.error.errors[0].message);
+      const errMsg = validResult.error?.issues?.[0]?.message || validResult.error?.errors?.[0]?.message || "Validation failed";
+      setValidationError(errMsg);
       return;
     }
 
