@@ -118,7 +118,7 @@ export function validateStep2(formData, isPhoneInput, t, countryCode = "EG") {
     }
   }
 
-  if (formData.role !== "caregiver") {
+  if (formData.role === "patient") {
     if (!formData.dateOfBirth) {
       errors.dateOfBirth = t("auth.validation.dobRequired") || "Date of birth is required";
       valid = false;
@@ -164,6 +164,18 @@ export function validateStep3(formData, t, countryCode = "EG") {
         errors.emergencyContactPhone = t("auth.validation.invalidPhoneForCountry") || "Please enter a valid phone number for the selected country.";
         valid = false;
       }
+    }
+  } else if (formData.role === "pharmacist") {
+    const pharmacyName = formData.pharmacyName ? formData.pharmacyName.trim() : "";
+    if (!pharmacyName) {
+      errors.pharmacyName = t("auth.validation.pharmacyNameRequired") || "Pharmacy name is required";
+      valid = false;
+    }
+
+    const licenseNumber = formData.licenseNumber ? formData.licenseNumber.trim() : "";
+    if (!licenseNumber) {
+      errors.licenseNumber = t("auth.validation.licenseNumberRequired") || "Professional license number is required";
+      valid = false;
     }
   }
 
