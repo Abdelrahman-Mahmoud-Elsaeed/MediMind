@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BrandingSidebar from "../components/BrandingSidebar";
 import {
@@ -18,6 +18,11 @@ import { useAuth } from "../hooks/useAuth";
 export default function RegistrationContainer() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const {
     currentStep,
@@ -40,26 +45,31 @@ export default function RegistrationContainer() {
   useEffect(() => {
     if (!loading && isAuthenticated) {
       const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
-      router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+      if (role === "PHARMACIST") {
+        router.replace("/pharmacy");
+      } else {
+        router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+      }
     }
   }, [isAuthenticated, loading, user, router]);
 
   const { showPassword, togglePasswordVisibility } = usePasswordVisibility();
 
-  if (!loading && isAuthenticated) {
+  if (!mounted || (!loading && isAuthenticated)) {
     return null;
   }
 
   return (
     <div
-      dir={dir}
+      dir={dir || "ltr"}
+      suppressHydrationWarning
       className="bg-background text-on-surface min-h-screen grid grid-cols-1 lg:grid-cols-2 antialiased overflow-hidden selection:bg-primary-container selection:text-on-primary-container"
     >
       <div className="flex flex-col h-full overflow-y-auto px-6 lg:px-12 py-8 bg-surface-container-lowest">
         <RegistrationHeader currentStep={currentStep} role={formData.role} />
 
         <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center">
-          <RegistrationStepIndicator currentStep={currentStep} />
+          <RegistrationStepIndicator currentStep={currentStep} role={formData.role} />
 
           {displayError && (
             <div className="w-full bg-error-container text-on-error-container p-3.5 rounded-2xl mb-6 text-center font-medium text-sm shadow-xs">

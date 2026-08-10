@@ -20,7 +20,7 @@ export function useRegistration() {
     password: "",
     role: "patient",
 
-    // Step 2
+    // Step 2 & 3
     firstName: "",
     lastName: "",
     phone: "",
@@ -30,6 +30,9 @@ export function useRegistration() {
     dateOfBirth: "",
     gender: "male",
     bloodType: "A+",
+    pharmacyName: "",
+    licenseNumber: "",
+    pharmacyPhone: "",
 
     // Step 3
     height: "",
