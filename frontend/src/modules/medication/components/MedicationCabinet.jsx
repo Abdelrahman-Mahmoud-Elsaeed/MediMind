@@ -14,6 +14,7 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 import { useMedications, useCreateMedication, useRefillOrders, useCreateRefillOrder } from '@/modules/medication/hooks/useMedicationHooks';
 import { usePatientDosesQuery } from '@/modules/patient/hooks/usePatientQueries';
 import { Card, Badge, Button } from '@/shared/components/ui';
+import { showSuccess, showError, showInfo } from '@/shared/components/ui/toast';
 
 export const MedicationCabinet = () => {
   const router = useRouter();
@@ -121,18 +122,24 @@ export const MedicationCabinet = () => {
     };
     createMedicationMutation.mutate(payload, {
       onSuccess: () => {
-        alert(isAr ? `تمت إضافة ${newMed.name} إلى الخزانة بنجاح.` : `Added ${newMed.name} to cabinet successfully.`);
+        showSuccess(isAr ? `تمت إضافة ${newMed.name} إلى الخزانة بنجاح.` : `Added ${newMed.name} to cabinet successfully.`, isAr ? 'تم بنجاح' : 'Success');
       },
       onError: () => {
-        alert(isAr ? `تمت إضافة ${newMed.name} إلى الخزانة بنجاح.` : `Added ${newMed.name} to cabinet successfully.`);
+        showError(isAr ? `تعذر إضافة ${newMed.name} إلى الخزانة. يرجى المحاولة لاحقًا.` : `Unable to add ${newMed.name} to the cabinet. Please try again later.`, isAr ? 'حدث خطأ' : 'Error');
       },
     });
   };
 
   const handleRefillOrder = (medicationId) => {
     createRefillMutation.mutate({ medicationId }, {
-      onSuccess: () => alert(isAr ? 'تم إرسال طلب إعادة التعبئة بنجاح!' : 'Refill order submitted successfully!'),
-      onError: () => alert(isAr ? 'تم تسجيل طلب إعادة التعبئة!' : 'Refill order request logged!'),
+      onSuccess: () => showSuccess(
+        isAr ? 'تم تسجيل طلب إعادة التعبئة بنجاح!' : 'Refill request submitted successfully!',
+        isAr ? 'تم بنجاح' : 'Success'
+      ),
+      onError: () => showError(
+        isAr ? 'تعذر تسجيل طلب إعادة التعبئة. يرجى المحاولة مرة أخرى.' : 'Unable to submit refill request. Please try again.',
+        isAr ? 'حدث خطأ' : 'Error'
+      ),
     });
   };
 
@@ -482,7 +489,7 @@ export const MedicationCabinet = () => {
                   {isAr ? 'إغلاق' : 'Close'}
                 </Button>
                 <Button
-                  onClick={() => alert(isAr ? 'جاري تتبع موقع مندوب التوصيل...' : 'Tracking live courier location...')}
+                  onClick={() => showInfo(isAr ? 'جاري تتبع موقع مندوب التوصيل...' : 'Tracking live courier location...', isAr ? 'معلومة' : 'Information')}
                   className="bg-teal-600 hover:bg-teal-700 text-white font-bold"
                 >
                   <MapPin className="w-4 h-4 mr-2" />
@@ -618,7 +625,7 @@ export const MedicationCabinet = () => {
                 <Button
                   onClick={() => {
                     setIsAutoRefillSettingsOpen(false);
-                    alert(isAr ? 'تم حفظ إعدادات التجديد التلقائي بنجاح!' : 'Auto-refill settings saved successfully!');
+                    showSuccess(isAr ? 'تم حفظ إعدادات التجديد التلقائي بنجاح!' : 'Auto-refill settings saved successfully!', isAr ? 'تم بنجاح' : 'Success');
                   }}
                   className="bg-teal-600 hover:bg-teal-700 text-white font-bold"
                 >

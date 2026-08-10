@@ -10,6 +10,7 @@ import {
 } from '@/modules/medication/hooks/useMedicationHooks';
 import { useDeletePatientMedicationMutation } from '@/modules/patient/hooks/usePatientQueries';
 import { Card, Badge, Button, ProgressBar } from '@/shared/components/ui';
+import { showSuccess, showError } from '@/shared/components/ui/toast';
 import { ArrowLeft, Clock, Edit3, RefreshCw, Trash2, Calendar, ShieldCheck, Pill, Utensils } from 'lucide-react';
 
 export default function MedicationDetailsPage({ params }) {
@@ -33,8 +34,14 @@ export default function MedicationDetailsPage({ params }) {
     createRefillMutation.mutate(
       { medicationId: medication.id || medication._id },
       {
-        onSuccess: () => alert(isAr ? 'تم إرسال طلب إعادة التعبئة بنجاح!' : 'Refill order submitted successfully!'),
-        onError: () => alert(isAr ? 'تم تسجيل طلب إعادة التعبئة!' : 'Refill order logged!'),
+        onSuccess: () => showSuccess(
+          isAr ? 'تم تسجيل طلب إعادة التعبئة بنجاح!' : 'Refill request submitted successfully!',
+          isAr ? 'تم بنجاح' : 'Success'
+        ),
+        onError: () => showError(
+          isAr ? 'تعذر تسجيل طلب إعادة التعبئة. يرجى المحاولة مرة أخرى.' : 'Unable to submit refill request. Please try again.',
+          isAr ? 'حدث خطأ' : 'Error'
+        ),
       }
     );
   };

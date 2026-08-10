@@ -397,6 +397,11 @@ body {
   50% { opacity: 0.8; transform: scale(1.05); }
 }
 
+@keyframes toastProgress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }

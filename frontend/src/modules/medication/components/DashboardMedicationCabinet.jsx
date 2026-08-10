@@ -7,6 +7,7 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 import { Loader2 } from 'lucide-react';
 import { AppProgressBar } from '@/shared/components/ui/AppProgressBar';
 import { AppButton } from '@/shared/components/ui/AppButton';
+import { showInfo } from '@/shared/components/ui/toast';
 const fallbackMedications = [
     {
         id: 'm1',
@@ -50,7 +51,7 @@ export const DashboardMedicationCabinet = () => {
     const isAr = locale === 'ar';
     const { data: apiMeds = [], isLoading, error } = useMedications();
     const handleRefill = (name) => {
-        alert(t('patient.home.refillRequested', { name }));
+        showInfo(t('patient.home.refillRequested', { name }), isAr ? 'معلومة' : 'Information');
     };
     const medications = apiMeds.slice(0, 4);
     return (<Card className="hover:shadow-lg transition-shadow p-6 sm:p-8">

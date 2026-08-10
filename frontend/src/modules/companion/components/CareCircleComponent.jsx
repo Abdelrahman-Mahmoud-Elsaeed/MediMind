@@ -446,7 +446,7 @@ export default function CareCircleComponent() {
 
               <Button
                 onClick={() => {
-                  alert(`Starting ${activeActionModal.type} session with ${activeActionModal.name}...`);
+                  showInfo(isAr ? `جاري بدء ${activeActionModal.type} مع ${activeActionModal.name}...` : `Starting ${activeActionModal.type} session with ${activeActionModal.name}...`, isAr ? 'معلومة' : 'Information');
                   setActiveActionModal(null);
                 }}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-2.5"

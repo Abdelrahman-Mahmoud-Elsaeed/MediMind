@@ -8,6 +8,7 @@ import { useTranslation } from "@/shared/lib/i18nContext";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useInviteCaregiverMutation } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Button } from "@/shared/components/ui";
+import { showSuccess, showError } from "@/shared/components/ui/toast";
 import { ArrowLeft, UserPlus, Mail, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function AddCaregiverPage() {
@@ -51,10 +52,11 @@ export default function AddCaregiverPage() {
 
     inviteMutation.mutate(payload, {
       onSuccess: () => {
-        alert(
+        showSuccess(
           isCaregiver
             ? (isAr ? "تم إرسال دعوة المريض بنجاح!" : "Patient invitation sent successfully!")
-            : (isAr ? "تم إرسال دعوة مقدم الرعاية بنجاح!" : "Caregiver invitation sent successfully!")
+            : (isAr ? "تم إرسال دعوة مقدم الرعاية بنجاح!" : "Caregiver invitation sent successfully!"),
+          isAr ? "تم بنجاح" : "Success"
         );
         router.push(isCaregiver ? "/patients" : "/caregivers");
       },

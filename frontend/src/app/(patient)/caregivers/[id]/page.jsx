@@ -10,6 +10,7 @@ import {
   useRevokeRelationshipMutation
 } from "@/modules/patient/hooks/usePatientQueries";
 import { Card, Badge, Button } from "@/shared/components/ui";
+import { showSuccess, showError } from "@/shared/components/ui/toast";
 import { ArrowLeft, User, Phone, Mail, ShieldCheck, Trash2, CheckCircle2, Clock } from "lucide-react";
 
 export default function CaregiverDetailPage({ params }) {
@@ -35,8 +36,11 @@ export default function CaregiverDetailPage({ params }) {
     if (confirm(confirmMsg)) {
       revokeMutation.mutate(relationship.id || relationship._id || relationship.relationshipId, {
         onSuccess: () => {
-          alert(isAr ? "تم إلغاء رابط الرعاية بنجاح!" : "Caregiver relationship revoked successfully!");
+          showSuccess(isAr ? "تم إلغاء رابط الرعاية بنجاح!" : "Caregiver relationship revoked successfully!", isAr ? "تم بنجاح" : "Success");
           router.push("/caregivers");
+        },
+        onError: () => {
+          showError(isAr ? "تعذر إلغاء رابط الرعاية. يرجى المحاولة مرة أخرى." : "Unable to revoke caregiver access. Please try again.", isAr ? "حدث خطأ" : "Error");
         },
       });
     }
