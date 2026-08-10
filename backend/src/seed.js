@@ -416,15 +416,18 @@ async function seed() {
       }
     }
 
-    const linkedCaregiverIds = [
+    // Seed Relationships for patient1, patient2, and patient3
+    const linkedPatientEmails = [
       "patient1@medimind.io",
       "patient2@medimind.io",
       "patient3@medimind.io",
     ];
 
-    if (linkedCaregiverIds.includes(info.email) && caregiverDocs.length > 0) {
-      const patientCaregivers = caregiverDocs.slice(0, 3);
-      for (const caregiverProfile of patientCaregivers) {
+    if (linkedPatientEmails.includes(info.email) && caregiverDocs.length > 0) {
+      // Connect to first 2 caregivers (1 ACCEPTED, 1 PENDING)
+      const patientCaregivers = caregiverDocs.slice(0, 2);
+      for (let i = 0; i < patientCaregivers.length; i++) {
+        const caregiverProfile = patientCaregivers[i];
         const existingRelation = await Relationship.findOne({
           patientId: patient._id,
           caregiverId: caregiverProfile._id,
@@ -432,20 +435,39 @@ async function seed() {
         });
 
         if (!existingRelation) {
+          const isAccepted = i === 0;
           await Relationship.create({
             patientId: patient._id,
             caregiverId: caregiverProfile._id,
             caregiverType: "FamilyCaregiver",
-            relation: caregiverProfile.firstName === "Nour" ? "Family Member" : "Primary Caregiver",
-            status: "ACCEPTED",
-            initiatedBy: "CAREGIVER",
-            permissions: {
-              canAddMedication: true,
-              canEditMedication: true,
-              canDeleteMedication: true,
-              canViewMedicalRecords: true,
-              canOrderRefills: true,
-            },
+            relation: isAccepted ? "Family Member" : "Primary Caregiver",
+            status: isAccepted ? "ACCEPTED" : "PENDING",
+            initiatedBy: isAccepted ? "CAREGIVER" : "PATIENT",
+            permissions: isAccepted
+              ? {
+                canViewMedications: true,
+                canAddMedication: true,
+                canEditMedication: true,
+                canDeleteMedication: true,
+                canViewMedicalRecords: true,
+                canEditMedicalRecords: false,
+                canViewDoseSchedule: true,
+                canConfirmDose: true,
+                canOrderRefills: true,
+                canReceiveNotifications: true,
+              }
+              : {
+                canViewMedications: true,
+                canAddMedication: false,
+                canEditMedication: false,
+                canDeleteMedication: false,
+                canViewMedicalRecords: true,
+                canEditMedicalRecords: false,
+                canViewDoseSchedule: true,
+                canConfirmDose: false,
+                canOrderRefills: false,
+                canReceiveNotifications: true,
+              },
           });
         }
       }

@@ -33,6 +33,7 @@ export default function CareCircleComponent() {
     loading,
     error,
     submitting,
+    updatingStatus,
     emailInput,
     setEmailInput,
     canManageMeds,
@@ -40,8 +41,11 @@ export default function CareCircleComponent() {
     canViewRecords,
     setCanViewRecords,
     activeCaregivers,
+    pendingIncoming,
+    pendingOutgoing,
     pendingInvitations,
     sendInvitation,
+    respondToRequest,
     revokeRelationship,
     validationError
   } = useCareCircle();
@@ -160,6 +164,87 @@ export default function CareCircleComponent() {
             {isAr ? "دعوة مقدم رعاية جديد" : "Invite New Caregiver"}
           </Button>
         </div>
+
+        {/* PENDING CONNECTION REQUESTS SECTION */}
+        {(pendingIncoming?.length > 0 || pendingOutgoing?.length > 0) && (
+          <div className="space-y-4 bg-gradient-to-r from-teal-500/10 via-teal-500/5 to-transparent border border-teal-500/30 rounded-3xl p-6 shadow-xs">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                {isAr ? "طلبات الربط المعلقة" : "Pending Connection Requests"}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Incoming Requests */}
+              {pendingIncoming?.map((req) => {
+                const cgName = req.caregiverId
+                  ? `${req.caregiverId.firstName || ""} ${req.caregiverId.lastName || ""}`.trim() || req.caregiverId.email
+                  : (isAr ? "مقدم رعاية جديد" : "New Caregiver");
+
+                return (
+                  <div
+                    key={req.relationshipId || req.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-xs"
+                  >
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{cgName}</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isAr ? "طلب ربط من مقدم رعاية" : "Incoming Caregiver Request"} • {req.relation || "Caregiver"}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        onClick={() => respondToRequest(req.relationshipId || req.id, "ACCEPTED")}
+                        disabled={updatingStatus}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        {isAr ? "قبول" : "Accept"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => respondToRequest(req.relationshipId || req.id, "REJECTED")}
+                        disabled={updatingStatus}
+                        className="border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-xs rounded-xl"
+                      >
+                        {isAr ? "رفض" : "Reject"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Outgoing Requests */}
+              {pendingOutgoing?.map((req) => {
+                const cgName = req.caregiverId
+                  ? `${req.caregiverId.firstName || ""} ${req.caregiverId.lastName || ""}`.trim() || req.caregiverId.email
+                  : (isAr ? "مقدم رعاية" : "Caregiver");
+
+                return (
+                  <div
+                    key={req.relationshipId || req.id}
+                    className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-4"
+                  >
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{cgName}</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isAr ? "دعوة كـ " : "Invited as "} {req.relation || "Caregiver"}
+                      </p>
+                    </div>
+
+                    <Badge variant="warning" className="text-[10px]">
+                      {isAr ? "بانتظار قبول مقدم الرعاية" : "Pending Caregiver Acceptance"}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* CARE TEAM SECTION */}
         <div className="space-y-4">
