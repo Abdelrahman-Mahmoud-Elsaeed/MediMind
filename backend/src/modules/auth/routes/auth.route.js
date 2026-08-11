@@ -12,11 +12,16 @@ const validate = require("../../../shared/middleware/validation.middleware");
 const { authRateLimiter } = require("../../../shared/middleware/rateLimit.middleware");
 
 // Validation Schemas
-const { loginSchema } = require("../validators/auth.validation");
+const {
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require("../validators/auth.validation");
 const {
   sendOtpSchema,
   verifyOtpSchema,
 } = require("../validators/otp.validation");
+const passwordResetController = require("../controllers/passwordReset.controller");
 
 const {
   registerProviderSchema: doctorSchema,
@@ -60,6 +65,20 @@ router.post(
   authRateLimiter,
   validateByRole(registerSchemas),
   authController.register,
+);
+
+// --- Password Reset Routes (Public, Rate Limited) ---
+router.post(
+  "/password/forgot",
+  authRateLimiter,
+  validate(forgotPasswordSchema),
+  passwordResetController.forgotPassword,
+);
+router.post(
+  "/password/reset",
+  authRateLimiter,
+  validate(resetPasswordSchema),
+  passwordResetController.resetPassword,
 );
 
 // --- OTP Routes (requires auth + rate limited) ---
