@@ -40,6 +40,11 @@ const env = {
   AWS_SES_REGION: process.env.AWS_SES_REGION || 'us-east-1',
   AWS_SES_FROM_EMAIL: process.env.AWS_SES_FROM_EMAIL || 'no-reply@medplatform.com',
 
+  // RESEND TRANSACTIONAL EMAIL (OTP, password reset, caregiver invites)
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM_ADDRESS:
+    process.env.EMAIL_FROM_ADDRESS || 'MediMind <no-reply@medimind.app>',
+
   // PWA FRONTEND MECHANICS: WEB-PUSH NOTIFICATIONS
   VAPID_SUBJECT: process.env.VAPID_SUBJECT,
   VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,
