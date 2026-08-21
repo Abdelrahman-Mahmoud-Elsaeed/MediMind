@@ -3,7 +3,8 @@ import {
   usePatientMedicationsQuery,
   usePatientDosesQuery,
   useConfirmDoseMutation,
-  useSkipDoseMutation
+  useSkipDoseMutation,
+  useSnoozeDoseMutation
 } from "./usePatientQueries";
 
 export function usePatientDashboard() {
@@ -14,13 +15,18 @@ export function usePatientDashboard() {
 
   const confirmDoseMutation = useConfirmDoseMutation();
   const skipDoseMutation = useSkipDoseMutation();
+  const snoozeDoseMutation = useSnoozeDoseMutation();
 
   const confirmDose = async (doseEventId) => {
-    await confirmDoseMutation.mutateAsync({ doseEventId, dateStr });
+    await confirmDoseMutation.mutateAsync({ doseEventId });
   };
 
   const skipDose = async (doseEventId) => {
-    await skipDoseMutation.mutateAsync({ doseEventId, dateStr });
+    await skipDoseMutation.mutateAsync({ doseEventId });
+  };
+
+  const snoozeDose = async (doseEventId, minutes = 15) => {
+    await snoozeDoseMutation.mutateAsync({ doseEventId, minutes });
   };
 
   const refetchAll = () => {
@@ -38,7 +44,7 @@ export function usePatientDashboard() {
   return {
     medications,
     doses,
-    loading: loadingMeds || loadingDoses || confirmDoseMutation.isPending || skipDoseMutation.isPending,
+    loading: loadingMeds || loadingDoses || confirmDoseMutation.isPending || skipDoseMutation.isPending || snoozeDoseMutation.isPending,
     error: queryError ? queryError.message : null,
     adherenceRate,
     nextDose,
@@ -46,6 +52,7 @@ export function usePatientDashboard() {
     totalDoses,
     confirmDose,
     skipDose,
+    snoozeDose,
     refetch: refetchAll
   };
 }

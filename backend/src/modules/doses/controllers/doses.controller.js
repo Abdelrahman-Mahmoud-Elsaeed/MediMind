@@ -61,6 +61,27 @@ class DosesController {
       next(error);
     }
   }
+
+  async snooze(req, res, next) {
+    try {
+      const { doseEventId } = req.params;
+      const minutes = req.body.minutes ? Number(req.body.minutes) : 15;
+      const result = await dosesService.snoozeDose(
+        req.accountId,
+        req.role,
+        doseEventId,
+        minutes
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      logger.error('Error snoozing dose:', error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new DosesController();

@@ -176,7 +176,7 @@ export const medicationApi = {
   // 5. DELETE /medications/:medicationId -> Delete Medication
   deleteMedication: async (id) => {
     const response = await apiClient.delete(`/medications/${id}`);
-    return response.data;
+    return response.status === 204 ? { success: true } : (response.data?.data || response.data || { success: true });
   },
 
   // 6. POST /medications/scan -> Scan Image Base64 (strictly matches scanMedicationSchema: { imageBase64 })
@@ -290,6 +290,10 @@ function mapBackendMedicationToUi(item) {
     relationToMeals: item.instructions?.relationToMeals || 'NONE',
     currentStock,
     totalStock,
+    refillThreshold,
+    inventory: item.inventory || { currentQuantity: currentQuantity, initialQuantity: totalStock, refillThreshold },
+    instructions: item.instructions || { relationToMeals: item.relationToMeals || 'NONE', notes: item.dosage },
+    schedule: item.schedule || { frequency: 'DAILY', firstDoseTime: item.time || '08:00' },
     unit: 'UNITS',
     status,
     category: currentStock <= refillThreshold || ratio <= 0.3 ? 'low_stock' : item.isActive === false ? 'finished' : 'active',

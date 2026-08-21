@@ -262,21 +262,21 @@ export const Header = () => {
                 {/* User Info Header */}
                 <div className="p-3 border-b border-outline-variant/20 mb-1">
                   <p className="text-xs font-bold text-on-surface truncate">
-                    {user?.name || user?.email?.split('@')[0] || (isAr ? 'حساب المستخدم' : 'User Account')}
+                    {user?.name || user?.email?.split('@')[0] || t('common.roles.userAccount')}
                   </p>
                   <p className="text-[10px] font-bold text-primary capitalize">
-                    {user?.role === 'FAMILY_CAREGIVER' ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
-                     : user?.role === 'PROFESSIONAL_CAREGIVER' ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
-                     : user?.role === 'CAREGIVER' ? (isAr ? 'مقدم رعاية' : 'Caregiver')
-                     : user?.role === 'ADMIN' ? (isAr ? 'مسؤول النظام' : 'Administrator')
-                     : (isAr ? 'مريض' : 'Patient')}
+                    {user?.role === 'FAMILY_CAREGIVER' ? t('common.roles.familyCaregiver')
+                     : user?.role === 'PROFESSIONAL_CAREGIVER' ? t('common.roles.professionalCaregiver')
+                     : user?.role === 'CAREGIVER' ? t('common.roles.caregiver')
+                     : user?.role === 'ADMIN' ? t('common.roles.admin')
+                     : t('common.roles.patient')}
                   </p>
                 </div>
 
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container transition-colors w-full">
                     <User className="w-4 h-4 text-primary"/>
-                    <span>{isAr ? 'الملف الشخصي' : 'My Profile'}</span>
+                    <span>{t('common.nav.myProfile')}</span>
                   </Link>
                 </DropdownMenuItem>
 
@@ -288,8 +288,8 @@ export const Header = () => {
                     <ShieldCheck className="w-4 h-4 text-primary"/>
                     <span>
                       {['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role)
-                        ? (isAr ? 'قائمة المرضى' : 'My Patients')
-                        : (isAr ? 'دائرة الرعاية' : 'Caregivers Circle')}
+                        ? t('common.nav.myPatients')
+                        : t('common.nav.caregiversCircle')}
                     </span>
                   </Link>
                 </DropdownMenuItem>
@@ -298,7 +298,7 @@ export const Header = () => {
 
                 <DropdownMenuItem onClick={() => logout?.()} className="text-error hover:bg-error-container/20 text-xs font-bold gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer">
                   <LogOut className="w-4 h-4 text-error"/>
-                  <span>{isAr ? 'تسجيل الخروج' : 'Sign Out'}</span>
+                  <span>{t('common.nav.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

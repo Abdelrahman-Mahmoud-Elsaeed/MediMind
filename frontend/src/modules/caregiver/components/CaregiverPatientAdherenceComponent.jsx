@@ -2,20 +2,20 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { 
-  TrendingUp, 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  Calendar as CalendarIcon, 
+import {
+  TrendingUp,
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Calendar as CalendarIcon,
   AlertCircle,
   Pill,
   Award
 } from 'lucide-react';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { AppCard, AppButton, AppBadge, AppProgressBar } from '@/shared/components/ui';
-import { 
+import {
   usePatientDosesQuery,
   useConfirmCaregiverDoseMutation,
   useSkipCaregiverDoseMutation
@@ -41,7 +41,7 @@ export function CaregiverPatientAdherenceComponent({ patientId }) {
     <div className="space-y-8 max-w-7xl mx-auto pb-12" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Back Link */}
       <div>
-        <Link 
+        <Link
           href={`/patients/${patientId}`}
           className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline"
         >
@@ -65,7 +65,7 @@ export function CaregiverPatientAdherenceComponent({ patientId }) {
         {/* Date Selector */}
         <div className="flex items-center gap-2 bg-surface-container-lowest dark:bg-surface-container-low p-2 rounded-2xl border border-outline-variant/30 shrink-0">
           <CalendarIcon className="w-4 h-4 text-primary" />
-          <input 
+          <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -145,21 +145,20 @@ export function CaregiverPatientAdherenceComponent({ patientId }) {
               const isPending = dose.status === 'PENDING';
               const isMissed = dose.status === 'MISSED';
 
-              const timeStr = dose.scheduledFor 
+              const timeStr = dose.scheduledFor
                 ? new Date(dose.scheduledFor).toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
                 : '08:00 AM';
 
               return (
-                <div 
+                <div
                   key={doseId}
                   className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-extrabold text-base ${
-                      isTaken ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
-                      isSkipped ? 'bg-surface-container-high text-on-surface-variant' :
-                      isMissed ? 'bg-red-500/20 text-red-600' : 'bg-primary/10 text-primary'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-extrabold text-base ${isTaken ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
+                        isSkipped ? 'bg-surface-container-high text-on-surface-variant' :
+                          isMissed ? 'bg-red-500/20 text-red-600' : 'bg-primary/10 text-primary'
+                      }`}>
                       <Pill className="w-6 h-6" />
                     </div>
 

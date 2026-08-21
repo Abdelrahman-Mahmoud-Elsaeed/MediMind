@@ -33,8 +33,12 @@ const createMedicationSchema = z.object({
 });
 
 const updateMedicationSchema = z.object({
+  name: z.string().min(1, 'Medication name is required').optional(),
+  formType: z.enum(['TABLET', 'CAPSULE', 'SYRUP', 'INJECTION', 'DROP', 'CREAM', 'OTHER']).optional(),
+  isChronic: z.boolean().optional(),
   imageURL: z.string().url().optional().nullable(),
   inventory: z.object({
+    initialQuantity: z.number().positive().optional(),
     currentQuantity: z.number().nonnegative().optional(),
     doseAmount: z.number().positive().optional(),
     refillThreshold: z.number().nonnegative().optional()

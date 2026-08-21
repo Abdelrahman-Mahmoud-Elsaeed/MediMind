@@ -149,8 +149,21 @@ class MedicationsService {
 
     await this.validateAccess(userAccountId, userRole, medication.patientId, 'canEditMedication');
 
+    if (updateData.name !== undefined) {
+      medication.name = updateData.name;
+    }
+    if (updateData.formType !== undefined) {
+      medication.formType = updateData.formType;
+    }
+    if (updateData.isChronic !== undefined) {
+      medication.isChronic = updateData.isChronic;
+    }
+
     // Update inventory
     if (updateData.inventory) {
+      if (updateData.inventory.initialQuantity !== undefined) {
+        medication.inventory.initialQuantity = updateData.inventory.initialQuantity;
+      }
       if (updateData.inventory.currentQuantity !== undefined) {
         medication.inventory.currentQuantity = updateData.inventory.currentQuantity;
       }

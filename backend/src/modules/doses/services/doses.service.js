@@ -50,7 +50,7 @@ class DosesService {
     const startOfDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
     const endOfDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
 
-    // Auto-generate dose events from schedules for the queried day if none exist yet (helps mock/demo/testing flow)
+    // Auto-generate dose events from schedules for the queried day if none exist yet
     const activeMeds = await Medication.find({ patientId, isActive: true });
     
     for (const med of activeMeds) {
@@ -71,10 +71,13 @@ class DosesService {
           const [hours, minutes] = timeStr.split(':').map(Number);
           const scheduledTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours || 0, minutes || 0, 0, 0));
           
-          // Check if dose event already exists for this scheduled time
+          // Check window around scheduled time (+- 2 hours) to avoid duplicates when snoozed
+          const windowStart = new Date(scheduledTime.getTime() - 2 * 60 * 60 * 1000);
+          const windowEnd = new Date(scheduledTime.getTime() + 2 * 60 * 60 * 1000);
+
           const existing = await DoseEvent.findOne({
             medicationId: med._id,
-            scheduledFor: scheduledTime
+            scheduledFor: { $gte: windowStart, $lte: windowEnd }
           });
 
           if (!existing) {
@@ -169,6 +172,32 @@ class DosesService {
       doseEventId: dose._id,
       status: dose.status,
       skippedAt: new Date()
+    };
+  }
+
+  async snoozeDose(userAccountId, userRole, doseEventId, minutes = 15) {
+    const dose = await DoseEvent.findById(doseEventId);
+    if (!dose) {
+      throw new AppError('Dose event not found', 404, 'DOSE_NOT_FOUND');
+    }
+
+    await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
+
+    if (dose.status !== 'PENDING') {
+      throw new AppError('Only pending doses can be snoozed', 400, 'INVALID_STATUS');
+    }
+
+    const currentSchedule = new Date(dose.scheduledFor);
+    const snoozedTime = new Date(currentSchedule.getTime() + minutes * 60 * 1000);
+
+    dose.scheduledFor = snoozedTime;
+    await dose.save();
+
+    return {
+      doseEventId: dose._id,
+      status: dose.status,
+      scheduledFor: dose.scheduledFor,
+      snoozedMinutes: minutes
     };
   }
 }

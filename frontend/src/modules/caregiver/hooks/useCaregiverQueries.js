@@ -15,7 +15,7 @@ export const CAREGIVER_KEYS = {
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
-export function useCaregiverProfileQuery() {
+export function useCaregiverProfileQuery(options = {}) {
   return useQuery({
     queryKey: CAREGIVER_KEYS.profile,
     queryFn: async () => {
@@ -23,6 +23,7 @@ export function useCaregiverProfileQuery() {
       return res?.success ? res.data : res;
     },
     staleTime: 1000 * 60 * 5,
+    ...options,
   });
 }
 

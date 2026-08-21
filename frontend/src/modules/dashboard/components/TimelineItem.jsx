@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { AppButton } from '@/shared/components/ui/AppButton';
 
-export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTaken, onSnooze, index = 0 }) => {
+export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, onMarkAsTaken, onSnooze, index = 0 }) => {
   const { t, dir } = useTranslation();
   const isRtl = dir === 'rtl';
 
@@ -17,10 +17,17 @@ export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTa
   const medicationSubtitle = item.subtext || item.medication || 'Medication';
   const targetId = item.doseEventId || item.id;
 
-  // Dynamic continuous connector line colors
-  const lineColor = isCompleted
+  // Determine line color leading to the NEXT item based on nextItem's status
+  const nextStatus = String(nextItem?.status || nextItem?.rawStatus || '').toUpperCase();
+  const isNextMissed = nextStatus === 'MISSED' || nextStatus === 'SKIPPED';
+  const isNextTaken = nextStatus === 'TAKEN' || nextStatus === 'COMPLETED';
+  const isNextDue = nextStatus === 'DUE' || nextStatus === 'PENDING';
+
+  const lineColor = isNextMissed
+    ? 'bg-rose-500 dark:bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]'
+    : isNextTaken
     ? 'bg-emerald-500/80 dark:bg-emerald-400/80'
-    : isDue
+    : isNextDue
     ? 'bg-gradient-to-b from-teal-500 to-emerald-500 shadow-[0_0_8px_rgba(20,184,166,0.35)]'
     : 'bg-slate-200 dark:bg-slate-700/80';
 
@@ -29,16 +36,14 @@ export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTa
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.4) }}
-      className="relative flex items-stretch gap-3 sm:gap-5 group"
+      className="relative flex items-stretch gap-3 sm:gap-5 group snap-start"
     >
-      {/* LEFT COLUMN: Perfectly Aligned Centered Node & Continuous Connector Line */}
+      {/* LEFT COLUMN: Perfectly Aligned Centered Node & Connector Line */}
       <div className="w-8 shrink-0 relative flex flex-col items-center select-none">
-        {/* Connector Line spanning full height behind node (handles single-item and n-items gracefully) */}
-        {!isFirst || !isLast ? (
+        {/* Connector Line to next item (renders ONLY if NOT the last item) */}
+        {!isLast ? (
           <div
-            className={`absolute left-1/2 -translate-x-1/2 w-[2.5px] ${lineColor} pointer-events-none transition-all duration-300 z-0 ${
-              isFirst ? 'top-5 bottom-0' : isLast ? 'top-0 h-5' : 'top-0 bottom-0'
-            }`}
+            className={`absolute left-1/2 -translate-x-1/2 w-[2.5px] ${lineColor} pointer-events-none transition-all duration-300 z-0 top-3.5 -bottom-6`}
           />
         ) : null}
 
@@ -72,8 +77,10 @@ export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTa
               </div>
             </div>
           ) : isMissed ? (
-            <div className="w-7 h-7 rounded-full bg-rose-500/10 border-2 border-rose-500 text-rose-600 dark:text-rose-400 flex items-center justify-center ring-4 ring-slate-50 dark:ring-slate-900">
-              <AlertTriangle className="w-3.5 h-3.5" />
+            <div className="w-7 h-7 rounded-full bg-white dark:bg-slate-900 border-2 border-rose-500 text-rose-600 dark:text-rose-400 flex items-center justify-center ring-4 ring-slate-50 dark:ring-slate-900 overflow-hidden">
+              <div className="w-full h-full bg-rose-500/10 flex items-center justify-center">
+                <AlertTriangle className="w-3.5 h-3.5" />
+              </div>
             </div>
           ) : (
             <div className="w-7 h-7 rounded-full border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 flex items-center justify-center ring-4 ring-slate-50 dark:ring-slate-900 transition-colors">
@@ -84,7 +91,7 @@ export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTa
       </div>
 
       {/* RIGHT COLUMN: Content Card Container */}
-      <div className="flex-1 pb-4">
+      <div className="flex-1 pb-4 px-1.5 min-w-0">
         <motion.div
           whileHover={{ x: isRtl ? -3 : 3 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
@@ -173,3 +180,5 @@ export const TimelineItem = ({ item, isFirst = false, isLast = false, onMarkAsTa
     </motion.div>
   );
 };
+
+export default TimelineItem;

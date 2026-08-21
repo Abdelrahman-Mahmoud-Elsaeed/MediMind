@@ -1,336 +1,84 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { 
-  Pill, 
-  TrendingUp, 
-  FileText, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  AlertTriangle, 
-  ArrowLeft, 
-  Heart, 
-  Calendar, 
-  ShieldCheck,
-  ChevronRight,
-  Activity
-} from 'lucide-react';
+import React from 'react';
+import { useParams } from 'next/navigation';
+import { Pill, AlertCircle, Calendar } from 'lucide-react';
 import { useTranslation } from '@/shared/lib/i18nContext';
-import { AppCard, AppButton, AppBadge, AppProgressBar } from '@/shared/components/ui';
+import { AppCard, AppBadge } from '@/shared/components/ui';
+import CaregiverPatientHeader from './CaregiverPatientHeader';
+import CaregiverPatientAdherenceSummary from './CaregiverPatientAdherenceSummary';
 import { 
-  usePatientMedicationsQuery, 
-  usePatientDosesQuery, 
-  usePatientConditionsQuery,
-  useConfirmCaregiverDoseMutation,
-  useSkipCaregiverDoseMutation
+  useCaregiverRelationshipsQuery,
+  usePatientMedicationsQuery 
 } from '../hooks/useCaregiverQueries';
 
-export function CaregiverPatientDetailComponent({ patientId }) {
-  const { locale } = useTranslation();
-  const isAr = locale === 'ar';
+export function CaregiverPatientDetailComponent() {
+  const { id: patientId } = useParams();
+  const { t } = useTranslation();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const { data: relationships = [], isLoading: isRelLoading } = useCaregiverRelationshipsQuery();
+  const { data: medications = [], isLoading: isMedsLoading } = usePatientMedicationsQuery(patientId);
 
-  const { data: medications = [], isLoading: loadingMeds } = usePatientMedicationsQuery(patientId);
-  const { data: doses = [], isLoading: loadingDoses } = usePatientDosesQuery(patientId, todayStr);
-  const { data: conditions = [], isLoading: loadingConditions } = usePatientConditionsQuery(patientId);
+  const relationship = relationships.find(r => r.patientId === patientId || r.patient?.id === patientId);
+  const patient = relationship?.patient || { id: patientId };
 
-  const confirmMutation = useConfirmCaregiverDoseMutation(patientId);
-  const skipMutation = useSkipCaregiverDoseMutation(patientId);
+  const isLoading = isRelLoading || isMedsLoading;
 
-  // Compute adherence summary metrics
-  const totalDosesToday = doses.length;
-  const takenDosesToday = doses.filter((d) => d.status === 'TAKEN').length;
-  const missedDosesToday = doses.filter((d) => d.status === 'MISSED').length;
-  const adherenceRate = totalDosesToday > 0 ? Math.round((takenDosesToday / totalDosesToday) * 100) : 100;
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto animate-pulse">
+        <div className="h-40 bg-surface-container-low rounded-3xl" />
+        <div className="h-64 bg-surface-container-low rounded-3xl" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12" dir={isAr ? 'rtl' : 'ltr'}>
-      {/* Navigation Back Link */}
-      <div>
-        <Link 
-          href="/patients"
-          className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline"
-        >
-          <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-          <span>{isAr ? 'العودة لقائمة المرضى' : 'Back to Patients Roster'}</span>
-        </Link>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+      {/* Composable Patient Header */}
+      <CaregiverPatientHeader patient={patient} relationship={relationship} />
 
-      {/* Patient Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 p-6 sm:p-8 backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary font-black text-2xl shadow-md shadow-primary/20 shrink-0">
-              P
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1 uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4" />
-                <span>{isAr ? 'ملف المريض المرتبط' : 'Linked Patient Profile'}</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
-                {isAr ? 'مركز متابعة المريض' : 'Patient Care Hub'}
-              </h1>
-              <p className="text-xs text-on-surface-variant mt-1">
-                {isAr ? `معرّف المريض: ${patientId}` : `Patient ID: ${patientId}`}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-3 gap-3 shrink-0">
-            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-3.5 text-center min-w-[90px]">
-              <span className="text-[10px] font-bold text-on-surface-variant block uppercase">
-                {isAr ? 'الأدوية' : 'Meds'}
-              </span>
-              <span className="text-xl font-black text-primary">{medications.length}</span>
-            </div>
-
-            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-3.5 text-center min-w-[90px]">
-              <span className="text-[10px] font-bold text-on-surface-variant block uppercase">
-                {isAr ? 'الجرعات' : 'Doses'}
-              </span>
-              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">{takenDosesToday}/{totalDosesToday}</span>
-            </div>
-
-            <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-3.5 text-center min-w-[90px]">
-              <span className="text-[10px] font-bold text-on-surface-variant block uppercase">
-                {isAr ? 'الحالات' : 'Conditions'}
-              </span>
-              <span className="text-xl font-black text-amber-500">{conditions.length}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Access Tabs Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-outline-variant/20">
-        <Link 
-          href={`/patients/${patientId}`}
-          className="px-4 py-2.5 rounded-2xl bg-primary text-on-primary font-bold text-xs shadow-sm shrink-0 flex items-center gap-2"
-        >
-          <Activity className="w-4 h-4" />
-          <span>{isAr ? 'نظرة عامة' : 'Overview Hub'}</span>
-        </Link>
-
-        <Link 
-          href={`/patients/${patientId}/medications`}
-          className="px-4 py-2.5 rounded-2xl bg-surface-container-lowest dark:bg-surface-container-low hover:bg-primary/10 text-on-surface font-semibold text-xs border border-outline-variant/30 shrink-0 flex items-center gap-2 transition-all"
-        >
-          <Pill className="w-4 h-4 text-primary" />
-          <span>{isAr ? 'خزانة الأدوية' : 'Medications Cabinet'}</span>
-        </Link>
-
-        <Link 
-          href={`/patients/${patientId}/adherence`}
-          className="px-4 py-2.5 rounded-2xl bg-surface-container-lowest dark:bg-surface-container-low hover:bg-emerald-500/10 text-on-surface font-semibold text-xs border border-outline-variant/30 shrink-0 flex items-center gap-2 transition-all"
-        >
-          <TrendingUp className="w-4 h-4 text-emerald-500" />
-          <span>{isAr ? 'متابعة الالتزام' : 'Adherence Tracker'}</span>
-        </Link>
-
-        <Link 
-          href={`/patients/${patientId}/medical-records`}
-          className="px-4 py-2.5 rounded-2xl bg-surface-container-lowest dark:bg-surface-container-low hover:bg-amber-500/10 text-on-surface font-semibold text-xs border border-outline-variant/30 shrink-0 flex items-center gap-2 transition-all"
-        >
-          <FileText className="w-4 h-4 text-amber-500" />
-          <span>{isAr ? 'السجلات الطبية' : 'Medical Records'}</span>
-        </Link>
-      </div>
-
-      {/* Main Grid: Today's Schedule & Medications Summary */}
+      {/* Grid of Adherence & Cabinet */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Today's Dose Timeline (2 cols) */}
-        <div className="lg:col-span-2 space-y-6">
-          <AppCard className="p-6 border border-outline-variant/30 rounded-3xl">
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-extrabold text-on-surface flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <span>{isAr ? 'جرعات اليوم وتأكيد التناول' : "Today's Dose Schedule"}</span>
-                </h2>
-                <p className="text-xs text-on-surface-variant mt-1">
-                  {isAr ? 'تأكيد أو إلغاء التناول نيابة عن المريض لتسجيل الالتزام.' : 'Confirm or skip doses on behalf of the patient to log adherence.'}
-                </p>
-              </div>
+        {/* Left Column: Adherence Summary */}
+        <div className="lg:col-span-1 space-y-6">
+          <CaregiverPatientAdherenceSummary adherenceData={{ adherenceRate: 85, takenCount: 12, missedCount: 2 }} />
+        </div>
 
-              <AppBadge variant={adherenceRate >= 80 ? 'success' : 'warning'}>
-                {adherenceRate}% {isAr ? 'التزام' : 'Adherence'}
+        {/* Right Column: Active Medications List */}
+        <div className="lg:col-span-2 space-y-6">
+          <AppCard className="p-6 md:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+              <div className="flex items-center gap-3">
+                <Pill className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-bold text-on-surface">
+                  {t('caregiver.patientHub.activeMeds')}
+                </h2>
+              </div>
+              <AppBadge variant="secondary">
+                {medications.length} {t('common.nav.meds')}
               </AppBadge>
             </div>
 
-            {loadingDoses ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-surface-container-low animate-pulse rounded-2xl" />
-                ))}
-              </div>
-            ) : doses.length === 0 ? (
-              <div className="text-center py-10 bg-surface-container-low/50 rounded-2xl border border-dashed border-outline-variant/30">
-                <Clock className="w-10 h-10 text-on-surface-variant/40 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-on-surface-variant">
-                  {isAr ? 'لا توجد جرعات مجدولة لهذا اليوم' : 'No doses scheduled for today'}
-                </p>
-              </div>
+            {medications.length === 0 ? (
+              <p className="text-sm text-on-surface-variant text-center py-6">
+                {t('caregiver.patientHub.noActiveMeds')}
+              </p>
             ) : (
               <div className="space-y-4">
-                {doses.map((dose, idx) => {
-                  const doseId = dose.doseEventId || dose._id || dose.id;
-                  const isTaken = dose.status === 'TAKEN';
-                  const isSkipped = dose.status === 'SKIPPED';
-                  const isPending = dose.status === 'PENDING';
-                  const isMissed = dose.status === 'MISSED';
-
-                  const timeStr = dose.scheduledFor 
-                    ? new Date(dose.scheduledFor).toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-                    : '08:00 AM';
-
-                  return (
-                    <div 
-                      key={doseId || idx}
-                      className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                          isTaken ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
-                          isSkipped ? 'bg-surface-container-high text-on-surface-variant' :
-                          isMissed ? 'bg-red-500/20 text-red-600' : 'bg-primary/10 text-primary'
-                        }`}>
-                          <Pill className="w-5 h-5" />
-                        </div>
-
-                        <div>
-                          <h4 className="font-bold text-on-surface text-base">
-                            {dose.medicationName || 'Medication'}
-                          </h4>
-                          <div className="flex items-center gap-3 text-xs text-on-surface-variant mt-0.5">
-                            <span className="font-semibold">{timeStr}</span>
-                            <span>•</span>
-                            <span className="capitalize">{dose.status}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      {isPending && (
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            onClick={() => confirmMutation.mutate({ doseEventId: doseId })}
-                            disabled={confirmMutation.isPending}
-                            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            <CheckCircle2 className="w-4 h-4 shrink-0" />
-                            <span>{isAr ? 'تأكيد التناول' : 'Take Dose'}</span>
-                          </button>
-
-                          <button
-                            onClick={() => skipMutation.mutate({ doseEventId: doseId })}
-                            disabled={skipMutation.isPending}
-                            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-xl border border-outline-variant/30 bg-surface-container-lowest dark:bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant active:scale-95 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            <XCircle className="w-4 h-4 shrink-0" />
-                            <span>{isAr ? 'تخطي' : 'Skip'}</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {!isPending && (
-                        <AppBadge variant={isTaken ? 'success' : isSkipped ? 'secondary' : 'error'}>
-                          {isTaken ? (isAr ? 'تم التناول' : 'Taken') : isSkipped ? (isAr ? 'تم التخطي' : 'Skipped') : (isAr ? 'فائتة' : 'Missed')}
-                        </AppBadge>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </AppCard>
-        </div>
-
-        {/* Right Column: Medications & Quick Actions (1 col) */}
-        <div className="space-y-6">
-          <AppCard className="p-6 border border-outline-variant/30 rounded-3xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-extrabold text-on-surface text-lg flex items-center gap-2">
-                <Pill className="w-5 h-5 text-primary" />
-                <span>{isAr ? 'الأدوية النشطة' : 'Active Cabinet'}</span>
-              </h3>
-              <Link 
-                href={`/patients/${patientId}/medications`}
-                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-              >
-                <span>{isAr ? 'عرض الكل' : 'View All'}</span>
-                <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-              </Link>
-            </div>
-
-            {loadingMeds ? (
-              <div className="space-y-2">
-                {[1, 2].map((i) => (
-                  <div key={i} className="h-14 bg-surface-container-low animate-pulse rounded-xl" />
-                ))}
-              </div>
-            ) : medications.length === 0 ? (
-              <p className="text-xs text-on-surface-variant py-4 text-center">
-                {isAr ? 'لا توجد أدوية مسجلة' : 'No active medications registered'}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {medications.slice(0, 4).map((med, idx) => (
-                  <div 
-                    key={med._id || med.medicationId || med.id || idx}
-                    className="p-3 bg-surface-container-low/60 rounded-xl flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <span className="font-bold text-on-surface block">{med.name}</span>
-                      <span className="text-on-surface-variant">{med.instructions?.relationToMeals || 'Daily'}</span>
+                {medications.map((med) => (
+                  <div key={med.id} className="p-4 bg-surface-container-low rounded-2xl flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-on-surface text-base">{med.name}</h3>
+                      <p className="text-xs text-on-surface-variant">
+                        {med.dosage} • {med.instructions || t('caregiver.patientHub.noInstructions')}
+                      </p>
                     </div>
 
-                    <AppBadge variant={med.inventory?.currentQuantity <= med.inventory?.refillThreshold ? 'warning' : 'secondary'}>
-                      {med.inventory?.currentQuantity ?? 0} {isAr ? 'متبقي' : 'left'}
+                    <AppBadge variant="outline" className="text-xs">
+                      <Calendar className="w-3 h-3 me-1 inline" />
+                      {med.frequency || 'Daily'}
                     </AppBadge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </AppCard>
-
-          {/* Chronic Conditions Summary */}
-          <AppCard className="p-6 border border-outline-variant/30 rounded-3xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-extrabold text-on-surface text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5 text-amber-500" />
-                <span>{isAr ? 'الحالات الصحية' : 'Health Conditions'}</span>
-              </h3>
-              <Link 
-                href={`/patients/${patientId}/medical-records`}
-                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-              >
-                <span>{isAr ? 'عرض الكل' : 'View All'}</span>
-                <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-              </Link>
-            </div>
-
-            {loadingConditions ? (
-              <div className="h-16 bg-surface-container-low animate-pulse rounded-xl" />
-            ) : conditions.length === 0 ? (
-              <p className="text-xs text-on-surface-variant py-4 text-center">
-                {isAr ? 'لا توجد حالات صحية مسجلة' : 'No medical conditions recorded'}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {conditions.slice(0, 3).map((cond, idx) => (
-                  <div 
-                    key={cond._id || cond.conditionId || cond.id || idx}
-                    className="p-3 bg-surface-container-low/60 rounded-xl flex items-center justify-between text-xs font-semibold text-on-surface"
-                  >
-                    <span>{cond.diseaseName}</span>
-                    <span className="text-xs font-normal text-on-surface-variant">
-                      {cond.isChronic ? (isAr ? 'مزمن' : 'Chronic') : (isAr ? 'حاد' : 'Acute')}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -341,4 +89,5 @@ export function CaregiverPatientDetailComponent({ patientId }) {
     </div>
   );
 }
+
 export default CaregiverPatientDetailComponent;

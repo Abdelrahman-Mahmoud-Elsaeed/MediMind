@@ -143,11 +143,23 @@ export const MedicationCabinet = () => {
     });
   };
 
+  const lowStockCount = useMemo(() => {
+    return medicationsList.filter((m) => {
+      const current = Number(m.inventory?.currentQuantity ?? m.currentStock ?? m.stock ?? 30);
+      const thresh = Number(m.inventory?.refillThreshold ?? m.refillThreshold ?? 5);
+      return current <= thresh;
+    }).length;
+  }, [medicationsList]);
+
   const filteredMedications = medicationsList.filter((med) => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'active') return med.category === 'active';
     if (activeFilter === 'finished') return med.category === 'finished';
-    if (activeFilter === 'low_stock') return med.category === 'low_stock';
+    if (activeFilter === 'low_stock') {
+      const current = Number(med.inventory?.currentQuantity ?? med.currentStock ?? med.stock ?? 30);
+      const thresh = Number(med.inventory?.refillThreshold ?? med.refillThreshold ?? 5);
+      return med.category === 'low_stock' || current <= thresh;
+    }
     return true;
   });
 
@@ -158,6 +170,7 @@ export const MedicationCabinet = () => {
         <MedicationHeader
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
+          lowStockCount={lowStockCount}
           onAddClick={() => router.push('/medications/add')}
         />
 

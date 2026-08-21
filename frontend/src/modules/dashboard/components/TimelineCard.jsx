@@ -7,7 +7,8 @@ import { CheckCircle2, Clock, Calendar } from 'lucide-react';
 import {
   usePatientDosesQuery,
   useConfirmDoseMutation,
-  useSkipDoseMutation
+  useSkipDoseMutation,
+  useSnoozeDoseMutation
 } from '@/modules/patient/hooks/usePatientQueries';
 
 export const TimelineCard = () => {
@@ -19,13 +20,14 @@ export const TimelineCard = () => {
   const { data: doses = [], isLoading, error } = usePatientDosesQuery(dateStr);
   const confirmDoseMutation = useConfirmDoseMutation();
   const skipDoseMutation = useSkipDoseMutation();
+  const snoozeDoseMutation = useSnoozeDoseMutation();
 
   const handleMarkAsTaken = (id) => {
     confirmDoseMutation.mutate({ doseEventId: id });
   };
 
   const handleSnooze = (id) => {
-    skipDoseMutation.mutate({ doseEventId: id });
+    snoozeDoseMutation.mutate({ doseEventId: id, minutes: 15 });
   };
 
   const formattedDate = new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
@@ -68,10 +70,23 @@ export const TimelineCard = () => {
       };
     });
 
-    // Sort priority: 'due' first, then 'upcoming', then 'completed'/'missed'
+    // Sort priority: 1. Waiting for taking (DUE/PENDING), 2. Taken (TAKEN/COMPLETED), 3. Missed (MISSED/SKIPPED), then time
     return [...mapped].sort((a, b) => {
-      const order = { due: 0, upcoming: 1, missed: 2, completed: 3 };
-      return (order[a.status] ?? 4) - (order[b.status] ?? 4);
+      const getStatusPriority = (s) => {
+        const status = String(s || '').toUpperCase();
+        if (status === 'DUE' || status === 'PENDING') return 0;
+        if (status === 'TAKEN' || status === 'COMPLETED') return 1;
+        if (status === 'MISSED' || status === 'SKIPPED') return 2;
+        return 3;
+      };
+
+      const p1 = getStatusPriority(a.rawStatus || a.status);
+      const p2 = getStatusPriority(b.rawStatus || b.status);
+      if (p1 !== p2) return p1 - p2;
+
+      const t1 = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
+      const t2 = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
+      return t1 - t2;
     });
   }, [doses, isAr]);
 
@@ -97,7 +112,7 @@ export const TimelineCard = () => {
               {t('patient.home.activeTimeline')}
             </h2>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {isAr ? 'متابعة المواعيد والإجراءات التفاعلية' : 'Track doses & take instant action'}
+              {isAr ? 'متابعة الجرعات والجدول الزمني النشط' : 'Track doses & take instant action'}
             </p>
           </div>
         </div>
@@ -176,11 +191,12 @@ export const TimelineCard = () => {
           </div>
         </div>
       ) : (
-        <div className="max-h-[580px] overflow-y-auto pr-1 sm:pr-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+        <div className="max-h-[580px] overflow-y-auto overflow-x-hidden snap-y snap-mandatory px-1.5 pr-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
           {filteredItems.map((item, index) => (
             <TimelineItem
               key={item.id}
               item={item}
+              nextItem={filteredItems[index + 1]}
               index={index}
               isFirst={index === 0}
               isLast={index === filteredItems.length - 1}

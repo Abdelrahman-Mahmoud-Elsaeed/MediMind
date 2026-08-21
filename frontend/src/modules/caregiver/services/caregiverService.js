@@ -5,12 +5,12 @@ export const caregiverService = {
 
   getProfile: async () => {
     const res = await apiClient.get('/profiles/caregiver/me');
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   updateProfile: async (payload) => {
     const res = await apiClient.put('/profiles/caregiver/me', payload);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   // ─── Relationships (Patient Roster) ─────────────────────────────────────────
@@ -22,7 +22,7 @@ export const caregiverService = {
   getRelationships: async (status) => {
     const query = status ? `?status=${status}` : '';
     const res = await apiClient.get(`/relationships${query}`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -32,7 +32,7 @@ export const caregiverService = {
    */
   updateRelationshipStatus: async (relationshipId, status) => {
     const res = await apiClient.patch(`/relationships/${relationshipId}/status`, { status });
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -42,10 +42,11 @@ export const caregiverService = {
    */
   sendInvitation: async (targetEmail, relation) => {
     const res = await apiClient.post('/relationships', {
+      targetEmail,
       caregiverEmail: targetEmail,
       relation: relation || 'Family Member',
     });
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   // ─── Patient Medications ─────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ export const caregiverService = {
    */
   getPatientMedications: async (patientId) => {
     const res = await apiClient.get(`/medications?patientId=${patientId}`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -65,7 +66,7 @@ export const caregiverService = {
    */
   addPatientMedication: async (patientId, payload) => {
     const res = await apiClient.post('/medications', { ...payload, patientId });
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -74,7 +75,7 @@ export const caregiverService = {
    */
   updateMedication: async (medicationId, payload) => {
     const res = await apiClient.patch(`/medications/${medicationId}`, payload);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -83,7 +84,7 @@ export const caregiverService = {
    */
   deletePatientMedication: async (medicationId) => {
     const res = await apiClient.delete(`/medications/${medicationId}`);
-    return res.data;
+    return res.status === 204 ? { success: true } : (res.data?.data ?? res.data ?? { success: true });
   },
 
   // ─── Patient Dose Schedule ───────────────────────────────────────────────────
@@ -95,7 +96,7 @@ export const caregiverService = {
   getPatientDoses: async (patientId, dateStr) => {
     const queryDate = dateStr || new Date().toISOString().split('T')[0];
     const res = await apiClient.get(`/doses?patientId=${patientId}&date=${queryDate}`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -104,7 +105,7 @@ export const caregiverService = {
    */
   confirmDose: async (doseEventId) => {
     const res = await apiClient.post(`/doses/${doseEventId}/confirm`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -113,7 +114,7 @@ export const caregiverService = {
    */
   skipDose: async (doseEventId) => {
     const res = await apiClient.post(`/doses/${doseEventId}/skip`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   // ─── Patient Medical Conditions ──────────────────────────────────────────────
@@ -124,7 +125,7 @@ export const caregiverService = {
    */
   getPatientConditions: async (patientId) => {
     const res = await apiClient.get(`/conditions?patientId=${patientId}`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -133,7 +134,7 @@ export const caregiverService = {
    */
   addPatientCondition: async (patientId, payload) => {
     const res = await apiClient.post('/conditions', { ...payload, patientId });
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -142,7 +143,7 @@ export const caregiverService = {
    */
   updatePatientCondition: async (conditionId, payload) => {
     const res = await apiClient.put(`/conditions/${conditionId}`, payload);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -151,7 +152,7 @@ export const caregiverService = {
    */
   deletePatientCondition: async (conditionId) => {
     const res = await apiClient.delete(`/conditions/${conditionId}`);
-    return res.data;
+    return res.status === 204 ? { success: true } : (res.data?.data ?? res.data ?? { success: true });
   },
 
   // ─── Refill Orders ───────────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ export const caregiverService = {
    */
   getPatientRefillOrders: async (patientId) => {
     const res = await apiClient.get(`/medications/refills?patientId=${patientId}`);
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 
   /**
@@ -171,6 +172,6 @@ export const caregiverService = {
    */
   createRefillOrder: async (patientId, payload) => {
     const res = await apiClient.post('/medications/refills', { ...payload, patientId });
-    return res.data;
+    return res.data?.data ?? res.data;
   },
 };

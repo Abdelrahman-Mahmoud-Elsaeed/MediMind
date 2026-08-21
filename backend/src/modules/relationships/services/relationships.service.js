@@ -13,6 +13,7 @@ class RelationshipsService {
     let patient;
     let caregiver;
     let caregiverType;
+    let targetAccount;
 
     if (userRole === 'PATIENT') {
       patient = await Patient.findOne({ accountId: userAccountId });
@@ -20,7 +21,7 @@ class RelationshipsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
 
-      const targetAccount = await Account.findOne({ email: targetEmail });
+      targetAccount = await Account.findOne({ email: targetEmail });
       if (!targetAccount) {
         throw new AppError('Account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
       }
@@ -63,7 +64,7 @@ class RelationshipsService {
         throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
       }
 
-      const targetAccount = await Account.findOne({ email: targetEmail });
+      targetAccount = await Account.findOne({ email: targetEmail });
       if (!targetAccount) {
         throw new AppError('Patient account not found for provided email', 404, 'ACCOUNT_NOT_FOUND');
       }
@@ -89,6 +90,7 @@ class RelationshipsService {
     });
 
     const initiatedByRole = userRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER';
+    let relationship;
 
     if (existing) {
       if (existing.status === 'PENDING') {
@@ -106,22 +108,23 @@ class RelationshipsService {
         existing.permissions = permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType];
         existing.deletedAt = null;
         await existing.save();
-        return existing;
+        relationship = existing;
+      } else {
+        throw new AppError(`Cannot re-initiate relationship from state: ${existing.status}`, 400, 'INVALID_TRANSITION');
       }
-      throw new AppError(`Cannot re-initiate relationship from state: ${existing.status}`, 400, 'INVALID_TRANSITION');
+    } else {
+      relationship = new Relationship({
+        patientId: patient._id,
+        caregiverId: caregiver._id,
+        caregiverType,
+        relation: relation || (userRole === 'PATIENT' ? 'Family Member' : 'Patient'),
+        status: 'PENDING',
+        initiatedBy: initiatedByRole,
+        permissions: permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType]
+      });
+
+      await relationship.save();
     }
-
-    const relationship = new Relationship({
-      patientId: patient._id,
-      caregiverId: caregiver._id,
-      caregiverType,
-      relation: relation || (userRole === 'PATIENT' ? 'Family Member' : 'Patient'),
-      status: 'PENDING',
-      initiatedBy: initiatedByRole,
-      permissions: permissions || DEFAULT_PERMISSIONS_BY_MODEL[caregiverType]
-    });
-
-    await relationship.save();
 
     // Trigger Notification & Real-Time Socket Delivery
     try {

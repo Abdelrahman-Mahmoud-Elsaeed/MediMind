@@ -7,24 +7,23 @@ import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 export const MobileNav = () => {
   const pathname = usePathname();
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const isAr = locale === 'ar';
 
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
 
   const caregiverItems = [
-    { href: '/dashboard', icon: 'dashboard', label: isAr ? 'الرئيسية' : 'Dashboard' },
-    { href: '/patients', icon: 'groups', label: isAr ? 'مرضاي' : 'My Patients' },
-    { href: '/profile', icon: 'person', label: isAr ? 'الملف الشخصي' : 'Profile' },
+    { href: '/dashboard', icon: 'dashboard', label: t('common.nav.dashboard') },
+    { href: '/patients', icon: 'groups', label: t('common.nav.myPatients') },
+    { href: '/profile', icon: 'person', label: t('patient.nav.profile') },
   ];
 
   const patientItems = [
-    { href: '/home', icon: 'home', labelKey: 'patient.nav.home', fallbackLabel: isAr ? 'الرئيسية' : 'Home' },
-    { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds', fallbackLabel: isAr ? 'الأدوية' : 'Meds' },
-    { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence', fallbackLabel: isAr ? 'الالتزام' : 'Adherence' },
-    { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care', fallbackLabel: isAr ? 'الرعاية' : 'Care' },
-    { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile', fallbackLabel: isAr ? 'الملف' : 'Profile' },
+    { href: '/home', icon: 'home', labelKey: 'patient.nav.home' },
+    { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds' },
+    { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence' },
+    { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care' },
+    { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile' },
   ];
 
   const navItems = isCaregiver ? caregiverItems : patientItems;
@@ -38,7 +37,7 @@ export const MobileNav = () => {
           (item.href === '/medications' && pathname?.startsWith('/ocr-scan')) ||
           (item.href === '/profile' && (pathname?.startsWith('/profile') || pathname?.startsWith('/medical-records')));
 
-        const displayLabel = item.label || (item.labelKey ? t(item.labelKey) : item.fallbackLabel);
+        const displayLabel = item.label || (item.labelKey ? t(item.labelKey) : '');
 
         return (
           <Link

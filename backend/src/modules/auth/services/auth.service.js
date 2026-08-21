@@ -14,7 +14,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../../../shared/utils/jwt.util");
-const ServiceResponse = require("../../../shared/utils/ServiceResponse"); // Path to your ServiceResponse class
+const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 
 const MODEL_MAP = {
   PATIENT: Patient,

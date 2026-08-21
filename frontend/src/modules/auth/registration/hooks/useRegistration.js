@@ -5,7 +5,7 @@ import { useRTL } from "./useRTL";
 import { validateStep } from "../utils/validation";
 import { detectPhoneInput, formatRegistrationPayload, extractNationalNumber } from "../utils/helpers";
 import { parseApiMessage } from "@/shared/lib/parseApiMessage";
-import apiClient from "@/shared/lib/apiClient";
+import { authService } from "@/modules/auth/services/authService";
 import { useCountrySelector } from "./useCountrySelector";
 
 export function useRegistration() {
@@ -182,36 +182,28 @@ export function useRegistration() {
         }
 
         try {
-          let queryParam = "";
-          if (id === "loginInput") {
-            const isPhone = /^[0-9+\s()-]+$/.test(trimmed);
-            if (isPhone) {
-              const nationalNum = extractNationalNumber(trimmed, callingCode);
-              const formatted = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmed;
-              queryParam = `phone=${encodeURIComponent(formatted)}`;
-            } else {
-              queryParam = `email=${encodeURIComponent(trimmed)}`;
-            }
-          } else if (id === "email") {
-            queryParam = `email=${encodeURIComponent(trimmed)}`;
-          } else if (id === "phone") {
-            const nationalNum = extractNationalNumber(trimmed, callingCode);
-            const formatted = nationalNum ? `${nationalNum.code}${nationalNum.number}` : trimmed;
-            queryParam = `phone=${encodeURIComponent(formatted)}`;
+          let fieldName = '';
+          let fieldVal = '';
+          if (id === "email" || (!isPhoneInput && id === "loginInput")) {
+            fieldName = 'email';
+            fieldVal = String(value).trim();
+          } else if (id === "phone" || (isPhoneInput && id === "loginInput")) {
+            fieldName = 'phone';
+            const countryCode = registrationData.phoneCountryCode || "+20";
+            fieldVal = extractNationalNumber(value, countryCode);
           }
 
-          if (!queryParam) return;
+          if (!fieldName || !fieldVal) return;
 
-          const response = await apiClient.get(`/auth/validate-uniqueness?${queryParam}`);
-          if (response.data?.success && response.data?.data) {
-            const { isUnique } = response.data.data;
+          const data = await authService.validateUniqueness(fieldName, fieldVal);
+          if (data) {
+            const isUnique = data.isUnique !== false;
             if (!isUnique) {
-              const isEmailErr = id === "email" || (!isPhoneInput && id === "loginInput");
+              const isEmailErr = fieldName === 'email';
               const msg = isEmailErr
                 ? t("auth.error.EMAIL_EXISTS") || "This email address is already registered."
                 : t("auth.error.PHONE_EXISTS") || "This phone number is already registered.";
               setAsyncErrors((prev) => ({ ...prev, [id]: msg }));
-              // Mark field as touched so the error is displayed immediately
               setTouchedFields((prev) => ({ ...prev, [id]: true }));
             } else {
               setAsyncErrors((prev) => ({ ...prev, [id]: "" }));

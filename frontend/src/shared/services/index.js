@@ -1,1 +1,1 @@
-export const sharedServices = {};
+export { notificationService } from './notificationService';

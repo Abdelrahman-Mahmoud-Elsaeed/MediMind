@@ -1,16 +1,15 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Pill, TrendingUp, Users, User, HeartPulse, } from 'lucide-react';
+import { LayoutGrid, Pill, TrendingUp, Users, User } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import Link from 'next/link';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 
-export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim }) => {
-    const { locale } = useTranslation();
+export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim, isMounted = false }) => {
+    const { t, locale } = useTranslation();
     const [mounted, setMounted] = useState(false);
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -20,17 +19,17 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
 
     const caregiverNavItems = [
         {
-            label: isAr ? 'الرئيسية' : 'Dashboard',
+            label: t('common.nav.dashboard'),
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            label: isAr ? 'مرضاي وقائمة المتابعة' : 'My Patients',
+            label: t('common.nav.myPatients'),
             href: '/patients',
             icon: Users,
         },
         {
-            label: isAr ? 'الملف الشخصي' : 'My Profile',
+            label: t('common.nav.myProfile'),
             href: '/profile',
             icon: User,
         },
@@ -38,27 +37,27 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
 
     const patientNavItems = [
         {
-            label: isAr ? 'الرئيسية' : 'Dashboard',
+            label: t('common.nav.dashboard'),
             href: '/home',
             icon: LayoutGrid,
         },
         {
-            label: isAr ? 'خزانة الأدوية' : 'Medications Cabinet',
+            label: t('common.nav.medicationsCabinet'),
             href: '/medications',
             icon: Pill,
         },
         {
-            label: isAr ? 'متابعة الالتزام' : 'Adherence Tracker',
+            label: t('common.nav.adherenceTracker'),
             href: '/adherence',
             icon: TrendingUp,
         },
         {
-            label: isAr ? 'دائرة الرعاية' : 'Caregivers Circle',
+            label: t('common.nav.caregiversCircle'),
             href: '/caregivers',
             icon: Users,
         },
         {
-            label: isAr ? 'الملف الشخصي' : 'My Profile',
+            label: t('common.nav.myProfile'),
             href: '/profile',
             icon: User,
         },
@@ -66,7 +65,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
 
     const navItems = isCaregiver ? caregiverNavItems : patientNavItems;
     return (<>
-      <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 transition-all duration-300 ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
+      <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 ${isMounted ? 'transition-all duration-300 opacity-100' : 'transition-none opacity-0'} ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
         <div className="space-y-8">
           {/* Brand Header & Toggle Button */}
           {!isSidebarSlim ? (
@@ -80,7 +79,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                   title="Toggle Sidebar"
                 >
                   <span className="material-symbols-outlined !text-[24px]">
-                    {isAr ? "menu_open" : "menu_open"}
+                    menu_open
                   </span>
                 </button>
               )}
@@ -97,7 +96,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                     <span className="text-[#00a396] dark:text-[#14b8a6]">Mind</span>
                   </h1>
                   <p className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
-                    {isAr ? 'منصة الرعاية الصحية' : 'Healthcare Dashboard'}
+                    {t('common.nav.healthcareDashboard')}
                   </p>
                 </div>
               </Link>
@@ -113,7 +112,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                   title="Toggle Sidebar"
                 >
                   <span className="material-symbols-outlined !text-[24px]">
-                    {isAr ? "menu" : "menu"}
+                    menu
                   </span>
                 </button>
               )}

@@ -108,6 +108,15 @@ async function seed() {
       conditions: [
         { diseaseName: "Type 2 Diabetes", isChronic: true, notes: "Diagnosed 2021. Managed with Metformin." },
         { diseaseName: "Hypertension", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteسبسشيبnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteسيبسبيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hypertبيسension", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hypeسسtension", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteبسيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteسيبسيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteبسشيبسnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteسشيبسnsion", isChronic: true, notes: "Monitor blood pressure daily." },
+        { diseaseName: "Hyperteسشيبسيشnsion", isChronic: true, notes: "Monitor blood pressure daily." },
       ],
       meds: [
         { name: "Metformin ER", strength: "500mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 2, stock: 45, initial: 60, refillThresh: 10, meal: "AFTER_MEALS", relation: "Diabetes" },

@@ -4,6 +4,8 @@ import apiClient from '@/shared/lib/apiClient';
 import { getSocket } from '@/shared/lib/socketClient';
 import { showNotification } from '@/shared/components/ui/toast';
 
+import { notificationService } from '@/shared/services/notificationService';
+
 export const NOTIFICATION_KEYS = {
   all: ['notifications'],
 };
@@ -20,8 +22,8 @@ export function useSocketNotifications() {
   const notificationsQuery = useQuery({
     queryKey: NOTIFICATION_KEYS.all,
     queryFn: async () => {
-      const res = await apiClient.get('/notifications');
-      return res.data?.success ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+      const data = await notificationService.getNotifications();
+      return Array.isArray(data) ? data : [];
     },
     enabled: hasToken,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -85,8 +87,8 @@ export function useSocketNotifications() {
   // 3. Mark Single Notification as Read Mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId) => {
-      const res = await apiClient.patch(`/notifications/${notificationId}/read`);
-      return res.data;
+      const data = await notificationService.markAsRead(notificationId);
+      return data;
     },
     onSuccess: (data, notificationId) => {
       queryClient.setQueryData(NOTIFICATION_KEYS.all, (oldData = []) => {
@@ -103,8 +105,8 @@ export function useSocketNotifications() {
   // 4. Mark All Notifications as Read Mutation
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiClient.patch('/notifications/read-all');
-      return res.data;
+      const data = await notificationService.markAllAsRead();
+      return data;
     },
     onSuccess: () => {
       queryClient.setQueryData(NOTIFICATION_KEYS.all, (oldData = []) => {

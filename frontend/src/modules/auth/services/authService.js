@@ -109,5 +109,20 @@ export const authService = {
       const legacyMsg = err.response?.data?.error?.message || err.message || 'Failed to fetch user';
       throw new Error(JSON.stringify({ en: legacyMsg, ar: 'فشل جلب بيانات المستخدم' }));
     }
+  },
+
+  async validateUniqueness(field, value) {
+    const res = await apiClient.get(`/auth/validate-uniqueness?${field}=${encodeURIComponent(value)}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async sendOtp(recipient, type = 'REGISTRATION') {
+    const res = await apiClient.post('/auth/otp/send', { recipient, type });
+    return res.data?.data ?? res.data;
+  },
+
+  async verifyOtp(recipient, code, type = 'REGISTRATION') {
+    const res = await apiClient.post('/auth/otp/verify', { recipient, code, type });
+    return res.data?.data ?? res.data;
   }
 };

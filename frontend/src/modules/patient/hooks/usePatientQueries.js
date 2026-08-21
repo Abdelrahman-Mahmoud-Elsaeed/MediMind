@@ -12,7 +12,7 @@ export const PATIENT_KEYS = {
 };
 
 // 1. Patient Profile
-export function usePatientProfileQuery() {
+export function usePatientProfileQuery(options = {}) {
   return useQuery({
     queryKey: PATIENT_KEYS.profile,
     queryFn: async () => {
@@ -20,6 +20,7 @@ export function usePatientProfileQuery() {
       return res?.success ? res.data : res;
     },
     staleTime: 1000 * 60 * 5,
+    ...options,
   });
 }
 
@@ -108,6 +109,20 @@ export function useSkipDoseMutation() {
   return useMutation({
     mutationFn: async ({ doseEventId }) => {
       const res = await patientService.skipDose(doseEventId);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient', 'doses'] });
+    },
+  });
+}
+
+export function useSnoozeDoseMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ doseEventId, minutes = 15 }) => {
+      const res = await patientService.snoozeDose(doseEventId, minutes);
       return res;
     },
     onSuccess: () => {

@@ -10,7 +10,7 @@ import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQuerie
 import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiverQueries';
 
 export const SidebarFooter = ({ isSidebarSlim = false }) => {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
 
@@ -23,21 +23,19 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
     setMounted(true);
   }, []);
 
-  const isAr = mounted && locale === 'ar';
-
   const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
 
   const userName = activeProfile?.firstName && activeProfile?.lastName
     ? `${activeProfile.firstName} ${activeProfile.lastName}`
-    : user?.name || user?.email?.split('@')[0] || (isAr ? 'مستخدم' : 'User');
+    : user?.name || user?.email?.split('@')[0] || t('common.roles.user');
 
   const userRole = user?.role === 'FAMILY_CAREGIVER' 
-    ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+    ? t('common.roles.familyCaregiver')
     : user?.role === 'PROFESSIONAL_CAREGIVER'
-    ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
+    ? t('common.roles.professionalCaregiver')
     : user?.role === 'CAREGIVER'
-    ? (isAr ? 'مقدم رعاية' : 'Caregiver')
-    : (isAr ? 'مريض' : 'Patient');
+    ? t('common.roles.caregiver')
+    : t('common.roles.patient');
 
   const userInitial = userName.charAt(0).toUpperCase();
   const avatarSrc = activeProfile?.profilePictureUrl || user?.profilePictureUrl || '';
@@ -56,8 +54,8 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
             type="button"
             onClick={() => logout()}
             className="w-10 h-10 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs"
-            title={isAr ? 'تسجيل الخروج' : 'Sign Out'}
-            aria-label="Sign Out"
+            title={t('common.nav.logout')}
+            aria-label={t('common.nav.logout')}
           >
             <LogOut className="w-4 h-4"/>
           </button>
@@ -101,8 +99,8 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
               type="button"
               onClick={() => logout()}
               className="w-8 h-8 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-all cursor-pointer shrink-0 shadow-2xs"
-              title={isAr ? 'تسجيل الخروج' : 'Sign Out'}
-              aria-label="Sign Out"
+              title={t('common.nav.logout')}
+              aria-label={t('common.nav.logout')}
             >
               <LogOut className="w-4 h-4"/>
             </button>
