@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Pill, TrendingUp, Users, User, HeartPulse, } from 'lucide-react';
+import { LayoutGrid, Pill, TrendingUp, Users, User, HeartPulse, RefreshCw } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
@@ -67,6 +67,11 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
             label: isAr ? 'خزانة الأدوية' : 'Medications Cabinet',
             href: '/medications',
             icon: Pill,
+        },
+        {
+            label: isAr ? 'إعادة التعبئة' : 'Refill Orders',
+            href: '/refills',
+            icon: RefreshCw,
         },
         {
             label: isAr ? 'متابعة الالتزام' : 'Adherence Tracker',
@@ -155,6 +160,7 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                 activePath === item.href ||
                 (item.href === '/pharmacy' && (activePath === '/pharmacy' || activePath === '/pharmacy/dashboard')) ||
                 (item.href === '/pharmacy/orders' && activePath === '/pharmacy/orders') ||
+                (item.href === '/refills' && activePath.startsWith('/refills')) ||
                 (item.href === '/home' && (activePath === '/dashboard' || activePath === '/')) ||
                 (item.href === '/medications' && (activePath.startsWith('/medications') || activePath.startsWith('/ocr-scan'))) ||
                 (item.href === '/caregivers' && activePath.startsWith('/caregivers')) ||

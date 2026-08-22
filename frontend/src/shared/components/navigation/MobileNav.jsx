@@ -41,6 +41,7 @@ export const MobileNav = () => {
   const patientItems = [
     { href: '/home', icon: 'home', labelKey: 'patient.nav.home', fallbackLabel: isAr ? 'الرئيسية' : 'Home' },
     { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds', fallbackLabel: isAr ? 'الأدوية' : 'Meds' },
+    { href: '/refills', icon: 'autorenew', labelKey: 'patient.nav.refills', fallbackLabel: isAr ? 'التعبئة' : 'Refills' },
     { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence', fallbackLabel: isAr ? 'الالتزام' : 'Adherence' },
     { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care', fallbackLabel: isAr ? 'الرعاية' : 'Care' },
     { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile', fallbackLabel: isAr ? 'الملف' : 'Profile' },
