@@ -7,7 +7,11 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 import Link from 'next/link';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 
-export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim }) => {
+import { usePathname } from 'next/navigation';
+
+export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, setIsSidebarSlim }) => {
+    const pathname = usePathname();
+    const activePath = propsActivePath || pathname || '/home';
     const { locale } = useTranslation();
     const isAr = locale === 'ar';
     const { user } = useAuth();
@@ -161,9 +165,11 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                 (item.href === '/pharmacy' && (activePath === '/pharmacy' || activePath === '/pharmacy/dashboard')) ||
                 (item.href === '/pharmacy/orders' && activePath === '/pharmacy/orders') ||
                 (item.href === '/refills' && activePath.startsWith('/refills')) ||
-                (item.href === '/home' && (activePath === '/dashboard' || activePath === '/')) ||
+                (item.href === '/home' && (activePath === '/home' || activePath === '/dashboard' || activePath === '/')) ||
                 (item.href === '/medications' && (activePath.startsWith('/medications') || activePath.startsWith('/ocr-scan'))) ||
                 (item.href === '/caregivers' && activePath.startsWith('/caregivers')) ||
+                (item.href === '/patients' && activePath.startsWith('/patients')) ||
+                (item.href === '/pharmacies' && activePath.startsWith('/pharmacies')) ||
                 (item.href === '/profile' && (activePath.startsWith('/profile') || activePath.startsWith('/medical-records')));
 
               return (

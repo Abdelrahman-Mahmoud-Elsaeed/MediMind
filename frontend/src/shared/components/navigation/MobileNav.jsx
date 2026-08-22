@@ -54,8 +54,14 @@ export const MobileNav = () => {
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== '/home' && item.href !== '/dashboard' && pathname?.startsWith(item.href)) ||
-          (item.href === '/medications' && pathname?.startsWith('/ocr-scan')) ||
+          (item.href === '/pharmacy' && (pathname === '/pharmacy' || pathname === '/pharmacy/dashboard')) ||
+          (item.href === '/pharmacy/orders' && pathname === '/pharmacy/orders') ||
+          (item.href === '/refills' && pathname?.startsWith('/refills')) ||
+          (item.href === '/home' && (pathname === '/home' || pathname === '/dashboard' || pathname === '/')) ||
+          (item.href === '/medications' && (pathname?.startsWith('/medications') || pathname?.startsWith('/ocr-scan'))) ||
+          (item.href === '/caregivers' && pathname?.startsWith('/caregivers')) ||
+          (item.href === '/patients' && pathname?.startsWith('/patients')) ||
+          (item.href === '/pharmacies' && pathname?.startsWith('/pharmacies')) ||
           (item.href === '/profile' && (pathname?.startsWith('/profile') || pathname?.startsWith('/medical-records')));
 
         const displayLabel = item.label || (item.labelKey ? t(item.labelKey) : item.fallbackLabel);
