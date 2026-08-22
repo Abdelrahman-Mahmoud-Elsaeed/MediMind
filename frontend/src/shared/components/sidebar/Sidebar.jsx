@@ -1,13 +1,16 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Pill, TrendingUp, Users, User } from 'lucide-react';
+import { LayoutGrid, Pill, TrendingUp, Users, User, RefreshCw } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import Link from 'next/link';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
+import { usePathname } from 'next/navigation';
 
-export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim, isMounted = false }) => {
+export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, setIsSidebarSlim, isMounted = false }) => {
+    const pathname = usePathname();
+    const activePath = propsActivePath || pathname || '/home';
     const { t, locale } = useTranslation();
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -73,7 +76,12 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
             icon: Pill,
         },
         {
-            label: t('common.nav.adherenceTracker'),
+            label: isAr ? 'إعادة التعبئة' : 'Refill Orders',
+            href: '/refills',
+            icon: RefreshCw,
+        },
+        {
+            label: isAr ? 'متابعة الالتزام' : 'Adherence Tracker',
             href: '/adherence',
             icon: TrendingUp,
         },
@@ -159,9 +167,12 @@ export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setI
                 activePath === item.href ||
                 (item.href === '/pharmacy' && (activePath === '/pharmacy' || activePath === '/pharmacy/dashboard')) ||
                 (item.href === '/pharmacy/orders' && activePath === '/pharmacy/orders') ||
-                (item.href === '/home' && (activePath === '/dashboard' || activePath === '/')) ||
+                (item.href === '/refills' && activePath.startsWith('/refills')) ||
+                (item.href === '/home' && (activePath === '/home' || activePath === '/dashboard' || activePath === '/')) ||
                 (item.href === '/medications' && (activePath.startsWith('/medications') || activePath.startsWith('/ocr-scan'))) ||
                 (item.href === '/caregivers' && activePath.startsWith('/caregivers')) ||
+                (item.href === '/patients' && activePath.startsWith('/patients')) ||
+                (item.href === '/pharmacies' && activePath.startsWith('/pharmacies')) ||
                 (item.href === '/profile' && (activePath.startsWith('/profile') || activePath.startsWith('/medical-records')));
 
               return (

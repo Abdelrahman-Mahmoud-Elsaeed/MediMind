@@ -39,11 +39,12 @@ export const MobileNav = () => {
   ];
 
   const patientItems = [
-    { href: '/home', icon: 'home', labelKey: 'patient.nav.home' },
-    { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds' },
-    { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence' },
-    { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care' },
-    { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile' },
+    { href: '/home', icon: 'home', labelKey: 'patient.nav.home', fallbackLabel: isAr ? 'الرئيسية' : 'Home' },
+    { href: '/medications', icon: 'medication', labelKey: 'patient.nav.meds', fallbackLabel: isAr ? 'الأدوية' : 'Meds' },
+    { href: '/refills', icon: 'autorenew', labelKey: 'patient.nav.refills', fallbackLabel: isAr ? 'التعبئة' : 'Refills' },
+    { href: '/adherence', icon: 'query_stats', labelKey: 'patient.nav.adherence', fallbackLabel: isAr ? 'الالتزام' : 'Adherence' },
+    { href: '/caregivers', icon: 'groups', labelKey: 'patient.nav.care', fallbackLabel: isAr ? 'الرعاية' : 'Care' },
+    { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile', fallbackLabel: isAr ? 'الملف' : 'Profile' },
   ];
 
   const navItems = isPharmacist ? pharmacistItems : isCaregiver ? caregiverItems : patientItems;
@@ -53,11 +54,17 @@ export const MobileNav = () => {
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== '/home' && item.href !== '/dashboard' && pathname?.startsWith(item.href)) ||
-          (item.href === '/medications' && pathname?.startsWith('/ocr-scan')) ||
+          (item.href === '/pharmacy' && (pathname === '/pharmacy' || pathname === '/pharmacy/dashboard')) ||
+          (item.href === '/pharmacy/orders' && pathname === '/pharmacy/orders') ||
+          (item.href === '/refills' && pathname?.startsWith('/refills')) ||
+          (item.href === '/home' && (pathname === '/home' || pathname === '/dashboard' || pathname === '/')) ||
+          (item.href === '/medications' && (pathname?.startsWith('/medications') || pathname?.startsWith('/ocr-scan'))) ||
+          (item.href === '/caregivers' && pathname?.startsWith('/caregivers')) ||
+          (item.href === '/patients' && pathname?.startsWith('/patients')) ||
+          (item.href === '/pharmacies' && pathname?.startsWith('/pharmacies')) ||
           (item.href === '/profile' && (pathname?.startsWith('/profile') || pathname?.startsWith('/medical-records')));
 
-        const displayLabel = item.label || (item.labelKey ? t(item.labelKey) : '');
+        const displayLabel = item.label || (item.labelKey ? (t(item.labelKey) !== item.labelKey ? t(item.labelKey) : item.fallbackLabel) : '');
 
         return (
           <Link
