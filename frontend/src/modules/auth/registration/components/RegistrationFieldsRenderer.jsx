@@ -18,10 +18,9 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
             <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-3">
               {t("auth.register.roleTitle")}
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <RoleCard roleKey="patient" icon="person" title={t("auth.register.patientRole")} isSelected={formData.role === "patient"} onClick={() => handleRoleSelect("patient")}/>
               <RoleCard roleKey="caregiver" icon="favorite" title={t("auth.register.caregiverRole")} isSelected={formData.role === "caregiver"} onClick={() => handleRoleSelect("caregiver")}/>
-              <RoleCard roleKey="pharmacist" icon="local_pharmacy" title={t("auth.register.pharmacistRole")} isSelected={formData.role === "pharmacist"} onClick={() => handleRoleSelect("pharmacist")}/>
             </div>
           </div>
         </>)}

@@ -189,11 +189,11 @@ export function useRegistration() {
           let fieldVal = '';
           if (id === "email" || (!isPhoneInput && id === "loginInput")) {
             fieldName = 'email';
-            fieldVal = String(value).trim();
+            fieldVal = String(val).trim();
           } else if (id === "phone" || (isPhoneInput && id === "loginInput")) {
             fieldName = 'phone';
-            const countryCode = registrationData.phoneCountryCode || "+20";
-            fieldVal = extractNationalNumber(value, countryCode);
+            const countryCode = registrationData?.phoneCountryCode || (callingCode ? `+${callingCode}` : "+20");
+            fieldVal = extractNationalNumber(val, countryCode);
           }
 
           if (!fieldName || !fieldVal) return;
