@@ -1,8 +1,24 @@
 services:
+  # frontend:
+  #   build:
+  #     context: ../frontend
+  #     dockerfile: Dockerfile
+  #   container_name: frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
+  #   depends_on:
+  #     - api
+
   # api:
   #   build:
   #     context: ../backend
   #     dockerfile: Dockerfile
+  #   container_name: api
+  #   restart: unless-stopped
   #   ports:
   #     - "${PORT:-8080}:${PORT:-8080}"
   #   environment:
@@ -25,6 +41,8 @@ services:
   #   build:
   #     context: ../worker
   #     dockerfile: Dockerfile
+  #   container_name: worker
+  #   restart: unless-stopped
   #   environment:
   #     - NODE_ENV=${NODE_ENV:-development}
   #     - PORT=${WORKER_PORT:-3001}
@@ -38,7 +56,6 @@ services:
     image: mongo:7.0
     container_name: mongodb
     restart: unless-stopped
-
     command:
       - "mongod" 
       - "--replSet"
@@ -46,18 +63,14 @@ services:
       - "--bind_ip_all"
       - "--port"
       - "27018"
-
     ports:
       - "27018:27018"
-
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-
     volumes:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
-
     entrypoint: >
       bash -c '
       if [ ! -f /data/configdb/mongo-keyfile ]; then
@@ -67,8 +80,6 @@ services:
       fi;
       exec docker-entrypoint.sh "$$@" --keyFile /data/configdb/mongo-keyfile
       '
-
-    # Simplified healthcheck string execution to prevent shell variable splitting
     healthcheck:
       test: mongosh --port 27018 -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --quiet --eval "db.adminCommand({ping:1}).ok"
       interval: 5s
@@ -83,8 +94,6 @@ services:
       mongodb:
         condition: service_healthy
     restart: "no"
-
-    # Switched variables to reference the environment directly to guarantee string parsing
     entrypoint: >
       bash -c '
       mongosh "mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27018/admin" --eval "
@@ -105,7 +114,7 @@ services:
         }
       "
       '
-  
+
   redis:
     image: redis:7-alpine
     container_name: redis
