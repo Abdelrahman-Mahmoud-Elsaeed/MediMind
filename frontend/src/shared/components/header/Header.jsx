@@ -166,11 +166,11 @@ function NotificationPopover({ locale, t }) {
           <div className="p-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container/40">
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-sm text-on-surface">
-                {isRtl ? "الإشعارات وطلبات الربط" : "Notifications & Invites"}
+                {t('common.notifications.title')}
               </h3>
               {totalUnread > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-400 text-xs font-black">
-                  {totalUnread} {isRtl ? "جديد" : "new"}
+                  {t('common.notifications.unreadCount', { count: totalUnread })}
                 </span>
               )}
             </div>
@@ -179,7 +179,7 @@ function NotificationPopover({ locale, t }) {
                 onClick={() => markAllRead()}
                 className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
               >
-                {isRtl ? "تحديد الكل كمقروء" : "Mark all as read"}
+                {t('common.notifications.markAllRead')}
               </button>
             )}
           </div>
@@ -187,15 +187,15 @@ function NotificationPopover({ locale, t }) {
           <div className="max-h-80 overflow-y-auto divide-y divide-outline-variant/10">
             {pendingIncoming.length === 0 && notifications.length === 0 ? (
               <div className="p-8 text-center text-on-surface-variant text-xs font-medium">
-                {isRtl ? "لا توجد إشعارات أو طلبات ربط جديدة" : "No new notifications or connection requests"}
+                {t('common.notifications.empty')}
               </div>
             ) : (
               <>
                 {/* 1. Pending Relationship Requests */}
                 {pendingIncoming.map((n) => {
                   const partnerName = isCaregiverRole
-                    ? (n.patientId ? `${n.patientId.firstName || ''} ${n.patientId.lastName || ''}`.trim() || n.patientId.email : (isRtl ? 'مريض' : 'Patient'))
-                    : (n.caregiverId ? `${n.caregiverId.firstName || ''} ${n.caregiverId.lastName || ''}`.trim() || n.caregiverId.email : (isRtl ? 'مقدم رعاية' : 'Caregiver'));
+                    ? (n.patientId ? `${n.patientId.firstName || ''} ${n.patientId.lastName || ''}`.trim() || n.patientId.email : t('common.roles.patient'))
+                    : (n.caregiverId ? `${n.caregiverId.firstName || ''} ${n.caregiverId.lastName || ''}`.trim() || n.caregiverId.email : t('common.roles.caregiver'));
 
                   const isPendingMut = isCaregiverRole ? caregiverUpdateStatus.isPending : patientUpdateStatus.isPending;
 
@@ -227,14 +227,14 @@ function NotificationPopover({ locale, t }) {
                           disabled={isPendingMut}
                           className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          {isRtl ? "قبول" : "Accept"}
+                          {t('common.actions.accept')}
                         </button>
                         <button
                           onClick={() => handleResponse(n.relationshipId, 'REJECTED')}
                           disabled={isPendingMut}
                           className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 hover:text-rose-600 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          {isRtl ? "رفض" : "Decline"}
+                          {t('common.actions.decline')}
                         </button>
                       </div>
                     </div>
@@ -289,7 +289,7 @@ function NotificationPopover({ locale, t }) {
               onClick={() => setIsOpen(false)}
               className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline inline-flex items-center gap-1"
             >
-              <span>{isRtl ? "عرض جميع الإشعارات" : "View All Notifications"}</span>
+              <span>{t('common.actions.viewAll')}</span>
               <span className="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
             </Link>
           </div>

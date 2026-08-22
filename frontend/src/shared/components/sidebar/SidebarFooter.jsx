@@ -36,16 +36,16 @@ export const SidebarFooter = ({ isSidebarSlim = false }) => {
     : activeUser?.name || activeUser?.email?.split('@')[0] || (isAr ? 'مستخدم' : 'User');
 
   const userRole = activeUser?.role === 'PHARMACIST'
-    ? (isAr ? 'صيدلي معتمد' : 'Pharmacist')
+    ? t('common.roles.pharmacist')
     : activeUser?.role === 'ADMIN'
-    ? (isAr ? 'مسؤول النظام' : 'Super Admin')
+    ? t('common.roles.admin')
     : activeUser?.role === 'FAMILY_CAREGIVER' 
-    ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+    ? t('common.roles.familyCaregiver')
     : activeUser?.role === 'PROFESSIONAL_CAREGIVER'
-    ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
+    ? t('common.roles.professionalCaregiver')
     : activeUser?.role === 'CAREGIVER'
-    ? (isAr ? 'مقدم رعاية' : 'Caregiver')
-    : (isAr ? 'مريض' : 'Patient');
+    ? t('common.roles.caregiver')
+    : t('common.roles.patient');
 
   const userInitial = userName.charAt(0).toUpperCase();
   const avatarSrc = activeProfile?.profilePictureUrl || activeUser?.profilePictureUrl || '';
