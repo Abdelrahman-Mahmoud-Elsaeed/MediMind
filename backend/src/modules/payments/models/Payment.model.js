@@ -34,7 +34,7 @@ const PaymentSchema = new Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["CARD", "MOBILE_WALLET", "CASH_ON_DELIVERY", "KIOSK", "FAWRY"],
+      enum: ["CARD", "MOBILE_WALLET", "CASH_ON_DELIVERY", "KIOSK", "FAWRY", "STRIPE"],
       required: true,
     },
 

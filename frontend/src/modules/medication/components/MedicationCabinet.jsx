@@ -37,7 +37,7 @@ export const MedicationCabinet = () => {
     setMounted(true);
   }, []);
 
-  const isAr = mounted && locale === 'ar';
+  const isAr = locale === 'ar';
 
   const dateStr = useMemo(() => new Date().toISOString().split('T')[0], []);
   const { data: apiDoses = [] } = usePatientDosesQuery(dateStr);

@@ -7,18 +7,18 @@ import PatientNotifications from "./PatientNotifications";
 import CaregiverNotifications from "./CaregiverNotifications";
 export default function NotificationsPage() {
     const router = useRouter();
-    const { user, isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, isAuthLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
     }, []);
     useEffect(() => {
-        if (mounted && !loading && !isAuthenticated) {
+        if (mounted && !isAuthLoading && !isAuthenticated) {
             router.push("/login");
         }
-    }, [isAuthenticated, loading, router, mounted]);
-    if (!mounted || loading) {
-        return <div className="p-8">Loading...</div>;
+    }, [isAuthenticated, isAuthLoading, router, mounted]);
+    if (!mounted || isAuthLoading) {
+        return <div className="p-8 text-slate-500 font-semibold" suppressHydrationWarning>Loading notifications...</div>;
     }
     if (!isAuthenticated) {
         return null;

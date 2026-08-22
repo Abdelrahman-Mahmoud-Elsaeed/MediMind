@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../../config/env');
 
 const JWT_ACCESS_EXPIRY = '15m';
@@ -22,7 +22,7 @@ const generateAccessToken = (payload) => {
  * @returns {Object} { token: string, tokenId: string }
  */
 const generateRefreshToken = (payload) => {
-  const tokenId = uuidv4(); // Unique identifier for this specific session
+  const tokenId = crypto.randomUUID(); // Unique identifier for this specific session
 
   const token = jwt.sign(
     { 

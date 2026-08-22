@@ -8,18 +8,18 @@ import { CaregiverDashboardComponent } from '@/modules/caregiver/components/Care
 
 export default function HomePage() {
     const router = useRouter();
-    const { user, isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, isAuthLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
     }, []);
     useEffect(() => {
-        if (mounted && !loading && !isAuthenticated) {
+        if (mounted && !isAuthLoading && !isAuthenticated) {
             router.push('/login');
         }
-    }, [isAuthenticated, loading, router, mounted]);
-    if (!mounted || loading) {
-        return <div className="p-8 text-slate-500 font-semibold">Loading dashboard...</div>;
+    }, [isAuthenticated, isAuthLoading, router, mounted]);
+    if (!mounted || isAuthLoading) {
+        return <div className="p-8 text-slate-500 font-semibold" suppressHydrationWarning>Loading dashboard...</div>;
     }
     if (!isAuthenticated) {
         return null;

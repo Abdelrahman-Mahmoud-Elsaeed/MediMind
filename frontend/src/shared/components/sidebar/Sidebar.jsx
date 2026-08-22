@@ -9,14 +9,10 @@ import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 export const Sidebar = ({ activePath = '/dashboard', isSidebarSlim = false, setIsSidebarSlim }) => {
     const { locale } = useTranslation();
-    const [mounted, setMounted] = useState(false);
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-    const isAr = mounted && locale === 'ar';
+    const isAr = locale === 'ar';
     const { user } = useAuth();
-    const userRole = mounted ? user?.role : null;
+
+    const userRole = user?.role;
     const isPharmacist = userRole === 'PHARMACIST';
     const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
 

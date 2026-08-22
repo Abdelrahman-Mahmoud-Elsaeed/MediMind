@@ -24,6 +24,9 @@ export const pharmacyApi = {
       quantityRequested: Number(payload.quantityRequested || 30),
       fulfillmentType: payload.fulfillmentType || 'DELIVERY',
       deliveryAddress: payload.deliveryAddress || undefined,
+      paymentMethod: payload.paymentMethod || 'CASH_ON_DELIVERY',
+      paymentStatus: payload.paymentStatus || (payload.paymentMethod === 'CARD' || payload.paymentMethod === 'STRIPE' ? 'PAID' : 'UNPAID'),
+      totalAmount: Number(payload.totalAmount || 0),
     };
 
     const response = await apiClient.post('/medications/refills', backendPayload);

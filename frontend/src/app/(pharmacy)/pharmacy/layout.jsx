@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export default function PharmacyLayout({ children }) {
   const [mounted, setMounted] = useState(false);
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function PharmacyLayout({ children }) {
 
   const isPharmacist = user?.role === 'PHARMACIST' || user?.role === 'ADMIN';
 
-  if (loading) {
+  if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
         <div className="flex flex-col items-center gap-3">

@@ -16,7 +16,7 @@ import { LanguageToggler } from "@/shared/components/LanguageToggler";
 import { z } from "zod";
 export default function LoginComponent() {
     const router = useRouter();
-    const { login, loading, error, resetError, clearRegistrationData, isAuthenticated, user } = useAuth();
+    const { login, loading, isAuthLoading, error, resetError, clearRegistrationData, isAuthenticated, user } = useAuth();
     const { locale, dir, t } = useTranslation();
     const { resolvedTheme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -24,7 +24,7 @@ export default function LoginComponent() {
         setMounted(true);
     }, []);
     useEffect(() => {
-        if (!loading && isAuthenticated) {
+        if (!isAuthLoading && isAuthenticated) {
             const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
             if (role === "PHARMACIST") {
                 router.replace("/pharmacy");
@@ -32,7 +32,7 @@ export default function LoginComponent() {
                 router.replace(role === "PATIENT" ? "/home" : "/dashboard");
             }
         }
-    }, [isAuthenticated, loading, user, router]);
+    }, [isAuthenticated, isAuthLoading, user, router]);
     const [loginInput, setLoginInput] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);

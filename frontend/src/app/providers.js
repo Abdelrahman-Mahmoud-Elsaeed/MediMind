@@ -23,10 +23,10 @@ function AuthInitializer({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
 
   useEffect(() => {
-    if (loading) return;
+    if (isAuthLoading) return;
 
     const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications', '/pharmacies'];
     const isPublicRoute = publicRoutes.some((route) => pathname === route || (route !== '/' && pathname?.startsWith(`${route}/`)));
@@ -54,7 +54,7 @@ function AuthInitializer({ children }) {
     } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify') {
       router.replace('/login');
     }
-  }, [isAuthenticated, user, loading, pathname, router]);
+  }, [isAuthenticated, user, isAuthLoading, pathname, router]);
 
   return <>{children}</>;
 }

@@ -72,10 +72,17 @@ export function LanguageProvider({ children, initialLocale = "en" }) {
   );
 }
 
+const defaultContext = {
+  locale: "en",
+  dir: "ltr",
+  toggleLanguage: () => {},
+  t: (path) => path,
+};
+
 export function useTranslation() {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error("useTranslation must be used within a LanguageProvider");
+    return defaultContext;
   }
   return context;
 }

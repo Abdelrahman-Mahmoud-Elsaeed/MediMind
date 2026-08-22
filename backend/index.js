@@ -1,5 +1,7 @@
+const http = require('http');
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
+const { initSocket } = require('./src/config/socket');
 const { logger } = require('./src/shared/utils/logger');
 const { PORT } = require('./src/config/env');
 
@@ -8,8 +10,11 @@ const port = PORT || 8080;
 const startServer = async () => {
   await connectDB();
 
-  const server = app.listen(port, () => {
-    logger.info(`Platform server successfully bound and listening on port: ${port}`);
+  const server = http.createServer(app);
+  initSocket(server);
+
+  server.listen(port, () => {
+    logger.info(`Platform server with Socket.IO successfully bound and listening on port: ${port}`);
   });
 
   process.on('unhandledRejection', (err) => {

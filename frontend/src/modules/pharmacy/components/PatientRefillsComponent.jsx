@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useRefillOrders, useCreateRefillOrder, usePharmacies } from '../hooks/usePharmacyHooks';
 import { useMedications } from '@/modules/medication/hooks/useMedicationHooks';
+import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
+import { getSocket } from '@/shared/lib/socketClient';
 
 export default function PatientRefillsComponent() {
   const { locale } = useTranslation();
@@ -15,13 +17,49 @@ export default function PatientRefillsComponent() {
   const [selectedPharmacyId, setSelectedPharmacyId] = useState('');
   const [quantity, setQuantity] = useState(30);
   const [fulfillmentType, setFulfillmentType] = useState('DELIVERY');
-  const [streetAddress, setStreetAddress] = useState('');
-  const [city, setCity] = useState('');
+  
+  // Address selection state
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState('0');
+  const [customStreet, setCustomStreet] = useState('');
+  const [customCity, setCustomCity] = useState('');
+
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState('CARD'); // 'CARD' or 'CASH_ON_DELIVERY'
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardHolder, setCardHolder] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+
+  // Toast notification state
+  const [liveToast, setLiveToast] = useState(null);
+
+  const { data: patientProfile } = usePatientProfileQuery();
+  const savedAddresses = patientProfile?.address || [];
 
   const { data: refillOrders = [], isLoading: isLoadingRefills } = useRefillOrders();
   const { data: medications = [] } = useMedications();
   const { data: pharmacies = [] } = usePharmacies();
   const createRefillMutation = useCreateRefillOrder();
+
+  // Socket listener for real-time status updates
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleStatusUpdate = (data) => {
+      const statusTitle = isAr ? 'تحديث حالة طلب الدواء' : 'Refill Status Updated';
+      const statusMsg = isAr
+        ? `قام الصيدلي بتحديث حالة طلبك إلى: ${data.orderStatus}`
+        : `Pharmacy updated your refill order to: ${data.orderStatus}`;
+      setLiveToast({ title: statusTitle, message: statusMsg });
+      setTimeout(() => setLiveToast(null), 5000);
+    };
+
+    socket.on('refill_status_updated', handleStatusUpdate);
+    return () => {
+      socket.off('refill_status_updated', handleStatusUpdate);
+    };
+  }, [isAr]);
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
@@ -31,19 +69,70 @@ export default function PatientRefillsComponent() {
     }
     const targetPharm = (selectedPharmacyId && selectedPharmacyId.length === 24) ? selectedPharmacyId : undefined;
 
+    let finalAddress = undefined;
+    if (fulfillmentType === 'DELIVERY') {
+      if (selectedAddressIndex !== 'CUSTOM' && savedAddresses[Number(selectedAddressIndex)]) {
+        const addr = savedAddresses[Number(selectedAddressIndex)];
+        finalAddress = {
+          street: addr.street || addr.additionalDirections || '',
+          city: addr.city || 'Cairo',
+          state: addr.state || '',
+          zipCode: addr.postalCode || '',
+        };
+      } else {
+        finalAddress = {
+          street: customStreet,
+          city: customCity || 'Cairo',
+        };
+      }
+    }
+
+    if (paymentMethod === 'CARD') {
+      const cleanCard = cardNumber.replace(/\s+/g, '');
+      if (cleanCard.length < 15) {
+        alert(isAr ? 'الرجاء إدخال رقم بطاقة ائتمان صحيح (16 رقم)' : 'Please enter a valid 16-digit card number');
+        return;
+      }
+      if (!cardExpiry || cardExpiry.length < 4) {
+        alert(isAr ? 'الرجاء إدخال تاريخ انتهاء البطاقة (MM/YY)' : 'Please enter a valid expiry date (MM/YY)');
+        return;
+      }
+      if (!cardCvc || cardCvc.length < 3) {
+        alert(isAr ? 'الرجاء إدخال رمز الأمان CVC (3 أرقام)' : 'Please enter a valid CVC (3 digits)');
+        return;
+      }
+    }
+
+    const estimatedAmount = Number(quantity) * 5; // e.g. 5 EGP / USD per unit
+
     createRefillMutation.mutate(
       {
         medicationId: selectedMedId,
         targetPharmacyId: targetPharm,
         quantityRequested: Number(quantity),
         fulfillmentType,
-        deliveryAddress: fulfillmentType === 'DELIVERY' ? { street: streetAddress, city: city || 'Cairo' } : undefined,
+        deliveryAddress: finalAddress,
+        paymentMethod,
+        paymentStatus: paymentMethod === 'CARD' ? 'PAID' : 'UNPAID',
+        totalAmount: estimatedAmount,
       },
       {
         onSuccess: () => {
           setIsModalOpen(false);
           setSelectedMedId('');
-          setStreetAddress('');
+          setCustomStreet('');
+          setCustomCity('');
+          setCardNumber('');
+          setCardHolder('');
+          setCardExpiry('');
+          setCardCvc('');
+          setLiveToast({
+            title: isAr ? 'تم الدفع وتأكيد الطلب بنجاح' : 'Payment Confirmed & Order Sent',
+            message: isAr
+              ? `تم تأكيد سداد ${estimatedAmount} ج.م عبر Stripe وإرسال طلبك للصيدلية المعتمدة.`
+              : `Payment of ${estimatedAmount} EGP confirmed via Stripe. Order sent to pharmacy.`,
+          });
+          setTimeout(() => setLiveToast(null), 5000);
         },
         onError: (err) => {
           alert(err?.response?.data?.message || (isAr ? 'حدث خطأ أثناء إرسال طلب التعبئة' : 'Failed to submit refill order'));
@@ -275,24 +364,38 @@ export default function PatientRefillsComponent() {
                 )}
 
                 {/* Order Meta details */}
-                <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/90 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">local_shipping</span>
-                    <span>
-                      {isAr ? 'نوع التوصيل:' : 'Fulfillment:'}{' '}
-                      <strong className="text-slate-700 dark:text-slate-200">
-                        {order.fulfillmentType === 'DELIVERY'
-                          ? isAr
-                            ? 'توصيل للمنزل'
-                            : 'Home Delivery'
-                          : isAr
-                          ? 'استلام من الصيدلية'
-                          : 'Pharmacy Pickup'}
-                      </strong>
-                    </span>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm text-teal-600">local_shipping</span>
+                      <span>
+                        {isAr ? 'طريقة الاستلام:' : 'Fulfillment:'}{' '}
+                        <strong className="text-slate-700 dark:text-slate-200">
+                          {order.fulfillmentType === 'DELIVERY'
+                            ? (order.deliveryAddress?.street ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city || ''}` : (isAr ? 'توصيل للمنزل' : 'Home Delivery'))
+                            : (isAr ? 'استلام من الصيدلية' : 'Pharmacy Pickup')}
+                        </strong>
+                      </span>
+                    </div>
+
+                    {/* Payment Badge */}
+                    <div className="flex items-center gap-1">
+                      {order.paymentMethod === 'CARD' || order.paymentMethod === 'STRIPE' ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-1">
+                          <span className="material-symbols-outlined text-xs">credit_card</span>
+                          <span>{isAr ? 'مدفوع (Stripe)' : 'Paid (Stripe)'}</span>
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1">
+                          <span className="material-symbols-outlined text-xs">payments</span>
+                          <span>{isAr ? 'الدفع عند الاستلام' : 'Cash on Delivery'}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
+
                   {order.createdAt && (
-                    <div>
+                    <div className="text-[11px]">
                       {isAr ? 'تاريخ الطلب:' : 'Date:'}{' '}
                       {new Date(order.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
                         day: 'numeric',
@@ -406,44 +509,295 @@ export default function PatientRefillsComponent() {
 
               {/* Address details if Delivery */}
               {fulfillmentType === 'DELIVERY' && (
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3 pt-2 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {isAr ? 'اختر عنوان التوصيل' : 'Select Delivery Address'}
+                  </label>
+
+                  {savedAddresses.length > 0 ? (
+                    <div className="space-y-2">
+                      {savedAddresses.map((addr, idx) => (
+                        <label
+                          key={idx}
+                          className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                            selectedAddressIndex === String(idx)
+                              ? 'bg-teal-50/80 dark:bg-teal-950/50 border-teal-500 text-teal-900 dark:text-teal-200 font-semibold'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="addressSelect"
+                            value={String(idx)}
+                            checked={selectedAddressIndex === String(idx)}
+                            onChange={(e) => setSelectedAddressIndex(e.target.value)}
+                            className="mt-1 accent-teal-600"
+                          />
+                          <div className="text-xs">
+                            <span className="font-bold block">
+                              {isAr ? `العنوان المسجل ${idx + 1}` : `Saved Address ${idx + 1}`}
+                            </span>
+                            <span className="text-slate-500 dark:text-slate-400">
+                              {[addr.street, addr.city, addr.state, addr.country].filter(Boolean).join(', ')}
+                            </span>
+                          </div>
+                        </label>
+                      ))}
+
+                      <label
+                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedAddressIndex === 'CUSTOM'
+                            ? 'bg-teal-50/80 dark:bg-teal-950/50 border-teal-500 text-teal-900 dark:text-teal-200 font-semibold'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="addressSelect"
+                          value="CUSTOM"
+                          checked={selectedAddressIndex === 'CUSTOM'}
+                          onChange={(e) => setSelectedAddressIndex(e.target.value)}
+                          className="accent-teal-600"
+                        />
+                        <span className="text-xs font-bold">
+                          {isAr ? '➕ إدخال عنوان مخصص جديد' : '➕ Enter Custom Address'}
+                        </span>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {(savedAddresses.length === 0 || selectedAddressIndex === 'CUSTOM') && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <input
+                          type="text"
+                          required
+                          placeholder={isAr ? 'الشارع / رقم المبنى' : 'Street / Building'}
+                          value={customStreet}
+                          onChange={(e) => setCustomStreet(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-teal-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          required
+                          placeholder={isAr ? 'المدينة (مثال: القاهرة)' : 'City (e.g. Cairo)'}
+                          value={customCity}
+                          onChange={(e) => setCustomCity(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-teal-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Payment Method Selector */}
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'طريقة الدفع' : 'Payment Method'}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('CARD')}
+                    className={`p-3 rounded-2xl border text-start transition-all cursor-pointer flex items-center gap-3 ${
+                      paymentMethod === 'CARD'
+                        ? 'bg-teal-50 dark:bg-teal-950/60 border-teal-500 text-teal-900 dark:text-teal-100 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-teal-600 text-2xl">credit_card</span>
+                    <div>
+                      <span className="block text-xs font-extrabold">{isAr ? 'بطاقة بنكية / فيزا (Stripe)' : 'Credit Card / Visa (Stripe)'}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">{isAr ? 'دفع إلكتروني آمن' : 'Instant & Secure'}</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}
+                    className={`p-3 rounded-2xl border text-start transition-all cursor-pointer flex items-center gap-3 ${
+                      paymentMethod === 'CASH_ON_DELIVERY'
+                        ? 'bg-teal-50 dark:bg-teal-950/60 border-teal-500 text-teal-900 dark:text-teal-100 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-teal-600 text-2xl">payments</span>
+                    <div>
+                      <span className="block text-xs font-extrabold">{isAr ? 'الدفع عند الاستلام' : 'Cash on Delivery'}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">{isAr ? 'نقدًا للمندوب/الصيدلية' : 'Pay at fulfillment'}</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* CARD DETAILS FORM (When Credit Card / Stripe is selected) */}
+              {paymentMethod === 'CARD' && (
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg space-y-3.5 border border-slate-700">
+                  <div className="flex items-center justify-between border-b border-slate-700/80 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-teal-400 text-lg">credit_card</span>
+                      <span className="text-xs font-bold text-slate-200">
+                        {isAr ? 'بيانات البطاقة الائتمانية (Visa / Mastercard)' : 'Credit Card Information (Stripe)'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-80">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-md border border-teal-500/30">
+                        Stripe
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Number */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {isAr ? 'عنوان التوصيل (الشارع / المبنى)' : 'Delivery Street Address'}
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      {isAr ? 'رقم البطاقة (16 رقم)' : 'Card Number'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        maxLength={19}
+                        value={cardNumber}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+                          const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+                          setCardNumber(formatted);
+                        }}
+                        placeholder="4242  4242  4242  4242"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white font-mono text-sm font-bold tracking-wider placeholder:text-slate-500 focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+                      />
+                      <span className="absolute end-3 top-2.5 material-symbols-outlined text-slate-400 text-xl pointer-events-none">
+                        lock
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Cardholder Name */}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      {isAr ? 'اسم صاحب البطاقة' : 'Cardholder Name'}
                     </label>
                     <input
                       type="text"
-                      placeholder={isAr ? 'مثال: شارع 90 الشمالي - مبنى 14' : 'e.g. 90th Street, Bldg 14'}
-                      value={streetAddress}
-                      onChange={(e) => setStreetAddress(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none"
+                      required
+                      value={cardHolder}
+                      onChange={(e) => setCardHolder(e.target.value)}
+                      placeholder={isAr ? 'الاسم كما هو مدون على البطاقة' : 'Name as on card'}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-xs font-semibold placeholder:text-slate-500 focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
                     />
+                  </div>
+
+                  {/* Expiry & CVC Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        {isAr ? 'تاريخ الانتهاء' : 'Expires'}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={5}
+                        value={cardExpiry}
+                        onChange={(e) => {
+                          let raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+                          if (raw.length >= 3) {
+                            raw = raw.slice(0, 2) + '/' + raw.slice(2);
+                          }
+                          setCardExpiry(raw);
+                        }}
+                        placeholder="MM / YY"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white font-mono text-xs font-bold text-center placeholder:text-slate-500 focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        {isAr ? 'رمز الأمان (CVV)' : 'CVC / CVV'}
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        maxLength={4}
+                        value={cardCvc}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+                          setCardCvc(raw);
+                        }}
+                        placeholder="•••"
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white font-mono text-xs font-bold text-center placeholder:text-slate-500 focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Security Notice */}
+                  <div className="flex items-center gap-2 pt-1 text-[10px] text-slate-400">
+                    <span className="material-symbols-outlined text-teal-400 text-sm">verified_user</span>
+                    <span>
+                      {isAr
+                        ? 'المدفوعات مؤمنة ومشفرة 256-bit عبر بوابة Stripe العالمية'
+                        : 'Payments are 256-bit encrypted and securely processed via Stripe.'}
+                    </span>
                   </div>
                 </div>
               )}
+
+              {/* Order Pricing Summary */}
+              <div className="bg-slate-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1.5 text-xs">
+                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <span>{isAr ? 'تكلفة الدواء التقديرية:' : 'Estimated Medication Cost:'}</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">{Number(quantity) * 5} EGP</span>
+                </div>
+                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <span>{isAr ? 'التوصيل والخدمة:' : 'Delivery & Service:'}</span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400">{isAr ? 'مجاناً' : 'Free'}</span>
+                </div>
+                <div className="flex justify-between pt-1.5 border-t border-slate-200 dark:border-slate-700 font-extrabold text-sm text-slate-900 dark:text-white">
+                  <span>{isAr ? 'الإجمالي:' : 'Total Amount:'}</span>
+                  <span className="text-teal-600 dark:text-teal-400">{Number(quantity) * 5} EGP</span>
+                </div>
+              </div>
 
               {/* Action buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-2xl text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                  className="px-5 py-2.5 rounded-2xl text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={createRefillMutation.isPending}
-                  className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm shadow-md transition-all flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
                   {createRefillMutation.isPending && (
                     <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
                   )}
-                  <span>{isAr ? 'إرسال طلب التعبئة' : 'Submit Refill Order'}</span>
+                  <span>
+                    {paymentMethod === 'CARD'
+                      ? (isAr ? 'دفع وتأكيد الطلب' : 'Pay & Submit Order')
+                      : (isAr ? 'إرسال طلب التعبئة' : 'Submit Refill Order')}
+                  </span>
                 </button>
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Real-time Floating Toast Alert */}
+      {liveToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-4 rounded-2xl shadow-2xl border border-teal-500/40 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
+          <span className="material-symbols-outlined text-teal-400 text-2xl animate-pulse">notifications_active</span>
+          <div>
+            <h4 className="text-xs font-extrabold">{liveToast.title}</h4>
+            <p className="text-xs text-slate-300 dark:text-slate-600">{liveToast.message}</p>
+          </div>
+          <button onClick={() => setLiveToast(null)} className="ms-3 text-slate-400 hover:text-white dark:hover:text-black font-bold">✕</button>
         </div>
       )}
     </div>

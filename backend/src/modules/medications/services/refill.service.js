@@ -65,6 +65,10 @@ class RefillService {
       throw new AppError('Target pharmacy not found', 404, 'PHARMACY_NOT_FOUND');
     }
 
+    const paymentMethod = payload.paymentMethod || 'CASH_ON_DELIVERY';
+    const isOnline = paymentMethod === 'CARD' || paymentMethod === 'STRIPE';
+    const paymentStatus = payload.paymentStatus || (isOnline ? 'PAID' : 'UNPAID');
+
     const order = new RefillOrder({
       patientId,
       medicationId: payload.medicationId,
@@ -73,10 +77,37 @@ class RefillService {
       fulfillmentType: payload.fulfillmentType,
       deliveryAddress: payload.deliveryAddress,
       quantityRequested: payload.quantityRequested,
+      paymentMethod,
+      paymentStatus,
+      totalAmount: payload.totalAmount || 0,
       orderStatus: 'SUBMITTED'
     });
 
     await order.save();
+
+    // Dispatch real-time notification and persist storage for Pharmacist
+    try {
+      const { notificationService } = require('../../notifications');
+      await notificationService.createAndSendNotification({
+        recipientAccountId: pharmacist.accountId,
+        recipientRole: 'PHARMACIST',
+        type: 'REFILL_ORDER_CREATED',
+        title: 'New Refill Request / طلب تعبئة جديد',
+        message: `New refill request for ${medication.name} (${order.quantityRequested} units).`,
+        data: {
+          refillOrderId: order._id,
+          medicationId: medication._id,
+          medicationName: medication.name,
+          quantityRequested: order.quantityRequested,
+          fulfillmentType: order.fulfillmentType,
+          patientId: order.patientId,
+        },
+        targetPharmacyId: pharmacist._id,
+      });
+    } catch (notifErr) {
+      // Non-blocking
+    }
+
     return order;
   }
 
@@ -114,6 +145,39 @@ class RefillService {
     }
 
     await order.save();
+
+    // Dispatch real-time notification and persist storage for Patient
+    try {
+      const { notificationService } = require('../../notifications');
+      const patient = await Patient.findById(order.patientId);
+      if (patient && patient.accountId) {
+        const statusLabels = {
+          APPROVED: 'Approved / تمت الموافقة عليه',
+          DISPENSED: 'Dispensed / تم تجهيز وصرف الدواء',
+          READY_FOR_PICKUP: 'Ready for Pickup / جاهز للاستلام أو التوصيل',
+          COMPLETED: 'Completed / تم التسليم بنجاح',
+          REJECTED: 'Rejected / تم رفض الطلب',
+        };
+        const statusText = statusLabels[payload.orderStatus] || payload.orderStatus;
+
+        await notificationService.createAndSendNotification({
+          recipientAccountId: patient.accountId,
+          recipientRole: 'PATIENT',
+          type: 'REFILL_ORDER_UPDATED',
+          title: 'Refill Order Update / تحديث حالة طلب الدواء',
+          message: `Your refill request status has been updated to: ${statusText}`,
+          data: {
+            refillOrderId: order._id,
+            medicationId: order.medicationId,
+            orderStatus: payload.orderStatus,
+            pharmacistNotes: payload.pharmacistNotes,
+          },
+        });
+      }
+    } catch (notifErr) {
+      // Non-blocking
+    }
+
     return order;
   }
 
@@ -157,8 +221,9 @@ class RefillService {
     }
 
     return await RefillOrder.find(filter)
-      .populate('medicationId', 'name formType')
-      .populate('patientId', 'firstName lastName')
+      .populate('medicationId', 'name formType imageURL instructions')
+      .populate('patientId', 'firstName lastName phone address')
+      .populate('targetPharmacyId', 'pharmacyName ownerName pharmacyPhone address')
       .sort({ createdAt: -1 });
   }
 }

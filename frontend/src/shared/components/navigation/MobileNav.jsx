@@ -10,12 +10,17 @@ export const MobileNav = () => {
   const { t, locale } = useTranslation();
   const { user } = useAuth();
   const [mounted, setMounted] = React.useState(false);
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isAr = mounted && locale === 'ar';
-  const userRole = mounted ? user?.role : null;
+  if (!mounted) {
+    return null;
+  }
+
+  const isAr = locale === 'ar';
+  const userRole = user?.role;
 
   const isPharmacist = userRole === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);

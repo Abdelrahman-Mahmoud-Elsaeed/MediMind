@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useRefillOrders, useUpdateRefillStatus } from '../hooks/usePharmacyHooks';
+import { getSocket } from '@/shared/lib/socketClient';
 
 export default function PharmacistOrdersComponent() {
   const { locale } = useTranslation();
@@ -15,6 +16,25 @@ export default function PharmacistOrdersComponent() {
 
   const { data: refillOrders = [], isLoading } = useRefillOrders();
   const updateStatusMutation = useUpdateRefillStatus();
+
+  // Real-time listener for incoming orders from patients
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewOrder = (data) => {
+      showToast(
+        isAr
+          ? '🔔 طلب صرف دواء جديد وارد الآن من المريض!'
+          : '🔔 New incoming refill request received!'
+      );
+    };
+
+    socket.on('new_refill_order', handleNewOrder);
+    return () => {
+      socket.off('new_refill_order', handleNewOrder);
+    };
+  }, [isAr]);
 
   // Metrics calculation
   const metrics = useMemo(() => {
@@ -333,7 +353,20 @@ export default function PharmacistOrdersComponent() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* Payment Status Badge */}
+                      {order.paymentMethod === 'CARD' || order.paymentMethod === 'STRIPE' ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm">credit_card</span>
+                          <span>{isAr ? 'مدفوع (Stripe)' : 'Paid (Stripe)'}</span>
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm">payments</span>
+                          <span>{isAr ? 'الدفع عند الاستلام' : 'Cash on Delivery'}</span>
+                        </span>
+                      )}
+
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1">
                         <span className="material-symbols-outlined text-sm">
                           {order.fulfillmentType === 'DELIVERY' ? 'two_wheeler' : 'storefront'}
@@ -357,43 +390,59 @@ export default function PharmacistOrdersComponent() {
 
                   {/* Medication Requested Details Box */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-50 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold">
-                        <span className="material-symbols-outlined text-xl">medication</span>
+                    <div className="bg-slate-50 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold shrink-0">
+                          <span className="material-symbols-outlined text-xl">medication</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                            {isAr ? 'الدواء المطلوب تعبئته' : 'Requested Medication'}
+                          </span>
+                          <span className="font-extrabold text-slate-900 dark:text-white text-base">
+                            {medName}
+                          </span>
+                          <span className="text-xs text-teal-600 dark:text-teal-400 font-bold block mt-0.5">
+                            {order.quantityRequested} {isAr ? 'وحدة (عبوة)' : 'units'}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                          {isAr ? 'الدواء المطلوبة تعبئته' : 'Requested Medication'}
-                        </span>
-                        <span className="font-extrabold text-slate-900 dark:text-white text-base">
-                          {medName}
-                        </span>
-                        <span className="text-xs text-teal-600 dark:text-teal-400 font-bold block mt-0.5">
-                          {order.quantityRequested} {isAr ? 'وحدة (عبوة)' : 'units'}
-                        </span>
+                      <div className="text-end">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">{isAr ? 'قيمة الطلب' : 'Total'}</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white">{order.totalAmount || (order.quantityRequested * 5)} EGP</span>
                       </div>
                     </div>
 
-                    {/* Fulfillment Details (Address or Pickup Note) */}
+                    {/* Fulfillment Details (Address & Phone) */}
                     <div className="bg-slate-50 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold shrink-0">
                         <span className="material-symbols-outlined text-xl">
                           {order.fulfillmentType === 'DELIVERY' ? 'home_pin' : 'store'}
                         </span>
                       </div>
-                      <div className="space-y-0.5">
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                          {order.fulfillmentType === 'DELIVERY'
-                            ? isAr
-                              ? 'عنوان التوصيل للمريض'
-                              : 'Delivery Address'
-                            : isAr
-                            ? 'استلام مباشر من الفرع'
-                            : 'Branch Pickup'}
-                        </span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs sm:text-sm block">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                            {order.fulfillmentType === 'DELIVERY'
+                              ? isAr
+                                ? 'عنوان التوصيل للمريض'
+                                : 'Delivery Address'
+                              : isAr
+                              ? 'استلام مباشر من الفرع'
+                              : 'Branch Pickup'}
+                          </span>
+                          {order.patientId?.phone && (
+                            <span className="text-[11px] font-mono font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-xs">call</span>
+                              <span>{order.patientId.phone}</span>
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs sm:text-sm block truncate">
                           {order.deliveryAddress?.street
-                            ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`
+                            ? `${order.deliveryAddress.street}, ${order.deliveryAddress.city || ''}`
+                            : order.patientId?.address?.[0]?.street
+                            ? `${order.patientId.address[0].street}, ${order.patientId.address[0].city || ''}`
                             : isAr
                             ? 'العنوان المسجل بحساب المريض'
                             : 'Default Patient Profile Address'}
@@ -613,6 +662,29 @@ export default function PharmacistOrdersComponent() {
                   </div>
                 </div>
 
+                {/* Payment Breakdown Box */}
+                <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 space-y-2">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+                    {isAr ? 'بيانات الدفع والمحاسبة:' : 'Payment Breakdown:'}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-slate-800 dark:text-slate-200">
+                    <div>
+                      <strong className="block font-semibold">{isAr ? 'طريقة الدفع:' : 'Payment Method:'}</strong>
+                      <span className="font-bold">
+                        {viewDetailsOrder.paymentMethod === 'CARD' || viewDetailsOrder.paymentMethod === 'STRIPE'
+                          ? (isAr ? '💳 بطاقة بنكية (Stripe)' : '💳 Credit Card (Stripe)')
+                          : (isAr ? '💵 الدفع عند الاستلام' : '💵 Cash on Delivery')}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="block font-semibold">{isAr ? 'إجمالي المبلغ المطلوب:' : 'Total Amount:'}</strong>
+                      <span className="font-black text-emerald-700 dark:text-emerald-400">
+                        {viewDetailsOrder.totalAmount || (viewDetailsOrder.quantityRequested * 5)} EGP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Fulfillment Address */}
                 <div className="bg-slate-50 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-1">
                   <span className="font-bold text-slate-400 uppercase tracking-wider block">
@@ -620,7 +692,11 @@ export default function PharmacistOrdersComponent() {
                   </span>
                   <span className="font-medium text-slate-800 dark:text-slate-200 block">
                     {viewDetailsOrder.deliveryAddress?.street
-                      ? `${viewDetailsOrder.deliveryAddress.street}, ${viewDetailsOrder.deliveryAddress.city}`
+                      ? `${viewDetailsOrder.deliveryAddress.street}, ${viewDetailsOrder.deliveryAddress.city || ''}`
+                      : viewDetailsOrder.patientId?.address?.[0]?.street
+                      ? `${viewDetailsOrder.patientId.address[0].street}, ${viewDetailsOrder.patientId.address[0].city || ''}`
+                      : isAr
+                      ? 'العنوان المسجل بحساب المريض'
                       : 'Default Patient Profile Address'}
                   </span>
                 </div>

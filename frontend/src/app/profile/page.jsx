@@ -10,7 +10,7 @@ import AdminProfile from "./AdminProfile";
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { user, isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, isAuthLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -18,13 +18,13 @@ export default function ProfilePage() {
     }, []);
 
     useEffect(() => {
-        if (mounted && !loading && !isAuthenticated) {
+        if (mounted && !isAuthLoading && !isAuthenticated) {
             router.push("/login");
         }
-    }, [isAuthenticated, loading, router, mounted]);
+    }, [isAuthenticated, isAuthLoading, router, mounted]);
 
-    if (!mounted || loading) {
-        return <div className="p-8">Loading...</div>;
+    if (!mounted || isAuthLoading) {
+        return <div className="p-8 text-slate-500 font-semibold" suppressHydrationWarning>Loading profile...</div>;
     }
 
     if (!isAuthenticated) {

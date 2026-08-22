@@ -8,58 +8,90 @@ import { LanguageToggler } from '@/shared/components/LanguageToggler';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, } from '@/shared/components/ui/dropdown-menu';
 
+import { useRouter } from 'next/navigation';
+import {
+  useNotifications,
+  useUnreadNotificationCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+} from '@/modules/notifications/hooks/useNotifications';
+
+// Helper for formatting relative time
+function formatRelativeTime(dateString, isAr) {
+  if (!dateString) return isAr ? 'الآن' : 'Just now';
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return isAr ? 'الآن' : 'Just now';
+  if (diffMins < 60) return isAr ? `منذ ${diffMins} دقيقة` : `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return isAr ? `منذ ${diffHours} ساعة` : `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return isAr ? `منذ ${diffDays} يوم` : `${diffDays}d ago`;
+}
+
+// Resolve route based on notification type and user role
+function getNotificationRoute(notification, userRole) {
+  if (!notification) return '/notifications';
+  const { type } = notification;
+
+  switch (type) {
+    case 'REFILL_ORDER_CREATED':
+      return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
+    case 'REFILL_ORDER_UPDATED':
+      return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
+    case 'DOSE_REMINDER':
+      return '/home';
+    case 'MEDICATION_LOW_STOCK':
+      return '/refills';
+    case 'CAREGIVER_INVITATION':
+      return userRole === 'PATIENT' ? '/caregivers' : '/patients';
+    default:
+      return '/notifications';
+  }
+}
+
 // ==========================================
 // SUB-COMPONENT: NOTIFICATION POPOVER MENU
 // ==========================================
 function NotificationPopover({ locale, t }) {
+  const router = useRouter();
   const isRtl = locale === 'ar';
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      titleEn: "Medication Due Soon",
-      titleAr: "موعد دواء قادم",
-      descEn: "Glucophage 500mg is scheduled for 8:00 PM",
-      descAr: "Glucophage 500mg مجدول في الساعة 8:00 مساءً",
-      timeEn: "In 15 mins",
-      timeAr: "خلال 15 دقيقة",
-      type: "reminder",
-      unread: true
-    },
-    {
-      id: 2,
-      titleEn: "Low Stock Warning",
-      titleAr: "تنبيه مخزون منخفض",
-      descEn: "Concor 5mg has only 4 doses remaining",
-      descAr: "Concor 5mg متبقي 4 جرعات فقط",
-      timeEn: "2 hours ago",
-      timeAr: "منذ ساعتين",
-      type: "warning",
-      unread: true
-    },
-    {
-      id: 3,
-      titleEn: "Caregiver Update",
-      titleAr: "تحديث من مقدم الرعاية",
-      descEn: "Dr. James Wilson reviewed your adherence report",
-      descAr: "قام د. جيمس ويلسون بمراجعة تقرير الالتزام الخاص بك",
-      timeEn: "Yesterday",
-      timeAr: "أمس",
-      type: "info",
-      unread: true
-    }
-  ]);
+  const { user } = useAuth();
+  const { data: notificationsData } = useNotifications();
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllMutation = useMarkAllNotificationsRead();
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const notifications = notificationsData?.data || (Array.isArray(notificationsData) ? notificationsData : []);
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    markAllMutation.mutate();
   };
 
   const markItemRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    if (id) {
+      markReadMutation.mutate(id);
+    }
+  };
+
+  const handleNotificationClick = (notification) => {
+    const notifId = notification._id || notification.id;
+    if (!notification.isRead && notifId) {
+      markItemRead(notifId);
+    }
+    setIsOpen(false);
+    const targetRoute = getNotificationRoute(notification, user?.role);
+    if (targetRoute) {
+      if (typeof window !== 'undefined' && window.location.pathname === targetRoute) {
+        // If already on the target page, scroll to content or trigger reload
+        window.location.reload();
+      } else {
+        router.push(targetRoute);
+      }
+    }
   };
 
   useEffect(() => {
@@ -85,7 +117,9 @@ function NotificationPopover({ locale, t }) {
       >
         <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant group-hover:text-on-surface group-hover:scale-110 transition-transform"/>
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-background animate-pulse"></span>
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-teal-600 text-white rounded-full ring-2 ring-background text-[10px] font-black flex items-center justify-center animate-pulse">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </button>
 
@@ -109,7 +143,7 @@ function NotificationPopover({ locale, t }) {
                 onClick={markAllRead}
                 className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
               >
-                {isRtl ? "تحديد الكل كقروء" : "Mark all as read"}
+                {isRtl ? "تحديد الكل كمقروء" : "Mark all as read"}
               </button>
             )}
           </div>
@@ -121,16 +155,18 @@ function NotificationPopover({ locale, t }) {
               </div>
             ) : (
               notifications.map((n) => {
-                const title = isRtl ? n.titleAr : n.titleEn;
-                const desc = isRtl ? n.descAr : n.descEn;
-                const time = isRtl ? n.timeAr : n.timeEn;
+                const notifId = n._id || n.id;
+                const isUnread = !n.isRead;
+                const title = n.title;
+                const desc = n.message;
+                const time = formatRelativeTime(n.createdAt, isRtl);
 
                 return (
                   <div
-                    key={n.id}
-                    onClick={() => markItemRead(n.id)}
+                    key={notifId}
+                    onClick={() => handleNotificationClick(n)}
                     className={`p-4 hover:bg-surface-container/60 transition-colors flex items-start gap-3.5 cursor-pointer relative ${
-                      n.unread ? "bg-primary-container/10" : ""
+                      isUnread ? "bg-teal-500/10 dark:bg-teal-950/40" : ""
                     }`}
                   >
                     <div className="w-9 h-9 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 mt-0.5 font-bold">
@@ -139,7 +175,7 @@ function NotificationPopover({ locale, t }) {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <h4 className="text-xs font-bold text-on-surface truncate">
+                        <h4 className={`text-xs truncate ${isUnread ? 'font-extrabold text-teal-700 dark:text-teal-300' : 'font-bold text-on-surface'}`}>
                           {title}
                         </h4>
                         <span className="text-[10px] text-on-surface-variant shrink-0 font-medium">{time}</span>
@@ -149,8 +185,8 @@ function NotificationPopover({ locale, t }) {
                       </p>
                     </div>
 
-                    {n.unread && (
-                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1.5"></span>
+                    {isUnread && (
+                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1.5 animate-pulse"></span>
                     )}
                   </div>
                 );
@@ -182,8 +218,8 @@ export const Header = () => {
     useEffect(() => {
         setMounted(true);
     }, []);
-    const isAr = mounted && locale === 'ar';
-    return (<header className="sticky top-0 z-30 w-full bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant/30 transition-colors duration-200">
+    const isAr = locale === 'ar';
+    return (<header className="sticky top-0 z-30 w-full bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant/30 transition-colors duration-200" suppressHydrationWarning>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
         {/* Left Section: Mobile Brand Logo */}
         <div className="flex items-center gap-3">
@@ -209,8 +245,19 @@ export const Header = () => {
           </div>
 
           {/* 2. Dark/Light Theme Toggle */}
-          <button type="button" onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-all cursor-pointer shadow-2xs" aria-label="Toggle Theme" title="Toggle Theme">
-            {mounted && resolvedTheme === 'dark' ? (<Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400"/>) : (<Moon className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant"/>)}
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-all cursor-pointer shadow-2xs"
+            aria-label="Toggle Theme"
+            title="Toggle Theme"
+            suppressHydrationWarning
+          >
+            {mounted && resolvedTheme === 'dark' ? (
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400"/>
+            ) : (
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant"/>
+            )}
           </button>
 
           {/* 3. Notification Popover */}
