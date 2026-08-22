@@ -6,6 +6,7 @@ import { caregiverTranslations } from './caregiver.translations';
 import { patientTranslations } from './patient.translations';
 import { landingTranslations } from './landing.translations';
 import { errorsTranslations } from './errors.translations';
+import { pharmacyTranslations } from './pharmacy.translations';
 
 function deepMerge(target = {}, source = {}) {
   if (!source) return target;
@@ -31,6 +32,7 @@ const modulesEn = [
   patientTranslations.en,
   landingTranslations.en,
   errorsTranslations.en,
+  pharmacyTranslations.en,
 ];
 
 const modulesAr = [
@@ -42,6 +44,7 @@ const modulesAr = [
   patientTranslations.ar,
   landingTranslations.ar,
   errorsTranslations.ar,
+  pharmacyTranslations.ar,
 ];
 
 export const translations = {

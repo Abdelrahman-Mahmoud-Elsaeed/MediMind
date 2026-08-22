@@ -4,6 +4,7 @@ export const patientTranslations = {
       nav: {
         home: "Home",
         meds: "Meds",
+        refills: "Refill Orders",
         adherence: "Adherence",
         care: "Care",
         profile: "Profile",
@@ -104,6 +105,7 @@ export const patientTranslations = {
       nav: {
         home: "الرئيسية",
         meds: "الأدوية",
+        refills: "إعادة التعبئة",
         adherence: "الالتزام",
         care: "الرعاية",
         profile: "الملف",

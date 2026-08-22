@@ -25,22 +25,22 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
 
     const pharmacistNavItems = [
         {
-            label: isAr ? 'بوابة الصيدلية' : 'Pharmacy Portal',
+            label: t('common.nav.pharmacyPortal'),
             href: '/pharmacy',
             icon: LayoutGrid,
         },
         {
-            label: isAr ? 'طلبات تعبئة الأدوية' : 'Refill Orders',
+            label: t('common.nav.pharmacyOrders'),
             href: '/pharmacy/orders',
             icon: Pill,
         },
         {
-            label: isAr ? 'دليل الصيدليات' : 'Pharmacy Directory',
+            label: t('common.nav.pharmacyDirectory'),
             href: '/pharmacies',
             icon: Users,
         },
         {
-            label: isAr ? 'ملف الصيدلية' : 'Pharmacy Profile',
+            label: t('common.nav.pharmacyProfile'),
             href: '/profile',
             icon: User,
         },
@@ -76,12 +76,12 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
             icon: Pill,
         },
         {
-            label: isAr ? 'إعادة التعبئة' : 'Refill Orders',
+            label: t('common.nav.refills'),
             href: '/refills',
             icon: RefreshCw,
         },
         {
-            label: isAr ? 'متابعة الالتزام' : 'Adherence Tracker',
+            label: t('common.nav.adherenceTracker'),
             href: '/adherence',
             icon: TrendingUp,
         },
