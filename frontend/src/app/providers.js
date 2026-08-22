@@ -23,16 +23,24 @@ function AuthInitializer({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
 
   useEffect(() => {
-    if (loading) return;
+    if (isAuthLoading) return;
 
-    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications'];
+    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications', '/pharmacies'];
     const isPublicRoute = publicRoutes.some((route) => pathname === route || (route !== '/' && pathname?.startsWith(`${route}/`)));
 
     if (isAuthenticated && user) {
       const isVerified = user.isEmailVerified || user.isPhoneVerified || user.isVerified;
+      const userRole = String(user.role).toUpperCase();
+
+      if (pathname === '/pharmacy' || pathname?.startsWith('/pharmacy/')) {
+        if (userRole !== 'PHARMACIST' && userRole !== 'ADMIN') {
+          router.replace(userRole === 'PATIENT' ? '/home' : '/dashboard');
+          return;
+        }
+      }
 
       if (!isVerified) {
         if (pathname !== '/verify') {
@@ -40,13 +48,13 @@ function AuthInitializer({ children }) {
         }
       } else {
         if (pathname === '/verify') {
-          router.replace(user.role === 'PATIENT' ? '/home' : '/dashboard');
+          router.replace(userRole === 'PATIENT' ? '/home' : userRole === 'PHARMACIST' ? '/pharmacy' : '/dashboard');
         }
       }
     } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify') {
       router.replace('/login');
     }
-  }, [isAuthenticated, user, loading, pathname, router]);
+  }, [isAuthenticated, user, isAuthLoading, pathname, router]);
 
   return <>{children}</>;
 }

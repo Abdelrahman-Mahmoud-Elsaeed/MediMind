@@ -12,33 +12,43 @@ import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiver
 export const SidebarFooter = ({ isSidebarSlim = false }) => {
   const { t, locale } = useTranslation();
   const { user, logout } = useAuth();
+  const isAr = locale === 'ar';
   const [mounted, setMounted] = useState(false);
-
-  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
-
-  const { data: patientProfile } = usePatientProfileQuery({ enabled: !isCaregiver });
-  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: isCaregiver });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const activeUser = mounted ? user : null;
+  const userRoleStr = activeUser?.role;
+  const isPharmacist = userRoleStr === 'PHARMACIST';
+  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRoleStr);
+
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: Boolean(mounted && activeUser && !isCaregiver && !isPharmacist) });
+  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: Boolean(mounted && activeUser && isCaregiver) });
+
   const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
 
-  const userName = activeProfile?.firstName && activeProfile?.lastName
+  const userName = isPharmacist
+    ? activeUser?.pharmacyName || activeUser?.name || activeUser?.email?.split('@')[0] || (isAr ? 'صيدلية معتمدة' : 'Pharmacy')
+    : activeProfile?.firstName && activeProfile?.lastName
     ? `${activeProfile.firstName} ${activeProfile.lastName}`
-    : user?.name || user?.email?.split('@')[0] || t('common.roles.user');
+    : activeUser?.name || activeUser?.email?.split('@')[0] || (isAr ? 'مستخدم' : 'User');
 
-  const userRole = user?.role === 'FAMILY_CAREGIVER' 
-    ? t('common.roles.familyCaregiver')
-    : user?.role === 'PROFESSIONAL_CAREGIVER'
-    ? t('common.roles.professionalCaregiver')
-    : user?.role === 'CAREGIVER'
-    ? t('common.roles.caregiver')
-    : t('common.roles.patient');
+  const userRole = activeUser?.role === 'PHARMACIST'
+    ? (isAr ? 'صيدلي معتمد' : 'Pharmacist')
+    : activeUser?.role === 'ADMIN'
+    ? (isAr ? 'مسؤول النظام' : 'Super Admin')
+    : activeUser?.role === 'FAMILY_CAREGIVER' 
+    ? (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver')
+    : activeUser?.role === 'PROFESSIONAL_CAREGIVER'
+    ? (isAr ? 'مقدم رعاية محترف' : 'Professional Caregiver')
+    : activeUser?.role === 'CAREGIVER'
+    ? (isAr ? 'مقدم رعاية' : 'Caregiver')
+    : (isAr ? 'مريض' : 'Patient');
 
   const userInitial = userName.charAt(0).toUpperCase();
-  const avatarSrc = activeProfile?.profilePictureUrl || user?.profilePictureUrl || '';
+  const avatarSrc = activeProfile?.profilePictureUrl || activeUser?.profilePictureUrl || '';
 
   if (isSidebarSlim) {
     return (

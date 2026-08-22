@@ -9,11 +9,15 @@ export function RegistrationHeader({ currentStep, role }) {
         if (currentStep === 2) {
             return role === "caregiver"
                 ? t("auth.register.caregiverDetailsTitle")
+                : role === "pharmacist"
+                ? t("auth.register.pharmacistDetailsTitle") || "بيانات الصيدلي المسؤول"
                 : t("auth.register.step2Title");
         }
         if (currentStep === 3) {
             return role === "caregiver"
                 ? t("auth.register.caregiverSettingsTitle")
+                : role === "pharmacist"
+                ? t("auth.register.pharmacyDetailsTitle") || "بيانات الصيدلية والترخيص"
                 : t("auth.register.healthDetailsTitle");
         }
         return "";

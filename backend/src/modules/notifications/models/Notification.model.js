@@ -1,17 +1,36 @@
 const mongoose = require('mongoose');
 
-const NotificationSchema = new mongoose.Schema(
+const Schema = mongoose.Schema;
+
+const NotificationSchema = new Schema(
   {
     recipientId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Account',
       required: true,
       index: true,
     },
+    recipientAccountId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Account',
+      index: true,
+    },
     senderId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Account',
       default: null,
+    },
+    recipientRole: {
+      type: String,
+      enum: [
+        'PATIENT',
+        'FAMILY_CAREGIVER',
+        'PROFESSIONAL_CAREGIVER',
+        'DOCTOR',
+        'PHARMACIST',
+        'ADMIN',
+      ],
+      default: 'PATIENT',
     },
     type: {
       type: String,
@@ -21,6 +40,11 @@ const NotificationSchema = new mongoose.Schema(
         'RELATIONSHIP_REJECTED',
         'MEDICATION_REFILL',
         'DOSE_MISSED',
+        'REFILL_ORDER_CREATED',
+        'REFILL_ORDER_UPDATED',
+        'DOSE_REMINDER',
+        'MEDICATION_LOW_STOCK',
+        'CAREGIVER_INVITATION',
         'GENERAL',
       ],
       default: 'GENERAL',
@@ -56,14 +80,22 @@ const NotificationSchema = new mongoose.Schema(
       default: null,
     },
     data: {
-      type: mongoose.Schema.Types.Mixed,
+      type: Schema.Types.Mixed,
       default: {},
     },
   },
   { timestamps: true }
 );
 
-// Indexes for common queries (listing user notifications by recency & unread count)
+NotificationSchema.pre('save', function (next) {
+  if (this.recipientId && !this.recipientAccountId) {
+    this.recipientAccountId = this.recipientId;
+  } else if (this.recipientAccountId && !this.recipientId) {
+    this.recipientId = this.recipientAccountId;
+  }
+  next();
+});
+
 NotificationSchema.index({ recipientId: 1, isRead: 1 });
 NotificationSchema.index({ recipientId: 1, createdAt: -1 });
 

@@ -7,10 +7,30 @@ import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 export const MobileNav = () => {
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { user } = useAuth();
+  const [mounted, setMounted] = React.useState(false);
 
-  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const isAr = locale === 'ar';
+  const userRole = user?.role;
+
+  const isPharmacist = userRole === 'PHARMACIST';
+  const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
+
+  const pharmacistItems = [
+    { href: '/pharmacy', icon: 'local_pharmacy', label: isAr ? 'الصيدلية' : 'Pharmacy' },
+    { href: '/pharmacy/orders', icon: 'medication', label: isAr ? 'الطلبات' : 'Orders' },
+    { href: '/pharmacies', icon: 'storefront', label: isAr ? 'الدليل' : 'Directory' },
+    { href: '/profile', icon: 'person', label: isAr ? 'الملف' : 'Profile' },
+  ];
 
   const caregiverItems = [
     { href: '/dashboard', icon: 'dashboard', label: t('common.nav.dashboard') },
@@ -26,7 +46,7 @@ export const MobileNav = () => {
     { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile' },
   ];
 
-  const navItems = isCaregiver ? caregiverItems : patientItems;
+  const navItems = isPharmacist ? pharmacistItems : isCaregiver ? caregiverItems : patientItems;
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 sm:px-6 py-2 pb-safe bg-surface-container-lowest/90 dark:bg-surface-container-low/95 backdrop-blur-2xl border-t border-outline-variant/30 shadow-[0_-6px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.4)] transition-colors duration-300">

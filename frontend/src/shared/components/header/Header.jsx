@@ -17,17 +17,67 @@ import {
   useCaregiverRelationshipsQuery, 
   useUpdateRelationshipStatusMutation as useUpdateCaregiverStatusMutation 
 } from '@/modules/caregiver/hooks/useCaregiverQueries';
+import { useRouter } from 'next/navigation';
+import {
+  useNotifications,
+  useUnreadNotificationCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+} from '@/modules/notifications/hooks/useNotifications';
+
+// Helper for formatting relative time
+function formatRelativeTime(dateString, isAr) {
+  if (!dateString) return isAr ? 'الآن' : 'Just now';
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return isAr ? 'الآن' : 'Just now';
+  if (diffMins < 60) return isAr ? `منذ ${diffMins} دقيقة` : `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return isAr ? `منذ ${diffHours} ساعة` : `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return isAr ? `منذ ${diffDays} يوم` : `${diffDays}d ago`;
+}
+
+// Resolve route based on notification type and user role
+function getNotificationRoute(notification, userRole) {
+  if (!notification) return '/notifications';
+  const { type } = notification;
+
+  switch (type) {
+    case 'REFILL_ORDER_CREATED':
+      return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
+    case 'REFILL_ORDER_UPDATED':
+      return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
+    case 'DOSE_REMINDER':
+      return '/home';
+    case 'MEDICATION_LOW_STOCK':
+      return '/refills';
+    case 'CAREGIVER_INVITATION':
+      return userRole === 'PATIENT' ? '/caregivers' : '/patients';
+    default:
+      return '/notifications';
+  }
+}
 
 // ==========================================
 // SUB-COMPONENT: NOTIFICATION POPOVER MENU
 // ==========================================
 function NotificationPopover({ locale, t }) {
+  const router = useRouter();
   const isRtl = locale === 'ar';
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const { user } = useAuth();
 
-  const { notifications = [], unreadCount: notifUnreadCount, markAsRead, markAllAsRead } = useSocketNotifications();
+  const { notifications: socketNotifs = [], unreadCount: socketUnreadCount = 0, markAsRead: socketMarkAsRead, markAllAsRead: socketMarkAllAsRead } = useSocketNotifications() || {};
+
+  const { data: notificationsData } = useNotifications();
+  const { data: apiUnreadCount = 0 } = useUnreadNotificationCount();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllMutation = useMarkAllNotificationsRead();
+
+  const apiNotifications = notificationsData?.data || (Array.isArray(notificationsData) ? notificationsData : []);
+  const notifications = apiNotifications.length > 0 ? apiNotifications : socketNotifs;
 
   const isCaregiverRole = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(user?.role);
 
@@ -41,6 +91,7 @@ function NotificationPopover({ locale, t }) {
     ? caregiverRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT')
     : patientRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
 
+  const notifUnreadCount = apiUnreadCount || socketUnreadCount || 0;
   const totalUnread = pendingIncoming.length + notifUnreadCount;
 
   const handleResponse = (relationshipId, status) => {
@@ -48,6 +99,34 @@ function NotificationPopover({ locale, t }) {
       caregiverUpdateStatus.mutate({ relationshipId, status });
     } else {
       patientUpdateStatus.mutate({ relationshipId, status });
+    }
+  };
+
+  const markAllRead = () => {
+    markAllMutation.mutate();
+    if (socketMarkAllAsRead) socketMarkAllAsRead();
+  };
+
+  const markItemRead = (id) => {
+    if (id) {
+      markReadMutation.mutate(id);
+      if (socketMarkAsRead) socketMarkAsRead(id);
+    }
+  };
+
+  const handleNotificationClick = (notification) => {
+    const notifId = notification._id || notification.id;
+    if (!notification.isRead && notifId) {
+      markItemRead(notifId);
+    }
+    setIsOpen(false);
+    const targetRoute = getNotificationRoute(notification, user?.role);
+    if (targetRoute) {
+      if (typeof window !== 'undefined' && window.location.pathname === targetRoute) {
+        window.location.reload();
+      } else {
+        router.push(targetRoute);
+      }
     }
   };
 
@@ -74,7 +153,9 @@ function NotificationPopover({ locale, t }) {
       >
         <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant group-hover:text-on-surface group-hover:scale-110 transition-transform"/>
         {totalUnread > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-background animate-pulse"></span>
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-teal-600 text-white rounded-full ring-2 ring-background text-[10px] font-black flex items-center justify-center animate-pulse">
+            {totalUnread > 99 ? '99+' : totalUnread}
+          </span>
         )}
       </button>
 
@@ -95,10 +176,10 @@ function NotificationPopover({ locale, t }) {
             </div>
             {notifUnreadCount > 0 && (
               <button
-                onClick={() => markAllAsRead()}
+                onClick={() => markAllRead()}
                 className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
               >
-                {isRtl ? "تحديد الكل كقروء" : "Mark all read"}
+                {isRtl ? "تحديد الكل كمقروء" : "Mark all as read"}
               </button>
             )}
           </div>
@@ -160,33 +241,44 @@ function NotificationPopover({ locale, t }) {
                   );
                 })}
 
-                {/* 2. Real-Time Persisted DB Notifications */}
-                {notifications.slice(0, 10).map((notif) => (
-                  <div
-                    key={notif.id || notif.notificationId}
-                    onClick={() => !notif.isRead && markAsRead(notif.id || notif.notificationId)}
-                    className={`p-3.5 hover:bg-surface-container/60 transition-colors flex items-start gap-3 relative ${
-                      !notif.isRead ? 'bg-teal-500/5' : ''
-                    }`}
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
-                      <Bell className="w-3.5 h-3.5" />
-                    </div>
+                {/* 2. Real-Time & Persisted DB Notifications */}
+                {notifications.slice(0, 10).map((notif) => {
+                  const notifId = notif._id || notif.id || notif.notificationId;
+                  const isUnread = !notif.isRead;
+                  const title = isRtl && notif.titleAr ? notif.titleAr : notif.title;
+                  const desc = isRtl && notif.messageAr ? notif.messageAr : notif.message;
+                  const time = formatRelativeTime(notif.createdAt, isRtl);
 
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-on-surface truncate">
-                        {isRtl && notif.titleAr ? notif.titleAr : notif.title}
-                      </h4>
-                      <p className="text-[11px] text-on-surface-variant leading-snug line-clamp-2 mt-0.5">
-                        {isRtl && notif.messageAr ? notif.messageAr : notif.message}
-                      </p>
-                    </div>
+                  return (
+                    <div
+                      key={notifId}
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`p-3.5 hover:bg-surface-container/60 transition-colors flex items-start gap-3 cursor-pointer relative ${
+                        isUnread ? 'bg-teal-500/10 dark:bg-teal-950/40' : ''
+                      }`}
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
+                        <Bell className="w-3.5 h-3.5" />
+                      </div>
 
-                    {!notif.isRead && (
-                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1" />
-                    )}
-                  </div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <h4 className={`text-xs truncate ${isUnread ? 'font-extrabold text-teal-700 dark:text-teal-300' : 'font-bold text-on-surface'}`}>
+                            {title}
+                          </h4>
+                          <span className="text-[10px] text-on-surface-variant shrink-0 font-medium">{time}</span>
+                        </div>
+                        <p className="text-[11px] text-on-surface-variant leading-snug line-clamp-2">
+                          {desc}
+                        </p>
+                      </div>
+
+                      {isUnread && (
+                        <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0 mt-1.5 animate-pulse" />
+                      )}
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>
@@ -215,8 +307,8 @@ export const Header = () => {
     useEffect(() => {
         setMounted(true);
     }, []);
-    const isAr = mounted && locale === 'ar';
-    return (<header className="sticky top-0 z-30 w-full bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant/30 transition-colors duration-200">
+    const isAr = locale === 'ar';
+    return (<header className="sticky top-0 z-30 w-full bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant/30 transition-colors duration-200" suppressHydrationWarning>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
         {/* Left Section: Mobile Brand Logo */}
         <div className="flex items-center gap-3">
@@ -242,8 +334,19 @@ export const Header = () => {
           </div>
 
           {/* 2. Dark/Light Theme Toggle */}
-          <button type="button" onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-all cursor-pointer shadow-2xs" aria-label="Toggle Theme" title="Toggle Theme">
-            {mounted && resolvedTheme === 'dark' ? (<Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400"/>) : (<Moon className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant"/>)}
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-all cursor-pointer shadow-2xs"
+            aria-label="Toggle Theme"
+            title="Toggle Theme"
+            suppressHydrationWarning
+          >
+            {mounted && resolvedTheme === 'dark' ? (
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400"/>
+            ) : (
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-on-surface-variant"/>
+            )}
           </button>
 
           {/* 3. Notification Popover */}

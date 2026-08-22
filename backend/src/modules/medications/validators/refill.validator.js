@@ -8,8 +8,12 @@ const createRefillOrderSchema = z.object({
   deliveryAddress: z.object({
     street: z.string().optional(),
     city: z.string().optional(),
+    state: z.string().optional(),
     zipCode: z.string().optional()
-  }).optional()
+  }).optional(),
+  paymentMethod: z.enum(['CARD', 'CASH_ON_DELIVERY', 'STRIPE', 'FAWRY', 'MOBILE_WALLET']).optional(),
+  paymentStatus: z.enum(['UNPAID', 'PENDING', 'PAID', 'REFUNDED']).optional(),
+  totalAmount: z.number().optional()
 });
 
 const updateRefillStatusSchema = z.object({

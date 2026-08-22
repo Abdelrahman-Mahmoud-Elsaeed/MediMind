@@ -53,7 +53,7 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
         </div>
 
         {/* Shared Bottom Mobile Navigation Bar */}
-        <MobileNav />
+        {mounted && <MobileNav />}
       </div>
     );
 };

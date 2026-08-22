@@ -31,8 +31,10 @@ export const useAuth = () => {
   const [localError, setLocalError] = useState(null);
 
   const registrationData = useSelector(selectRegistrationData);
-  const isAuthenticated = Boolean(user && (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : true));
-  const loading = isLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
+  const isAuthenticated = Boolean(user);
+  const isSubmitting = loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
+  const loading = isSubmitting;
+  const isAuthLoading = isLoading;
 
   const currentError = localError || 
     loginMutation.error?.message || 
@@ -92,6 +94,8 @@ export const useAuth = () => {
     user: user || null,
     isAuthenticated,
     loading,
+    isSubmitting,
+    isAuthLoading,
     error: currentError,
     registrationData,
     login,

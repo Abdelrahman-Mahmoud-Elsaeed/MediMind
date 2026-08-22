@@ -56,6 +56,19 @@ const RefillOrderSchema = new Schema(
     pharmacistNotes: { type: String },
     dispensedAt: { type: Date },
 
+    // Payment details
+    paymentMethod: {
+      type: String,
+      enum: ["CARD", "CASH_ON_DELIVERY", "STRIPE", "FAWRY", "MOBILE_WALLET"],
+      default: "CASH_ON_DELIVERY",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["UNPAID", "PENDING", "PAID", "REFUNDED"],
+      default: "UNPAID",
+    },
+    totalAmount: { type: Number, default: 0 },
+
     // Financial reference
     paymentId: { type: Schema.Types.ObjectId, ref: "Payment", default: null },
   },
