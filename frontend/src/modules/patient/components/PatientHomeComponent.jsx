@@ -103,7 +103,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
             {t('patient.home.activeTimeline')}
           </h2>
           <span className="text-xs font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/80 px-3 py-1 rounded-full border border-teal-200/80 dark:border-teal-800/60">
-            {sortedDoses.length} {isRtl ? 'جرعات اليوم' : 'Doses Today'}
+            {sortedDoses.length} {t('patient.home.dosesToday')}
           </span>
         </div>
 
@@ -122,7 +122,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
         >
-          {isRtl ? 'الكل' : 'All'} ({sortedDoses.length})
+          {t('common.actions.all')} ({sortedDoses.length})
         </button>
 
         <button
@@ -133,7 +133,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
         >
-          {isRtl ? 'قيد الانتظار' : 'Pending'} ({pendingCount})
+          {t('common.status.pending')} ({pendingCount})
         </button>
 
         <button
@@ -144,7 +144,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
         >
-          {isRtl ? 'المكتملة' : 'Completed'} ({completedCount})
+          {t('common.status.completed')} ({completedCount})
         </button>
 
         <button
@@ -155,7 +155,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
         >
-          {isRtl ? 'الفائتة' : 'Missed'} ({missedCount})
+          {t('common.status.missed')} ({missedCount})
         </button>
       </div>
 
@@ -163,7 +163,7 @@ function ActiveTimeline({ doses, nextDose, confirmDose, skipDose, snoozeDose, lo
       <div className="max-h-[580px] overflow-y-auto overflow-x-hidden snap-y snap-mandatory px-1.5 pr-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
         {filteredDoses.length === 0 ? (
           <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-sm font-semibold">
-            {isRtl ? 'لا توجد جرعات في هذه الفئة' : 'No doses found in this category'}
+            {t('patient.home.noDosesCategory')}
           </div>
         ) : (
           filteredDoses.map((dose, idx) => {
