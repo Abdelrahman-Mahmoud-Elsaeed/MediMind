@@ -47,13 +47,13 @@ export default function MedicalRecordsComponent() {
     };
     
     const handleDeleteConditionClick = (conditionId) => {
-        if (confirm(isAr ? "هل أنت متأكد من حذف هذا السجل الطبية؟" : "Are you sure you want to delete this condition record?")) {
+        if (confirm(t("patient.records.deleteConfirmRecord"))) {
             deleteCondition(conditionId);
         }
     };
     
     const handleDeleteDocClick = (docId) => {
-        if (confirm(isAr ? "هل أنت متأكد من حذف هذا المستند نهائياً؟" : "Are you sure you want to delete this document from your secure vault?")) {
+        if (confirm(t("patient.records.deleteConfirmDoc"))) {
             deleteDocument(docId);
         }
     };
@@ -73,7 +73,7 @@ export default function MedicalRecordsComponent() {
               </Link>
               <div>
                 <span className="text-[11px] font-extrabold text-teal-700 dark:text-teal-400 uppercase tracking-widest block mb-0.5">
-                  {isAr ? "السجل الطبي والتأمين" : "HEALTH RECORDS & VAULT"}
+                  {t("patient.records.vaultHeader")}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   {t("patient.profile.medicalRecords")}
@@ -87,7 +87,7 @@ export default function MedicalRecordsComponent() {
                 className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl text-xs transition-all flex items-center gap-2"
               >
                 <Activity className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                <span>{isAr ? "إدارة الحالات الطبية" : "Manage Conditions"}</span>
+                <span>{t("patient.records.manageConditions")}</span>
               </Link>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function MedicalRecordsComponent() {
                   </div>
                   <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 text-xs font-bold mt-2">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{isAr ? "تشفير آمن متاح" : "Secure HIPAA Encrypted Vault"}</span>
+                    <span>{t("patient.records.secureVault")}</span>
                   </span>
                 </div>
               </section>

@@ -78,6 +78,8 @@ export const patientTranslations = {
       },
       records: {
         title: "Medical Records & Conditions",
+        vaultHeader: "HEALTH RECORDS & VAULT",
+        manageConditions: "Manage Conditions",
         addCondition: "Add Condition",
         diseaseName: "Condition Name",
         conditionName: "Condition / Diagnosis Name",
@@ -91,7 +93,9 @@ export const patientTranslations = {
         uploadDocs: "Upload Clinical Documents",
         uploadDesc: "Upload prescription PDFs or lab analysis images",
         submitRecord: "Save Condition Record",
-        secureVault: "Encrypted Medical Vault",
+        secureVault: "Secure Encrypted Medical Vault",
+        deleteConfirmRecord: "Are you sure you want to delete this condition record?",
+        deleteConfirmDoc: "Are you sure you want to delete this document from your vault?",
       },
       adherence: {
         title: "Adherence History",
@@ -181,7 +185,9 @@ export const patientTranslations = {
       },
       records: {
         title: "السجلات الطبية والحالات الصحية",
-        addCondition: "إضافة حالة صحية",
+        vaultHeader: "السجل الطبي والتأمين",
+        manageConditions: "إدارة الحالات الطبية",
+        addCondition: "إضافة حالة طبية",
         diseaseName: "اسم الحالة",
         conditionName: "اسم الحالة أو التشخيص",
         conditionType: "تصنيف الحالة",
@@ -193,8 +199,10 @@ export const patientTranslations = {
         notes: "ملاحظات طبية",
         uploadDocs: "رفع الوثائق السريرية",
         uploadDesc: "قم برفع ملفات الروشتات أو التحاليل",
-        submitRecord: "حفظ الحالة الصحية",
-        secureVault: "خزينة السجلات المشفرة",
+        submitRecord: "حفظ سجل الحالة",
+        secureVault: "خزينة طبية مشفرة وآمنة",
+        deleteConfirmRecord: "هل أنت متأكد من حذف هذا السجل الطبي؟",
+        deleteConfirmDoc: "هل أنت متأكد من حذف هذا المستند نهائياً؟",
       },
       adherence: {
         title: "سجل الالتزام الدوائي",
