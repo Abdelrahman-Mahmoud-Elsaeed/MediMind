@@ -1,33 +1,14 @@
-const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
-const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const crypto = require("crypto");
-const env = require("../../../config/env");
-const OtpVerification = require("../models/otp.model");
+const mongoose = require("mongoose");
 const Account = require("../models/Account.model");
+const OtpVerification = require("../models/OtpVerification.model");
 const AppError = require("../../../shared/utils/AppError");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
-
-// Initialize AWS SNS Client for SMS deliveries
-const snsClient = new SNSClient({
-  region: env.AWS_SNS_REGION,
-  credentials: {
-    accessKeyId: env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  },
-});
-
-// Initialize AWS SES Client for Transactional Emails
-const sesClient = new SESClient({
-  region: env.AWS_SES_REGION,
-  credentials: {
-    accessKeyId: env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+const { logger } = require("../../../shared/utils/logger");
 
 class OtpService {
   /**
-   * Generates, saves to MongoDB, and sends a 6-digit OTP
+   * Generates, saves to MongoDB, and sends a 6-digit OTP via AWS SNS (SMS) or Email
    * @param {Object} payload - { accountId: "ObjectIdString", target: "email/phone", type: "EMAIL" | "PHONE" }
    * @returns {Promise<ServiceResponse>}
    */
@@ -68,18 +49,39 @@ class OtpService {
       { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
-    // if (type === "PHONE") {
-    //   await this._sendSMS("PHONE", otp);
-    // } else if (type === "EMAIL") {
-    //   await this._sendEmail("EMAIL", otp);
-    // } else {
-    //   throw new AppError("Unsupported transport verification channel type", 400, "INVALID_TYPE", {
-    //     en: "Unsupported channel type specified.",
-    //     ar: "نوع القناة المحدد غير مدعوم."
-    //   });
-    // }
-    console.log(otp)
-    // 5. Encapsulate execution using ServiceResponse structure
+    // Highly visible CloudWatch & Console searchable log banner
+    console.log(`
+============================================================
+🔑 [OTP DISPATCH] SENSITIVE VERIFICATION CODE GENERATED 🔑
+============================================================
+  • Target Destination : ${resolvedTarget}
+  • Channel Type       : ${type || channel}
+  • Generated OTP Code : >>> ${otp} <<<
+  • Account ID         : ${accountId || 'N/A'}
+  • Environment        : ${process.env.NODE_ENV || 'development'}
+  • Timestamp          : ${new Date().toISOString()}
+============================================================
+`);
+
+    logger.info(
+      { target: resolvedTarget, channel: type || channel, otp, accountId },
+      '[OTP_DISPATCH] Verification code generated successfully'
+    );
+
+    // Dispatch via SNS (SMS) or Email in production/staging environments
+    if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging") {
+      if (channel === "phone") {
+        await this._sendSMS(resolvedTarget, otp);
+      } else {
+        await this._sendEmail(resolvedTarget, otp);
+      }
+    } else {
+      logger.info(
+        { target: resolvedTarget, channel, otp },
+        "[LOCAL_DEV] Skipped external SMS/Email dispatch in local development mode"
+      );
+    }
+
     return new ServiceResponse({
       success: true,
       status: "SUCCESS",
@@ -87,6 +89,49 @@ class OtpService {
       en: "OTP has been sent successfully.",
       ar: "تم إرسال رمز التحقق بنجاح."
     });
+  }
+
+  /**
+   * Sends transactional SMS via AWS SNS
+   */
+  async _sendSMS(phone, otp) {
+    try {
+      const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+      const snsClient = new SNSClient({ region: process.env.AWS_SNS_REGION || process.env.AWS_REGION || "us-east-1" });
+      const command = new PublishCommand({
+        PhoneNumber: phone,
+        Message: `Your MediMind verification code is: ${otp}`,
+        MessageAttributes: {
+          'AWS.SNS.SMS.SenderID': {
+            DataType: 'String',
+            StringValue: process.env.AWS_SNS_SENDER_ID || 'MEDTRACK'
+          },
+          'AWS.SNS.SMS.SMSType': {
+            DataType: 'String',
+            StringValue: 'Transactional'
+          }
+        }
+      });
+      await snsClient.send(command);
+      logger.info({ phone }, '[SNS_SMS_SUCCESS] SMS verification code published via AWS SNS');
+    } catch (err) {
+      logger.error(err, '[SNS_SMS_ERROR] Failed to publish SMS via AWS SNS');
+      throw err;
+    }
+  }
+
+  /**
+   * Sends transactional email via Email Service
+   */
+  async _sendEmail(email, otp) {
+    try {
+      const emailService = require("../../../config/email.service");
+      await emailService.sendOtp(email, "User", otp);
+      logger.info({ email }, '[EMAIL_SUCCESS] Email verification code sent successfully');
+    } catch (err) {
+      logger.error(err, '[EMAIL_ERROR] Failed to send email verification code');
+      throw err;
+    }
   }
 
   /**
@@ -98,153 +143,57 @@ class OtpService {
   async verifyOtp({ accountId, type, code }) {
     const channel = type.toLowerCase();
 
-    // 1. Fetch tracking token
-    const record = await OtpVerification.findOne({ accountId, channel });
+    const otpRecord = await OtpVerification.findOne({ accountId, channel });
 
-    if (!record) {
-      throw new AppError("OTP code expired or was never requested", 400, "OTP_NOT_FOUND", {
-        en: "Verification code expired or not requested yet.",
-        ar: "انتهت صلاحية رمز التحقق أو لم يتم طلبه بعد."
+    if (!otpRecord) {
+      throw new AppError("No OTP requested for this channel", 400, "OTP_NOT_FOUND", {
+        en: "No verification code requested.",
+        ar: "لم يتم طلب رمز تحقق لهذه القناة."
       });
     }
 
-    // 2. Validate standard lifetime limits
-    if (new Date() > record.expiresAt) {
-      await OtpVerification.deleteOne({ _id: record._id });
-      throw new AppError("OTP code expired", 400, "OTP_EXPIRED", {
-        en: "The verification code has expired.",
-        ar: "انتهت صلاحية رمز التحقق."
+    if (otpRecord.attempts >= 5) {
+      throw new AppError("Maximum OTP attempts exceeded", 429, "MAX_ATTEMPTS_EXCEEDED", {
+        en: "Too many failed attempts. Please request a new verification code.",
+        ar: "تم تجاوز الحد الأقصى للمحاولات. يرجى طلب رمز جديد."
       });
     }
 
-    // 3. Brute-force verification ceiling checks
-    if (record.attempts >= 5) {
-      await OtpVerification.deleteOne({ _id: record._id });
-      throw new AppError("Too many incorrect attempts. Please request a new OTP", 429, "BRUTE_FORCE_LOCK", {
-        en: "Too many failed attempts. Code revoked.",
-        ar: "محاولات كثيرة خاطئة. تم إلغاء الرمز."
+    if (new Date() > otpRecord.expiresAt) {
+      throw new AppError("OTP has expired", 400, "OTP_EXPIRED", {
+        en: "Verification code has expired. Please request a new code.",
+        ar: "انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد."
       });
     }
 
-    // 4. Hash verification comparison logic
-    const inputHash = crypto.createHash("sha256").update(code.trim()).digest("hex");
+    const hashedInput = crypto.createHash("sha256").update(code).digest("hex");
 
-    if (inputHash !== record.code) {
-      record.attempts += 1;
-      await record.save();
+    if (hashedInput !== otpRecord.code) {
+      otpRecord.attempts += 1;
+      await otpRecord.save();
 
-      throw new AppError(
-        `Invalid OTP code. ${5 - record.attempts} attempts remaining.`,
-        400,
-        "INVALID_OTP",
-        {
-          en: `Invalid code. ${5 - record.attempts} attempts remaining.`,
-          ar: `رمز التحقق غير صحيح. متبقي ${5 - record.attempts} محاولات.`
-        }
-      );
-    }
+      console.log(`❌ [OTP VERIFY FAILED] Account: ${accountId} | Input: ${code} | Attempts: ${otpRecord.attempts}`);
 
-    // 5. Explicitly apply specific verification true status updates on target account profile
-    const updatePayload = {};
-    if (type === "EMAIL") updatePayload.isEmailVerified = true;
-    if (type === "PHONE") updatePayload.isPhoneVerified = true;
-
-    const updatedAccount = await Account.findByIdAndUpdate(accountId, updatePayload, { returnDocument: 'after' });
-
-    if (!updatedAccount) {
-      throw new AppError("Associated account profile was not found", 404, "ACCOUNT_NOT_FOUND", {
-        en: "Target account profile missing.",
-        ar: "الحساب المرتبط غير موجود."
+      throw new AppError("Invalid OTP verification code", 400, "INVALID_OTP", {
+        en: "Invalid verification code. Please try again.",
+        ar: "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى."
       });
     }
 
-    // 6. Verification completed cleanly, destroy temporary collection verification document
-    await OtpVerification.deleteOne({ _id: record._id });
+    await OtpVerification.deleteOne({ _id: otpRecord._id });
 
-    // 7. Encapsulate successful execution architecture inside ServiceResponse instance
+    const updateField = channel === "email" ? { isEmailVerified: true } : { isPhoneVerified: true };
+    await Account.findByIdAndUpdate(accountId, updateField);
+
+    console.log(`✅ [OTP VERIFY SUCCESS] Account: ${accountId} | Channel: ${channel}`);
+
     return new ServiceResponse({
       success: true,
       status: "SUCCESS",
       data: {},
-      en: "Identity verification successfully completed.",
-      ar: "تم التحقق من الهوية بنجاح."
+      en: "Verification completed successfully.",
+      ar: "تمت عملية التحقق بنجاح."
     });
-  }
-
-  // ==========================================
-  // PRIVATE INFRASTRUCTURE ROUTINES
-  // ==========================================
-
-  async _sendSMS(phoneNumber, otp) {
-    try {
-      const messageAttributes = {
-        "AWS.SNS.SMS.SMSType": {
-          DataType: "String",
-          StringValue: "Transactional",
-        },
-        "AWS.SNS.SMS.SenderID": {
-          DataType: "String",
-          StringValue: env.AWS_SNS_SENDER_ID,
-        }
-      };
-
-      const command = new PublishCommand({
-        PhoneNumber: phoneNumber,
-        Message: `Your verification security OTP code is: ${otp}. Valid for 5 minutes.`,
-        MessageAttributes: messageAttributes,
-      });
-
-      await snsClient.send(command);
-    } catch (error) {
-      throw new AppError("SMS delivery provider tracking failure", 500, "SMS_PROVIDER_ERROR", {
-        en: "Failed to dispatch SMS text token message.",
-        ar: "فشل إرسال رسالة التحقق النصية."
-      });
-    }
-  }
-
-  async _sendEmail(emailAddress, otp) {
-    try {
-      const command = new SendEmailCommand({
-        Source: env.AWS_SES_FROM_EMAIL,
-        Destination: {
-          ToAddresses: [emailAddress],
-        },
-        Message: {
-          Subject: {
-            Data: "Your Verification Code",
-            Charset: "UTF-8",
-          },
-          Body: {
-            Html: {
-              Data: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e4; border-radius: 8px;">
-                  <h2 style="color: #333; text-align: center;">Security Verification</h2>
-                  <p>Use the following 6-digit One-Time Password (OTP) to complete your verification process. This code is valid for 5 minutes.</p>
-                  <div style="background-color: #f4f7f6; padding: 15px; text-align: center; font-size: 26px; font-weight: bold; letter-spacing: 5px; color: #0070f3; margin: 20px 0; border-radius: 4px;">
-                    ${otp}
-                  </div>
-                  <p style="font-size: 12px; color: #666; text-align: center;">If you did not request this code, please ignore this email.</p>
-                </div>
-              `,
-              Charset: "UTF-8",
-            },
-            Text: {
-              Data: `Your verification security OTP code is: ${otp}. Valid for 5 minutes.`,
-              Charset: "UTF-8",
-            },
-          },
-        },
-      });
-
-      await sesClient.send(command);
-    } catch (error) {
-      console.error("====== AWS SES CRASH DETAILS ======", error);
-      throw new AppError("Email gateway delivery communication failure", 500, "EMAIL_PROVIDER_ERROR", {
-        en: "Failed to dispatch email verification message.",
-        ar: "فشل إرسال بريد التحقق الإلكتروني."
-      });
-    }
   }
 }
 

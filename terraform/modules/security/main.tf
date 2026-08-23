@@ -51,7 +51,7 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 resource "aws_secretsmanager_secret_version" "app_secrets_val" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
   secret_string = jsonencode({
-    NODE_ENV              = var.environment
+    NODE_ENV              = "production"
     PORT                  = "8080"
     LOG_LEVEL             = "info"
     FRONTEND_URL          = var.alb_dns_name != "" ? "http://${var.alb_dns_name}" : "http://localhost:3000"
