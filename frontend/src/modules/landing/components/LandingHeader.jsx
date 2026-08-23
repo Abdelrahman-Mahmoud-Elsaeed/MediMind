@@ -14,19 +14,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { User, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
 import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiverQueries';
 
 export function LandingHeader() {
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { user: authUser, logout } = useAuth();
+  const { isAuthenticated, user: reduxUser } = useSelector((state) => state.auth);
+  const user = authUser || reduxUser;
 
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(user?.role);
-  const isPatient = user?.role === 'PATIENT' || (!user?.role && isAuthenticated);
+  const isPatient = user?.role === 'PATIENT' || (!user?.role && (isAuthenticated || Boolean(user)));
 
-  const { data: patientProfile } = usePatientProfileQuery({ enabled: isPatient });
-  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: isCaregiver });
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: Boolean(isPatient && user) });
+  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: Boolean(isCaregiver && user) });
 
   const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
 
@@ -40,13 +43,21 @@ export function LandingHeader() {
   }, []);
 
   const isUserLoggedIn = Boolean(
-    isAuthenticated ||
-    user ||
-    (typeof window !== 'undefined' && (localStorage.getItem('accessToken') || localStorage.getItem('user')))
+    (isAuthenticated || Boolean(user)) &&
+    (typeof window !== 'undefined' && localStorage.getItem('accessToken'))
   );
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userRole');
+      localStorage.clear();
+    }
     dispatch(logoutThunk());
+    await logout();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   const handleSmoothScroll = (e, targetId) => {

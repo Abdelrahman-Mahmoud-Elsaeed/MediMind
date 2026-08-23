@@ -142,6 +142,18 @@ function NotificationPopover({ locale, t }) {
     };
   }, []);
 
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userRole');
+      localStorage.clear();
+    }
+    await logout();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -399,7 +411,7 @@ export const Header = () => {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={() => logout?.()} className="text-error hover:bg-error-container/20 text-xs font-bold gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer">
+                <DropdownMenuItem onClick={handleLogout} className="text-error hover:bg-error-container/20 text-xs font-bold gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer">
                   <LogOut className="w-4 h-4 text-error"/>
                   <span>{t('common.nav.logout')}</span>
                 </DropdownMenuItem>

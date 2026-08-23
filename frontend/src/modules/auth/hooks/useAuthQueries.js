@@ -71,12 +71,19 @@ export function useLogoutMutation() {
       return result;
     },
     onSuccess: () => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userRole');
+        localStorage.clear();
+      }
       queryClient.setQueryData(AUTH_KEYS.user, null);
       queryClient.clear();
     },
     onError: () => {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('userRole');
+        localStorage.clear();
       }
       queryClient.setQueryData(AUTH_KEYS.user, null);
       queryClient.clear();
