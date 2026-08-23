@@ -34,8 +34,8 @@ else
     exit 1
 fi
 
-# Step 1: Ensure S3 State Bucket Exists
-echo -e "${YELLOW}[Step 1/5] Initializing Remote S3 State Backend (Native S3 Lockfile Enabled)...${NC}"
+# Step 1: Initialize Terraform & Apply Infrastructure FIRST (provisions ECR repositories)
+echo -e "${YELLOW}[Step 1/5] Initializing Remote S3 State Backend & Applying Terraform Infrastructure...${NC}"
 STATE_BUCKET="medtrack-development-tfstate-${ACCOUNT_ID}"
 
 if ! aws s3api head-bucket --bucket "$STATE_BUCKET" --no-cli-pager 2>/dev/null; then
@@ -50,7 +50,9 @@ else
 fi
 
 terraform init -reconfigure
-echo ""
+echo -e "  Running 'terraform apply -auto-approve' to provision ECR Repositories & Cloud Infra..."
+terraform apply -auto-approve
+echo -e "  ${GREEN}[OK] ECR Repositories & Cloud Infrastructure Provisioned!${NC}\n"
 
 # Step 2: Authenticate Docker with AWS ECR & Build/Push Container Images
 echo -e "${YELLOW}[Step 2/5] Authenticating Docker & Pushing Container Images...${NC}"
@@ -77,13 +79,12 @@ echo -e "  ---> Pushing [worker] to AWS ECR..."
 docker push "${ECR_REGISTRY}/medtrack-worker:latest"
 echo -e "  ${GREEN}[OK] Worker image pushed successfully!${NC}\n"
 
-# Step 3: Terraform Apply & Refresh State
-echo -e "${YELLOW}[Step 3/5] Running 'terraform apply -auto-approve'...${NC}"
-terraform apply -auto-approve
-echo -e "  ${GREEN}[OK] Full infrastructure deployment complete!${NC}"
-echo -e "  Updating & refreshing remote S3 state..."
-terraform refresh >/dev/null 2>&1
-echo -e "  ${GREEN}[OK] Remote S3 state synchronized!${NC}\n"
+# Step 3: Trigger ECS Forced Rolling Redeployment
+echo -e "${YELLOW}[Step 3/5] Triggering ECS Service Redeployments...${NC}"
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-frontend-service --force-new-deployment --no-cli-pager >/dev/null
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-backend-service --force-new-deployment --no-cli-pager >/dev/null
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-worker-service --force-new-deployment --no-cli-pager >/dev/null
+echo -e "  ${GREEN}[OK] Rolling updates triggered across all services!${NC}\n"
 
 # Step 4: Outputs & Target Health Audit
 echo -e "${YELLOW}[Step 4/5] Auditing Target Groups & Secrets Manager...${NC}"

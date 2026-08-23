@@ -33,9 +33,9 @@ if ($awsIdentity) {
 Write-Host ""
 
 # ------------------------------------------------------------------------------
-# STEP 1: Auto-Bootstrap S3 State Bucket if missing
+# STEP 1: Auto-Bootstrap S3 State Bucket & Apply Terraform Infra FIRST
 # ------------------------------------------------------------------------------
-Write-Host "[Step 1/5] Initializing Remote S3 State Backend (Native S3 Lockfile Enabled)..." -ForegroundColor Yellow
+Write-Host "[Step 1/5] Initializing Remote S3 State Backend & Applying Terraform Infrastructure..." -ForegroundColor Yellow
 $stateBucket = "medtrack-development-tfstate-$accountId"
 
 aws s3api head-bucket --bucket $stateBucket --no-cli-pager 2>$null
@@ -51,6 +51,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 terraform init -reconfigure 2>&1 | Out-Host
+Write-Host "  Running 'terraform apply -auto-approve' to provision ECR Repositories & Cloud Infra..." -ForegroundColor White
+terraform apply -auto-approve 2>&1 | Out-Host
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [FAIL] Terraform apply encountered an error." -ForegroundColor Red
+    exit 1
+}
+Write-Host "  [OK] ECR Repositories & Cloud Infrastructure Provisioned!" -ForegroundColor Green
 Write-Host ""
 
 # ------------------------------------------------------------------------------
@@ -94,18 +101,13 @@ Write-Host "  [OK] Worker image pushed successfully!" -ForegroundColor Green
 Write-Host ""
 
 # ------------------------------------------------------------------------------
-# STEP 3: Execute Full Terraform Apply & Refresh State
+# STEP 3: Trigger ECS Service Redeployments
 # ------------------------------------------------------------------------------
-Write-Host "[Step 3/5] Running 'terraform apply -auto-approve' for full ECS infrastructure..." -ForegroundColor Yellow
-terraform apply -auto-approve 2>&1 | Out-Host
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  [FAIL] Terraform apply encountered an error." -ForegroundColor Red
-    exit 1
-}
-Write-Host "  [OK] Full AWS ECS infrastructure deployed!" -ForegroundColor Green
-Write-Host "  Updating & refreshing remote S3 state..." -ForegroundColor Gray
-terraform refresh 2>&1 | Out-Null
-Write-Host "  [OK] Remote S3 state synchronized!" -ForegroundColor Green
+Write-Host "[Step 3/5] Triggering ECS Service Redeployments..." -ForegroundColor Yellow
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-frontend-service --force-new-deployment --no-cli-pager 2>&1 | Out-Null
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-backend-service --force-new-deployment --no-cli-pager 2>&1 | Out-Null
+aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-worker-service --force-new-deployment --no-cli-pager 2>&1 | Out-Null
+Write-Host "  [OK] Rolling updates triggered across all services!" -ForegroundColor Green
 Write-Host ""
 
 # ------------------------------------------------------------------------------
