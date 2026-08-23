@@ -47,19 +47,28 @@ export function LanguageProvider({ children, initialLocale = "en" }) {
     setLocale((prev) => (prev === "en" ? "ar" : "en"));
   };
 
-  const t = (path, params = {}) => {
+  const t = (path, fallbackOrParams = {}, params = {}) => {
+    let fallback = null;
+    let interpolations = params;
+
+    if (typeof fallbackOrParams === 'string') {
+      fallback = fallbackOrParams;
+    } else if (fallbackOrParams && typeof fallbackOrParams === 'object') {
+      interpolations = fallbackOrParams;
+    }
+
     const keys = path.split(".");
     let value = translations[locale];
     for (const key of keys) {
       if (value && value[key] !== undefined) {
         value = value[key];
       } else {
-        return path;
+        return fallback !== null ? fallback : path;
       }
     }
-    if (typeof value === "string" && params && typeof params === "object") {
-      Object.keys(params).forEach((paramKey) => {
-        value = value.replace(new RegExp(`{{\\s*${paramKey}\\s*}}`, "g"), params[paramKey]);
+    if (typeof value === "string" && interpolations && typeof interpolations === "object") {
+      Object.keys(interpolations).forEach((paramKey) => {
+        value = value.replace(new RegExp(`{{\\s*${paramKey}\\s*}}`, "g"), interpolations[paramKey]);
       });
     }
     return value;

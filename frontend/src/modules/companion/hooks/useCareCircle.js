@@ -10,6 +10,7 @@ import {
 
 export function useCareCircle() {
   const { data: relationships = [], isLoading, error: queryError } = usePatientRelationshipsQuery();
+  const safeRelationships = Array.isArray(relationships) ? relationships : (relationships?.data || []);
   const inviteCaregiverMutation = useInviteCaregiverMutation();
   const revokeRelationshipMutation = useRevokeRelationshipMutation();
   const updateStatusMutation = useUpdateRelationshipStatusMutation();
@@ -19,16 +20,16 @@ export function useCareCircle() {
   const [canViewRecords, setCanViewRecords] = useState(false);
   const [validationError, setValidationError] = useState(null);
 
-  const activeCaregivers = relationships.filter(
-    (r) => r.status === "ACCEPTED" || r.status === "ACTIVE"
+  const activeCaregivers = safeRelationships.filter(
+    (r) => r.status === "ACCEPTED" || r.status === "ACTIVE" || r.status === "PENDING"
   );
-  const pendingIncoming = relationships.filter(
+  const pendingIncoming = safeRelationships.filter(
     (r) => r.status === "PENDING" && r.initiatedBy === "CAREGIVER"
   );
-  const pendingOutgoing = relationships.filter(
+  const pendingOutgoing = safeRelationships.filter(
     (r) => r.status === "PENDING" && r.initiatedBy === "PATIENT"
   );
-  const pendingInvitations = relationships.filter(
+  const pendingInvitations = safeRelationships.filter(
     (r) => r.status === "PENDING"
   );
 
@@ -104,6 +105,8 @@ export function useCareCircle() {
     pendingIncoming,
     pendingOutgoing,
     pendingInvitations,
+    caregiverRelationships: activeCaregivers || [],
+    patientRelationships: safeRelationships,
     sendInvitation,
     respondToRequest,
     revokeRelationship,

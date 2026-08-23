@@ -33,8 +33,8 @@ export default function CareCircleComponent() {
   const isAr = locale === "ar" || dir === "rtl";
 
   const {
-    caregiverRelationships,
-    patientRelationships,
+    caregiverRelationships = [],
+    patientRelationships = [],
     loading,
     error,
     actionError,
@@ -57,49 +57,39 @@ export default function CareCircleComponent() {
   const [selectedCaregiver, setSelectedCaregiver] = useState(null);
   const [actionDialog, setActionDialog] = useState({ open: false, type: null, target: null });
 
+  const activeRelationships = Array.isArray(caregiverRelationships) ? caregiverRelationships : [];
+
   if (loading) {
-    return (
-      <MainLayout>
-        <div className="max-w-7xl mx-auto p-6 flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-slate-500 font-bold">{isAr ? "جاري تحميل دائرة الرعاية..." : "Loading Care Circle..."}</p>
-        </div>
-      </MainLayout>
-    );
+    return null;
   }
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto space-y-8 p-4 sm:p-6 pb-24" dir={dir}>
-        {/* Banner Section */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-600 via-teal-700 to-emerald-800 text-white p-6 sm:p-10 shadow-2xl">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold uppercase tracking-wider">
-                <Users className="w-4 h-4" />
-                <span>{isAr ? "شبكة الدعم والمساندة" : "Care Network"}</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                {isAr ? "دائرة الرعاية الصحية" : "Care Circle"}
-              </h1>
-              <p className="text-teal-100 text-sm sm:text-base leading-relaxed">
-                {isAr
-                  ? "ربط فوري وآمن بين المرضى ومقدمي الرعاية لمتابعة الالتزام الدوائي، وتلقي الإشعارات الفورية، وضمان السلامة الصحية على مدار الساعة."
-                  : "Seamlessly connect patients with family and professional caregivers to monitor medication adherence and stay updated."}
-              </p>
-            </div>
-
-            <Button
-              onClick={() => setIsInviteModalOpen(true)}
-              className="bg-white hover:bg-teal-50 text-teal-800 font-extrabold shadow-lg rounded-2xl px-6 py-6 text-sm shrink-0 flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span>{isAr ? "دعوة مقدم رعاية" : "Invite Caregiver"}</span>
-            </Button>
+      <div dir={dir} className="p-6 md:p-10 max-w-6xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
+              <Users className="w-8 h-8 text-teal-600" />
+              <span>{isAr ? "دائرة الرعاية" : "Care Circle"}</span>
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              {isAr
+                ? "إدارة مقدمي الرعاية المرتبطين بحسابك وصلاحيات الاطلاع الممنوحة لهم."
+                : "Manage your linked caregivers and configure access permissions for your health profile."}
+            </p>
           </div>
+
+          <Button
+            onClick={() => setIsInviteModalOpen(true)}
+            className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-2xl shadow-sm flex items-center gap-2"
+          >
+            <UserPlus className="w-5 h-5" />
+            <span>{isAr ? "دعوة مقدم رعاية" : "Invite Caregiver"}</span>
+          </Button>
         </div>
 
-        {/* Global Notifications */}
+        {/* Feedback Alerts */}
         {actionError && (
           <div className="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 shadow-xs">
             <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -119,68 +109,82 @@ export default function CareCircleComponent() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Shield className="w-5 h-5 text-teal-600" />
-              <span>{isAr ? "أعضاء دائرة الرعاية المرتبطون" : "Active Care Circle Members"}</span>
+              <span>{t('caregiver.careCircle.activeMembers', 'Active Care Circle Members')}</span>
             </h2>
             <Badge variant="outline" className="font-bold border-teal-500 text-teal-600">
-              {caregiverRelationships.length} {isAr ? "مترابطون" : "Members"}
+              {activeRelationships.length} {t('caregiver.careCircle.membersCount', 'Members')}
             </Badge>
           </div>
 
-          {caregiverRelationships.length === 0 ? (
+          {activeRelationships.length === 0 ? (
             <Card className="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
               <Users className="w-12 h-12 text-slate-400 mx-auto" />
               <div className="space-y-1">
                 <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">
-                  {isAr ? "لا يوجد مقدمو رعاية مرتبطون حتى الآن" : "No Caregivers Linked Yet"}
+                  {t('caregiver.careCircle.noCaregiversLinked', 'No Caregivers Linked Yet')}
                 </h3>
                 <p className="text-sm text-slate-500 max-w-md mx-auto">
-                  {isAr
-                    ? "قم بإرسال دعوة لمقدم الرعاية أو أفراد عائلتك لمتابعة حالتك الصحية وجدول الأدوية."
-                    : "Invite your family or professional caregiver to stay updated on your medication adherence."}
+                  {t('caregiver.careCircle.noCaregiversDesc', 'Invite your family or professional caregiver to stay updated on your medication adherence.')}
                 </p>
               </div>
               <Button onClick={() => setIsInviteModalOpen(true)} className="bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl">
                 <UserPlus className="w-4 h-4 mr-2" />
-                {isAr ? "إرسال أول دعوة" : "Send First Invitation"}
+                {t('caregiver.careCircle.sendFirstInvite', 'Send First Invitation')}
               </Button>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {caregiverRelationships.map((rel) => {
-                const cg = rel.caregiver || {};
-                const u = cg.user || {};
-                const name = `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.email || (isAr ? "مقدم رعاية" : "Caregiver");
+              {activeRelationships.map((rel) => {
+                const cg = rel.caregiverId || rel.caregiver || rel.patientId || rel.patient || {};
+                const firstName = cg.firstName || cg.user?.firstName || "";
+                const lastName = cg.lastName || cg.user?.lastName || "";
+                const email = cg.email || cg.accountId?.email || cg.user?.email || "";
+                const phone = cg.phone || "";
+                const defaultRoleName = t('caregiver.careCircle.defaultCaregiver', 'Caregiver');
+                const name = `${firstName} ${lastName}`.trim() || email || defaultRoleName;
+
+                const rawRelation = (rel.relation || "").toLowerCase();
+                const relationKey = `caregiver.careCircle.relations.${rawRelation}`;
+                const translatedRelation = t(relationKey);
+                const relationLabel = translatedRelation !== relationKey ? translatedRelation : (rel.relation ? (rel.relation.charAt(0).toUpperCase() + rel.relation.slice(1)) : defaultRoleName);
+
+                const canManageMeds = rel.permissions?.canAddMedication ?? rel.permissions?.canManageMeds ?? rel.canManageMeds ?? false;
+                const canViewRecords = rel.permissions?.canViewMedicalRecords ?? rel.permissions?.canViewRecords ?? rel.canViewRecords ?? false;
+                const isStatusActive = rel.status === "ACTIVE" || rel.status === "ACCEPTED";
 
                 return (
-                  <Card key={rel.id} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-all space-y-5 flex flex-col justify-between">
+                  <Card key={rel.id || rel._id || rel.relationshipId} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-all space-y-5 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 font-black text-xl flex items-center justify-center border border-teal-500/20">
-                            {name.charAt(0)}
+                            {name.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">{name}</h3>
-                            <p className="text-xs text-slate-500">{u.email}</p>
+                            <p className="text-xs text-slate-500">{email || phone}</p>
+                            <span className="inline-block mt-1 text-[10px] uppercase font-semibold text-teal-600 bg-teal-50 dark:bg-teal-950/40 px-2 py-0.5 rounded-md">
+                              {relationLabel}
+                            </span>
                           </div>
                         </div>
 
-                        <Badge variant={rel.status === "ACTIVE" ? "default" : "secondary"}>
-                          {rel.status === "ACTIVE" ? (isAr ? "نشط" : "Active") : (isAr ? "معلق" : "Pending")}
+                        <Badge variant={isStatusActive ? "default" : "secondary"}>
+                          {isStatusActive ? t('caregiver.careCircle.statusActive', 'Active') : t('caregiver.careCircle.statusPending', 'Pending')}
                         </Badge>
                       </div>
 
                       <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                         <div className="flex justify-between">
-                          <span>{isAr ? "إدارة الأدوية:" : "Manage Meds:"}</span>
-                          <span className={rel.canManageMeds ? "text-teal-600 font-bold" : "text-slate-400"}>
-                            {rel.canManageMeds ? (isAr ? "مفعل" : "Allowed") : (isAr ? "غير مفعل" : "Disabled")}
+                          <span>{t('caregiver.careCircle.manageMeds', 'Manage Medications')}</span>
+                          <span className={canManageMeds ? "text-teal-600 font-bold" : "text-slate-400"}>
+                            {canManageMeds ? t('caregiver.careCircle.allowed', 'Allowed') : t('caregiver.careCircle.disabled', 'Disabled')}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>{isAr ? "عرض السجلات:" : "View Records:"}</span>
-                          <span className={rel.canViewRecords ? "text-teal-600 font-bold" : "text-slate-400"}>
-                            {rel.canViewRecords ? (isAr ? "مفعل" : "Allowed") : (isAr ? "غير مفعل" : "Disabled")}
+                          <span>{t('caregiver.careCircle.viewRecords', 'View Medical Records')}</span>
+                          <span className={canViewRecords ? "text-teal-600 font-bold" : "text-slate-400"}>
+                            {canViewRecords ? t('caregiver.careCircle.allowed', 'Allowed') : t('caregiver.careCircle.disabled', 'Disabled')}
                           </span>
                         </div>
                       </div>
@@ -190,11 +194,11 @@ export default function CareCircleComponent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => revokeRelationship(rel.id)}
+                        onClick={() => revokeRelationship(rel.id || rel.relationshipId)}
                         className="w-full text-rose-600 hover:bg-rose-50 border-rose-200 font-bold"
                       >
                         <Trash2 className="w-4 h-4 mr-1.5" />
-                        {isAr ? "إلغاء الربط" : "Revoke Access"}
+                        {t('caregiver.careCircle.revokeAccess', 'Revoke Access')}
                       </Button>
                     </div>
                   </Card>

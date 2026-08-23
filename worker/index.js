@@ -5,7 +5,7 @@ const { redisConnectionOptions, QUEUE_NAMES } = require('./src/config/queue');
 const { BACKEND_API_URL } = require('./src/config/env');
 const { logger } = require('./src/shared/logger');
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.WORKER_PORT || (process.env.NODE_ENV === 'production' ? (process.env.PORT || 8080) : 3001);
 
 // Start Lightweight Health Check Server for AWS ALB / ECS Target Group Probes
 const healthServer = http.createServer((req, res) => {

@@ -25,6 +25,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/profiles', profilesRoutes);
 router.use('/conditions', conditionsRoutes);
+router.use('/medical-records/conditions', conditionsRoutes);
 router.use('/medications', medicationsRoutes);
 router.use('/relationships', relationshipsRoutes);
 router.use('/doses', dosesRoutes);

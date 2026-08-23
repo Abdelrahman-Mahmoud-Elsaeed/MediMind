@@ -11,7 +11,13 @@ function getCleanSocketUrl() {
       return url;
     }
   }
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8080';
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+    return window.location.origin;
+  }
+  return 'http://localhost:8080';
 }
 
 const SOCKET_URL = getCleanSocketUrl();

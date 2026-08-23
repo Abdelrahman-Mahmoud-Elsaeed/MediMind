@@ -40,22 +40,22 @@ export const patientService = {
 
   // 3. Medical Conditions
   getConditions: async () => {
-    const res = await apiClient.get("/medical-records/conditions");
+    const res = await apiClient.get("/conditions");
     return res.data?.data ?? res.data;
   },
 
   createCondition: async (payload) => {
-    const res = await apiClient.post("/medical-records/conditions", payload);
+    const res = await apiClient.post("/conditions", payload);
     return res.data?.data ?? res.data;
   },
 
   updateCondition: async (conditionId, payload) => {
-    const res = await apiClient.put(`/medical-records/conditions/${conditionId}`, payload);
+    const res = await apiClient.put(`/conditions/${conditionId}`, payload);
     return res.data?.data ?? res.data;
   },
 
   deleteCondition: async (conditionId) => {
-    const res = await apiClient.delete(`/medical-records/conditions/${conditionId}`);
+    const res = await apiClient.delete(`/conditions/${conditionId}`);
     return res.data?.data ?? res.data;
   },
 
