@@ -24,6 +24,7 @@ export const authTranslations = {
         brandingF2: "Caregiver Connection",
         brandingF3: "Health Insights",
         brandingF4: "Secure & Private",
+        demoCredentialsTitle: "Quick Demo Login",
       },
       register: {
         step1Title: "Create Account",
@@ -193,6 +194,7 @@ export const authTranslations = {
         brandingF2: "الربط بمقدم الرعاية",
         brandingF3: "تحليلات صحية",
         brandingF4: "آمن وخاص",
+        demoCredentialsTitle: "تسجيل دخول تجريبي سريع",
       },
       register: {
         step1Title: "إنشاء حساب",

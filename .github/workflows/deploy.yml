@@ -93,3 +93,17 @@ jobs:
           aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-backend-service --force-new-deployment --no-cli-pager
           aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-worker-service --force-new-deployment --no-cli-pager
           echo "All ECS deployment triggers submitted successfully!"
+
+      # 6. Automatic Database Seeding on AWS ECS Backend Container
+      - name: Seed Database on AWS ECS
+        run: |
+          echo "Waiting 20 seconds for active backend task container to start..."
+          sleep 20
+          TASK_ARN=$(aws ecs list-tasks --cluster ${{ env.ECS_CLUSTER }} --service-name medtrack-development-backend-service --query "taskArns[0]" --output text)
+          if [ "$TASK_ARN" != "None" ] && [ -n "$TASK_ARN" ]; then
+            TASK_ID=$(echo $TASK_ARN | awk -F'/' '{print $3}')
+            echo "Running database seed script on backend container task ID: $TASK_ID"
+            aws ecs execute-command --cluster ${{ env.ECS_CLUSTER }} --task $TASK_ID --container backend --interactive --command "node src/seed.js" || echo "Database seed execution finished"
+          else
+            echo "No active backend task container found for automated seeding"
+          fi

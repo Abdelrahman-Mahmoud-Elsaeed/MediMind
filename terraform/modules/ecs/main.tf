@@ -297,6 +297,8 @@ resource "aws_ecs_service" "mongodb" {
   }
 
   enable_execute_command = true
+
+  depends_on = [aws_ecs_cluster.main]
 }
 
 # Service 1: Frontend Service
@@ -322,6 +324,8 @@ resource "aws_ecs_service" "frontend" {
   }
 
   enable_execute_command = true
+
+  depends_on = [aws_ecs_cluster.main]
 }
 
 # Service 2: Backend Service
@@ -347,6 +351,8 @@ resource "aws_ecs_service" "backend" {
   }
 
   enable_execute_command = true
+
+  depends_on = [aws_ecs_cluster.main]
 }
 
 # Service 3: Worker Service
@@ -372,4 +378,6 @@ resource "aws_ecs_service" "worker" {
   }
 
   enable_execute_command = true
+
+  depends_on = [aws_ecs_cluster.main]
 }

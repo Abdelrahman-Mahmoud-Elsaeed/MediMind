@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const Account = require("../models/Account.model");
-const OtpVerification = require("../models/OtpVerification.model");
+const OtpVerification = require("../models/otp.model");
 const AppError = require("../../../shared/utils/AppError");
 const ServiceResponse = require("../../../shared/utils/ServiceResponse");
 const { logger } = require("../../../shared/utils/logger");
