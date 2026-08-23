@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 # S3 Bucket for Storing Terraform State Files
 resource "aws_s3_bucket" "terraform_state" {
   bucket        = "${var.project_name}-${var.environment}-tfstate-${data.aws_caller_identity.current.account_id}"
-  force_destroy = false
+  force_destroy = true
 }
 
 # Enable S3 Bucket Versioning for State File History & Recovery
