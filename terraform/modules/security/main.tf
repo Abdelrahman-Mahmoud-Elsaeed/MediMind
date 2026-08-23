@@ -180,6 +180,16 @@ resource "aws_iam_policy" "app_permissions_policy" {
           "sns:Publish"
         ]
         Resource = [var.sns_topic_arn]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ]
+        Resource = "*"
       }
     ]
   })

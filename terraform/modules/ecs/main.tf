@@ -113,9 +113,11 @@ resource "aws_ecs_task_definition" "mongodb" {
 
   container_definitions = jsonencode([
     {
-      name      = "mongodb"
-      image     = "mongo:6.0"
-      essential = true
+      name       = "mongodb"
+      image      = "mongo:6.0"
+      essential  = true
+      entryPoint = ["sh", "-c"]
+      command    = ["mongod --replSet rs0 --bind_ip_all & MONGOD_PID=$!; sleep 3; mongosh --eval 'try { rs.status() } catch(e) { rs.initiate() }'; wait $MONGOD_PID"]
       portMappings = [
         {
           containerPort = 27017
@@ -293,6 +295,8 @@ resource "aws_ecs_service" "mongodb" {
   service_registries {
     registry_arn = aws_service_discovery_service.mongodb.arn
   }
+
+  enable_execute_command = true
 }
 
 # Service 1: Frontend Service
@@ -316,6 +320,8 @@ resource "aws_ecs_service" "frontend" {
     container_name   = "frontend"
     container_port   = 3000
   }
+
+  enable_execute_command = true
 }
 
 # Service 2: Backend Service
@@ -339,6 +345,8 @@ resource "aws_ecs_service" "backend" {
     container_name   = "backend"
     container_port   = 8080
   }
+
+  enable_execute_command = true
 }
 
 # Service 3: Worker Service
@@ -362,4 +370,6 @@ resource "aws_ecs_service" "worker" {
     container_name   = "worker"
     container_port   = 8080
   }
+
+  enable_execute_command = true
 }

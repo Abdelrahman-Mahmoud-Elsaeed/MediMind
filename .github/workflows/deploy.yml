@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-and-deploy:
-    name: Build Docker Images, Push to ECR & Deploy to ECS
+    name: Build Docker Images, Apply Terraform & Deploy to ECS
     runs-on: ubuntu-latest
 
     steps:
@@ -28,6 +28,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
 
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -71,7 +76,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 4. Trigger ECS Forced Rolling Redeployment
+      # 4. Initialize & Apply Terraform Infrastructure
+      - name: Terraform Init & Apply
+        working-directory: ./terraform
+        run: |
+          echo "Initializing Terraform backend..."
+          terraform init -reconfigure
+          echo "Applying Terraform infrastructure changes..."
+          terraform apply -auto-approve
+
+      # 5. Trigger ECS Forced Rolling Redeployment
       - name: Force ECS Service Redeployment
         run: |
           echo "Triggering ECS Fargate rolling updates..."
