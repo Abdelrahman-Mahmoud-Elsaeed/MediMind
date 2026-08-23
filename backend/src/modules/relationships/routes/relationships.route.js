@@ -6,11 +6,11 @@ const { authenticate, authorize } = require('../../../shared/middleware/auth.mid
 const validate = require('../../../shared/middleware/validation.middleware');
 
 // Roles that can initiate a relationship (patient or a caregiver/doctor inviting a patient)
-const RELATIONSHIP_INITIATORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+const RELATIONSHIP_INITIATORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 // All relational roles can list their own relationships
-const RELATIONSHIP_VIEWERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'PHARMACIST'];
+const RELATIONSHIP_VIEWERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'PHARMACIST', 'ADMIN'];
 // Both sides of the relationship can accept/reject a pending invitation
-const RELATIONSHIP_STATUS_UPDATERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+const RELATIONSHIP_STATUS_UPDATERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 // Only the patient can revoke (permanently remove) a relationship
 const RELATIONSHIP_REVOKERS = ['PATIENT'];
 

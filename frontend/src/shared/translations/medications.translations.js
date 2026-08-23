@@ -34,6 +34,15 @@ export const medicationsTranslations = {
       notFound: "Medication Not Found",
       returnToCabinet: "Return to Cabinet",
       loadingMed: "Loading medication data...",
+      units: {
+        capsule: "capsules",
+        tablet: "tablets",
+        syrup: "mL",
+        injection: "mL/vials",
+        drop: "drops",
+        cream: "applications",
+        unit: "units",
+      }
     }
   },
   ar: {
@@ -71,6 +80,15 @@ export const medicationsTranslations = {
       notFound: "لم يتم العثور على الدواء",
       returnToCabinet: "العودة للخزانة",
       loadingMed: "جاري تحميل بيانات الدواء...",
+      units: {
+        capsule: "كبسولة",
+        tablet: "قرص",
+        syrup: "مل",
+        injection: "حقنة / مل",
+        drop: "قطرة",
+        cream: "استخدام",
+        unit: "وحدة",
+      }
     }
   }
 };

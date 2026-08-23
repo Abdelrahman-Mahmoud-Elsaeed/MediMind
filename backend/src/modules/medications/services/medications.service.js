@@ -37,6 +37,8 @@ class MedicationsService {
         throw new AppError('Insufficient permissions to access this patient profile', 403, 'FORBIDDEN');
       }
       return null;
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      return null;
     } else {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
@@ -51,42 +53,30 @@ class MedicationsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER', 'PHARMACIST', 'ADMIN'].includes(userRole)) {
       if (!payload.patientId) {
-        throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
+        throw new AppError('patientId is required', 400, 'VALIDATION_ERROR');
       }
       patientId = payload.patientId;
-      await this.validateAccess(userAccountId, userRole, patientId, 'canAddMedication');
+      if (!['PHARMACIST', 'ADMIN'].includes(userRole)) {
+        await this.validateAccess(userAccountId, userRole, patientId, 'canEditMedications');
+      }
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    // Verify condition exists if provided
-    if (payload.conditionId) {
-      const condition = await MedicalCondition.findOne({ _id: payload.conditionId, patientId });
-      if (!condition) {
-        throw new AppError('Medical condition not found for this patient', 404, 'CONDITION_NOT_FOUND');
-      }
+    let associatedCondition = null;
+    if (payload.medicalConditionId) {
+      associatedCondition = await MedicalCondition.findById(payload.medicalConditionId);
     }
 
-    // Validate chronic / endDate logic
-    if (payload.isChronic) {
-      payload.schedule.endDate = null;
-    } else if (!payload.schedule.endDate) {
-      throw new AppError('endDate is required for acute medications', 400, 'VALIDATION_ERROR');
-    }
-
-    // Generate times of day
-    const timesOfDay = this.generateTimesOfDay(
-      payload.schedule.firstDoseTime,
-      payload.schedule.dosesPerDay
-    );
+    const timesOfDay = this.generateTimesOfDay(payload.schedule?.firstDoseTime, payload.schedule?.dosesPerDay || 1);
 
     const medication = new Medication({
       patientId,
-      conditionId: payload.conditionId || null,
-      addedBy: userAccountId,
+      medicalConditionId: associatedCondition ? associatedCondition._id : null,
       name: payload.name,
+      dosage: payload.dosage,
       imageURL: payload.imageURL,
       formType: payload.formType,
       isChronic: payload.isChronic,
@@ -119,11 +109,16 @@ class MedicationsService {
       }
       patientId = targetPatientId;
       await this.validateAccess(userAccountId, userRole, patientId, 'canViewMedications');
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      patientId = targetPatientId || null;
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    let query = { patientId };
+    let query = {};
+    if (patientId) {
+      query.patientId = patientId;
+    }
     if (isActive !== undefined) {
       query.isActive = isActive;
     }

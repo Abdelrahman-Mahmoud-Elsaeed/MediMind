@@ -51,13 +51,13 @@ export default function AddMedicationComponent() {
 
   const getFormUnit = (type) => {
     switch (type) {
-      case "CAPSULE": return isAr ? "كبسولة" : "capsules";
-      case "TABLET": return isAr ? "قرص" : "tablets";
-      case "SYRUP": return isAr ? "مل" : "mL";
-      case "INJECTION": return isAr ? "حقنة / مل" : "mL/vials";
-      case "DROP": return isAr ? "قطرة" : "drops";
-      case "CREAM": return isAr ? "استخدام" : "applications";
-      default: return isAr ? "وحدة" : "units";
+      case "CAPSULE": return t("medications.units.capsule");
+      case "TABLET": return t("medications.units.tablet");
+      case "SYRUP": return t("medications.units.syrup");
+      case "INJECTION": return t("medications.units.injection");
+      case "DROP": return t("medications.units.drop");
+      case "CREAM": return t("medications.units.cream");
+      default: return t("medications.units.unit");
     }
   };
 

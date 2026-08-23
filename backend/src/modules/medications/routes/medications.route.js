@@ -8,18 +8,18 @@ const { authenticate, authorize } = require('../../../shared/middleware/auth.mid
 const validate = require('../../../shared/middleware/validation.middleware');
 
 // Roles that can read patient medications (service layer enforces relationship checks for caregivers)
-const MEDICATION_READERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'PHARMACIST'];
+const MEDICATION_READERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'PHARMACIST', 'ADMIN'];
 // Roles that can create a medication
-const MEDICATION_CREATORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+const MEDICATION_CREATORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 // Roles that can update a medication
-const MEDICATION_EDITORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR'];
+const MEDICATION_EDITORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 // Roles that can delete a medication
-const MEDICATION_DELETORS = ['PATIENT', 'FAMILY_CAREGIVER', 'DOCTOR'];
+const MEDICATION_DELETORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 
 // Roles that can request a refill
-const REFILL_REQUESTORS = ['PATIENT', 'FAMILY_CAREGIVER', 'DOCTOR'];
+const REFILL_REQUESTORS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'ADMIN'];
 // Roles that can list refill orders
-const REFILL_VIEWERS = ['PATIENT', 'FAMILY_CAREGIVER', 'DOCTOR', 'PHARMACIST', 'ADMIN'];
+const REFILL_VIEWERS = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'PHARMACIST', 'ADMIN'];
 // Roles that can update refill status (fulfillment side)
 const REFILL_STATUS_UPDATERS = ['PHARMACIST', 'ADMIN'];
 

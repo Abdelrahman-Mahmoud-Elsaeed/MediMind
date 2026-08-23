@@ -2,7 +2,17 @@ export const caregiverTranslations = {
   en: {
     caregiver: {
       portal: "Caregiver Portal",
+      dashboard: {
+        welcome: "Welcome Back, {{name}} 👋",
+        welcomeDesc: "Monitor linked patient adherence, daily dose schedules, and accept connection requests.",
+        viewRoster: "View Patients Roster",
+        activePatients: "Active Patients",
+        pendingRequests: "Pending Requests",
+        professionalPortal: "Professional Caregiver Portal",
+        familyPortal: "Family Caregiver Portal",
+      },
       myLinkedPatients: "My Linked Patients",
+      listDesc: "Monitor your patient list, daily medication schedules, and real-time adherence rates.",
       invitePatient: "Invite Patient",
       activeCount: "Active",
       pendingCount: "Pending",
@@ -61,7 +71,17 @@ export const caregiverTranslations = {
   ar: {
     caregiver: {
       portal: "لوحة تحكم مقدم الرعاية",
+      dashboard: {
+        welcome: "مرحباً بك، {{name}} 👋",
+        welcomeDesc: "تابع حالة مرضائك، واطلع على جداول الجرعات والالتزام اليومي، واستجب لطلبات الربط الجديدة.",
+        viewRoster: "عرض كافة المرضى",
+        activePatients: "المرضى النشطين",
+        pendingRequests: "طلبات معلقة",
+        professionalPortal: "مقدم رعاية محترف (مرخص)",
+        familyPortal: "مقدم رعاية عائلي",
+      },
       myLinkedPatients: "مرضاي وقائمة المتابعة",
+      listDesc: "تابع حالة مرضائك، جداول أدوية اليوم، ومعدلات التزامهم بالعلاج بشكل لحظي.",
       invitePatient: "دعوة مريض جديد",
       activeCount: "النشطين",
       pendingCount: "المعلقة",

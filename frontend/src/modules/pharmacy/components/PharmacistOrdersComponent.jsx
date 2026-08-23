@@ -5,7 +5,7 @@ import { useRefillOrders, useUpdateRefillStatus } from '../hooks/usePharmacyHook
 import { getSocket } from '@/shared/lib/socketClient';
 
 export default function PharmacistOrdersComponent() {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const isAr = locale === 'ar';
 
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -120,20 +120,18 @@ export default function PharmacistOrdersComponent() {
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                   <span className="material-symbols-outlined text-sm">local_pharmacy</span>
-                  <span>{isAr ? 'لوحة تحكم الصيدلي' : 'Pharmacist Portal'}</span>
+                  <span>{t('pharmacy.portal')}</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-full text-xs font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isAr ? 'الصيدلية المركزية المعتمدة' : 'Verified Central Pharmacy'}</span>
+                  <span>{t('pharmacy.verifiedCentral')}</span>
                 </span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
-                {isAr ? 'إدارة واستلام طلبات صرف الدواء' : 'Refill Dispensing Dashboard'}
+                {t('pharmacy.dashboardTitle')}
               </h1>
               <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-                {isAr
-                  ? 'تابع الطلبات الواردة من المرضى والمرافقين، قم بتأكيد الصرف، وتحديث حالات الاستلام والتوصيل.'
-                  : 'Manage incoming refill requests from patients and caregivers, verify dosages, and update fulfillment.'}
+                {t('pharmacy.dashboardDesc')}
               </p>
             </div>
 
@@ -141,16 +139,12 @@ export default function PharmacistOrdersComponent() {
             <div className="bg-white/10 backdrop-blur-md border border-white/15 p-4 rounded-2xl flex items-center gap-4 text-xs">
               <div className="space-y-1">
                 <span className="text-slate-300 block font-semibold">
-                  {isAr ? 'حالة استقبال الطلبات' : 'Accepting Refills'}
+                  {t('pharmacy.acceptingRefills')}
                 </span>
                 <span className="font-bold text-white text-sm">
                   {isStoreOpen
-                    ? isAr
-                      ? 'مفتوح 24/7 (نشط)'
-                      : 'Active & Accepting'
-                    : isAr
-                    ? 'متوقف مؤقتاً'
-                    : 'Paused'}
+                    ? t('pharmacy.activeAccepting')
+                    : t('pharmacy.paused')}
                 </span>
               </div>
               <button
@@ -161,7 +155,7 @@ export default function PharmacistOrdersComponent() {
                     : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                 }`}
               >
-                {isStoreOpen ? (isAr ? 'نشط' : 'Online') : (isAr ? 'تفعيل' : 'Turn On')}
+                {isStoreOpen ? t('pharmacy.online') : t('pharmacy.turnOn')}
               </button>
             </div>
           </div>
@@ -173,7 +167,7 @@ export default function PharmacistOrdersComponent() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                {isAr ? 'إجمالي الطلبات' : 'Total Orders'}
+                {t('pharmacy.totalOrders')}
               </span>
               <div className="w-10 h-10 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                 <span className="material-symbols-outlined text-xl">inventory_2</span>
@@ -192,7 +186,7 @@ export default function PharmacistOrdersComponent() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                {isAr ? 'جديدة (بانتظار الموافقة)' : 'Pending Requests'}
+                {t('pharmacy.pendingRequests')}
               </span>
               <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                 <span className="material-symbols-outlined text-xl">pending_actions</span>

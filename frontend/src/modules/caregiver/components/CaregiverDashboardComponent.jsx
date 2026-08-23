@@ -25,7 +25,7 @@ import {
 } from '../hooks/useCaregiverQueries';
 
 export function CaregiverDashboardComponent() {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const isAr = locale === 'ar';
 
   const { data: profile } = useCaregiverProfileQuery();
@@ -47,19 +47,15 @@ export function CaregiverDashboardComponent() {
               <ShieldCheck className="w-4 h-4" />
               <span>
                 {isProfessional 
-                  ? (isAr ? 'مقدم رعاية محترف (مرخص)' : 'Professional Caregiver Portal') 
-                  : (isAr ? 'مقدم رعاية عائلي' : 'Family Caregiver Portal')}
+                  ? t('caregiver.dashboard.professionalPortal')
+                  : t('caregiver.dashboard.familyPortal')}
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-on-surface tracking-tight">
-              {isAr 
-                ? `مرحباً بك، ${profile?.firstName || 'مقدم الرعاية'} 👋` 
-                : `Welcome Back, ${profile?.firstName || 'Caregiver'} 👋`}
+              {t('caregiver.dashboard.welcome', { name: profile?.firstName || t('common.roles.caregiver') })}
             </h1>
             <p className="text-on-surface-variant mt-2 text-sm sm:text-base max-w-2xl">
-              {isAr 
-                ? 'تابع حالة مرضائك، واطلع على جداول الجرعات والالتزام اليومي، واستجب لطلبات الربط الجديدة.' 
-                : 'Monitor linked patient adherence, daily dose schedules, and accept connection requests.'}
+              {t('caregiver.dashboard.welcomeDesc')}
             </p>
           </div>
 
@@ -69,7 +65,7 @@ export function CaregiverDashboardComponent() {
               className="inline-flex items-center justify-center py-2.5 px-5 rounded-2xl bg-primary hover:opacity-95 text-on-primary font-bold text-xs sm:text-sm shadow-lg shadow-primary/20 transition-all gap-2 cursor-pointer select-none"
             >
               <Users className="w-4 h-4" />
-              <span>{isAr ? 'عرض كافة المرضى' : 'View Patients Roster'}</span>
+              <span>{t('caregiver.dashboard.viewRoster')}</span>
             </Link>
           </div>
         </div>
@@ -80,7 +76,7 @@ export function CaregiverDashboardComponent() {
         <AppCard className="p-6 border border-outline-variant/30 rounded-3xl flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
-              {isAr ? 'المرضى النشطين' : 'Active Patients'}
+              {t('caregiver.dashboard.activePatients')}
             </span>
             <span className="text-3xl font-black text-primary mt-1 block">{activePatients.length}</span>
           </div>
@@ -92,7 +88,7 @@ export function CaregiverDashboardComponent() {
         <AppCard className="p-6 border border-outline-variant/30 rounded-3xl flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
-              {isAr ? 'طلبات معلقة' : 'Pending Requests'}
+              {t('caregiver.dashboard.pendingRequests')}
             </span>
             <span className="text-3xl font-black text-amber-500 mt-1 block">{pendingRequests.length}</span>
           </div>

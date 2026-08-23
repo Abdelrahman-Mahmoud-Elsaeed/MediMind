@@ -1,5 +1,7 @@
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "images" {
-  bucket        = "${var.project_name}-${var.environment}-packaging-images"
+  bucket        = "${var.project_name}-${var.environment}-images-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
 
   tags = {

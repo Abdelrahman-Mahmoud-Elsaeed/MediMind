@@ -62,9 +62,7 @@ export function CaregiverPatientsListComponent() {
               {t('caregiver.myLinkedPatients')}
             </h1>
             <p className="text-on-surface-variant mt-2 text-base max-w-2xl">
-              {isAr 
-                ? 'تابع حالة مرضائك، جداول أدوية اليوم، ومعدلات التزامهم بالعلاج بشكل لحظي.'
-                : 'Monitor your patient list, daily medication schedules, and real-time adherence rates.'}
+              {t('caregiver.listDesc')}
             </p>
           </div>
 

@@ -22,6 +22,8 @@ class DosesService {
         throw new AppError('Insufficient permissions to access this patient profile', 403, 'FORBIDDEN');
       }
       return null;
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      return null;
     } else {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
@@ -42,6 +44,11 @@ class DosesService {
       }
       patientId = queryPatientId;
       await this.validateAccess(userAccountId, userRole, patientId, 'canViewDoseSchedule');
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      patientId = queryPatientId || null;
+      if (!patientId) {
+        return [];
+      }
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }

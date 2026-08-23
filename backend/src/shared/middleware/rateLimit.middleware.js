@@ -5,6 +5,7 @@ const globalRateLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per minute
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.includes('/health') || req.path === '/',
   message: {
     success: false,
     code: 'TOO_MANY_REQUESTS',

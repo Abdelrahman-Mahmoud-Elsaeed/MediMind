@@ -1,0 +1,81 @@
+name: Build & Deploy MediMind to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - development
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 468997136367.dkr.ecr.us-east-1.amazonaws.com
+  ECS_CLUSTER: medtrack-development-cluster
+
+jobs:
+  build-and-deploy:
+    name: Build Docker Images, Push to ECR & Deploy to ECS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 1. Build and Push Backend Image
+      - name: Build & Push [backend] Image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/medtrack-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 2. Build and Push Frontend Image
+      - name: Build & Push [frontend] Image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          build-args: |
+            NEXT_PUBLIC_API_URL=/api/v1
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/medtrack-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 3. Build and Push Worker Image
+      - name: Build & Push [worker] Image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./worker
+          file: ./worker/Dockerfile
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/medtrack-worker:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 4. Trigger ECS Forced Rolling Redeployment
+      - name: Force ECS Service Redeployment
+        run: |
+          echo "Triggering ECS Fargate rolling updates..."
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-frontend-service --force-new-deployment --no-cli-pager
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-backend-service --force-new-deployment --no-cli-pager
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-worker-service --force-new-deployment --no-cli-pager
+          echo "All ECS deployment triggers submitted successfully!"

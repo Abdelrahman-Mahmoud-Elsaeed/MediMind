@@ -3,7 +3,18 @@ import { io } from 'socket.io-client';
 let socket = null;
 let currentToken = null;
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8080';
+function getCleanSocketUrl() {
+  let url = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (url && typeof url === 'string') {
+    url = url.trim().replace(/^["']|["']$/g, '');
+    if (!/^[a-zA-Z]:/.test(url) && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('ws://') || url.startsWith('wss://'))) {
+      return url;
+    }
+  }
+  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8080';
+}
+
+const SOCKET_URL = getCleanSocketUrl();
 
 /**
  * Returns or initializes the singleton Socket.IO client instance with JWT authentication.

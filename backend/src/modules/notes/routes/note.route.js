@@ -6,7 +6,7 @@ const { authenticate, authorize } = require('../../../shared/middleware/auth.mid
 const validate = require('../../../shared/middleware/validation.middleware');
 
 // All clinical roles can create and view notes
-const NOTE_ROLES = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'PHARMACIST'];
+const NOTE_ROLES = ['PATIENT', 'FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR', 'PHARMACIST', 'ADMIN'];
 
 router.post('/', authenticate, authorize(...NOTE_ROLES), validate(createNoteSchema), noteController.create);
 router.get('/', authenticate, authorize(...NOTE_ROLES), noteController.list);

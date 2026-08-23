@@ -1,6 +1,23 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+function getCleanApiUrl() {
+  let url = process.env.NEXT_PUBLIC_API_URL;
+  if (url && typeof url === 'string') {
+    url = url.trim().replace(/^["']|["']$/g, '');
+    // If it's a Windows drive letter path (e.g. C:\ or C:/), discard it
+    if (!/^[a-zA-Z]:/.test(url)) {
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+        return url;
+      }
+    }
+  }
+  if (typeof window !== 'undefined') {
+    return '/api/v1';
+  }
+  return 'http://localhost:8080/api/v1';
+}
+
+const API_URL = getCleanApiUrl();
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -12,6 +29,10 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
+    // Sanitize any accidental Windows drive letter in config.url
+    if (config.url && typeof config.url === 'string') {
+      config.url = config.url.replace(/^[a-zA-Z]:[\\/]+/, '/');
+    }
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('accessToken');
       if (token) {
@@ -46,9 +67,9 @@ apiClient.interceptors.response.use(
     
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (
-        originalRequest.url.includes('/auth/login') || 
-        originalRequest.url.includes('/auth/token/refresh') ||
-        originalRequest.url.includes('/auth/register')
+        originalRequest.url?.includes('/auth/login') || 
+        originalRequest.url?.includes('/auth/token/refresh') ||
+        originalRequest.url?.includes('/auth/register')
       ) {
         return Promise.reject(error);
       }

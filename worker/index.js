@@ -1,8 +1,29 @@
 // worker/index.js
+const http = require('http');
 const { Worker } = require('bullmq');
 const { redisConnectionOptions, QUEUE_NAMES } = require('./src/config/queue');
 const { BACKEND_API_URL } = require('./src/config/env');
 const { logger } = require('./src/shared/logger');
+
+const PORT = process.env.PORT || 8080;
+
+// Start Lightweight Health Check Server for AWS ALB / ECS Target Group Probes
+const healthServer = http.createServer((req, res) => {
+  if (req.url === '/health' || req.url === '/worker/health' || req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      success: true, 
+      data: { status: 'UP', service: 'medtrack-worker', timestamp: new Date().toISOString() } 
+    }));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, message: 'Not Found' }));
+  }
+});
+
+healthServer.listen(PORT, () => {
+  logger.info(`Worker Health Probe HTTP Server running on port ${PORT}`);
+});
 
 const startWorkerProcess = () => {
   logger.info('Initializing background worker process loops...');
@@ -49,7 +70,9 @@ const startWorkerProcess = () => {
 
 process.on('SIGTERM', () => {
   logger.warn('SIGTERM received. Gracefully closing active worker connections...');
-  process.exit(0);
+  healthServer.close(() => {
+    process.exit(0);
+  });
 });
 
 startWorkerProcess();

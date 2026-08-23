@@ -21,6 +21,8 @@ class ConditionsService {
         throw new AppError('Insufficient permissions to access this patient profile', 403, 'FORBIDDEN');
       }
       return null;
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      return null;
     } else {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
@@ -35,12 +37,14 @@ class ConditionsService {
         throw new AppError('Patient profile not found', 404, 'PATIENT_NOT_FOUND');
       }
       patientId = patient._id;
-    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER'].includes(userRole)) {
+    } else if (['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'DOCTOR', 'CAREGIVER', 'PHARMACIST', 'ADMIN'].includes(userRole)) {
       if (!payload.patientId) {
-        throw new AppError('patientId is required for caregivers', 400, 'VALIDATION_ERROR');
+        throw new AppError('patientId is required', 400, 'VALIDATION_ERROR');
       }
       patientId = payload.patientId;
-      await this.validateAccess(userAccountId, userRole, patientId, 'canEditMedicalRecords');
+      if (!['PHARMACIST', 'ADMIN'].includes(userRole)) {
+        await this.validateAccess(userAccountId, userRole, patientId, 'canEditMedicalRecords');
+      }
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
@@ -72,11 +76,17 @@ class ConditionsService {
       }
       patientId = targetPatientId;
       await this.validateAccess(userAccountId, userRole, patientId, 'canViewMedicalRecords');
+    } else if (['PHARMACIST', 'ADMIN'].includes(userRole)) {
+      patientId = targetPatientId || null;
     } else {
       throw new AppError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    return await MedicalCondition.find({ patientId });
+    let query = {};
+    if (patientId) {
+      query.patientId = patientId;
+    }
+    return await MedicalCondition.find(query);
   }
 
   async getCondition(userAccountId, userRole, conditionId) {
