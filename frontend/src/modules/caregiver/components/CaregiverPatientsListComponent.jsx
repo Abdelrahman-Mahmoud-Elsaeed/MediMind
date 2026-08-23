@@ -33,17 +33,20 @@ export function CaregiverPatientsListComponent() {
     updateStatusMutation.mutate({ relationshipId, status: newStatus });
   };
 
-  const activePatients = relationships.filter(r => r.status === 'ACTIVE');
+  const activePatients = relationships.filter(r => r.status === 'ACTIVE' || r.status === 'ACCEPTED');
   const pendingRequests = relationships.filter(r => r.status === 'PENDING');
 
   const filteredRelationships = relationships.filter((rel) => {
-    const p = rel.patient || {};
+    const p = rel.patientId || rel.patient || {};
     const u = p.user || {};
-    const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim().toLowerCase();
-    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) || (u.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const firstName = p.firstName || u.firstName || '';
+    const lastName = p.lastName || u.lastName || '';
+    const email = p.email || u.email || p.accountId?.email || '';
+    const fullName = `${firstName} ${lastName}`.trim().toLowerCase();
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) || email.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (!matchesSearch) return false;
-    if (activeTab === 'ACTIVE') return rel.status === 'ACTIVE';
+    if (activeTab === 'ACTIVE') return rel.status === 'ACTIVE' || rel.status === 'ACCEPTED';
     if (activeTab === 'PENDING') return rel.status === 'PENDING';
     return true;
   });
@@ -153,14 +156,17 @@ export function CaregiverPatientsListComponent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRelationships.map((rel) => {
-            const p = rel.patient || {};
+            const p = rel.patientId || rel.patient || {};
             const u = p.user || {};
-            const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || t('caregiver.patientHub.unnamedPatient');
+            const firstName = p.firstName || u.firstName || '';
+            const lastName = p.lastName || u.lastName || '';
+            const email = p.email || u.email || p.accountId?.email || '';
+            const fullName = `${firstName} ${lastName}`.trim() || email || t('caregiver.patientHub.unnamedPatient');
             const isPending = rel.status === 'PENDING';
 
             return (
               <AppCard 
-                key={rel.id} 
+                key={rel.id || rel._id || rel.relationshipId} 
                 className="p-6 bg-surface-container-lowest dark:bg-surface-container-low border-outline-variant/30 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col justify-between group"
               >
                 <div>
@@ -169,14 +175,14 @@ export function CaregiverPatientsListComponent() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-12 h-12 border border-primary/20">
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary-container/40 text-primary font-extrabold text-lg">
-                          {fullName.charAt(0)}
+                          {fullName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="font-bold text-on-surface text-lg group-hover:text-primary transition-colors">
                           {fullName}
                         </h3>
-                        <p className="text-xs text-on-surface-variant">{u.email}</p>
+                        <p className="text-xs text-on-surface-variant">{email || p.phone}</p>
                       </div>
                     </div>
 
@@ -224,10 +230,10 @@ export function CaregiverPatientsListComponent() {
                       </AppButton>
                     </div>
                   ) : (
-                    <Link href={`/patients/${p.id}`} className="block">
-                      <AppButton variant="secondary" className="w-full flex items-center justify-between group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                        <span>{t('caregiver.patientHub.viewDetails')}</span>
-                        {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    <Link href={`/patients/${p.id || p._id || rel.patientId?.id || rel.patientId?._id || rel.patientId}`} className="block w-full">
+                      <AppButton variant="secondary" className="w-full flex items-center justify-between gap-2 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span className="inline-flex items-center gap-2">{t('caregiver.patientHub.viewDetails')}</span>
+                        {isAr ? <ChevronLeft className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
                       </AppButton>
                     </Link>
                   )}

@@ -6,6 +6,7 @@ import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { useRefillOrders, useUpdateRefillStatus } from '../hooks/usePharmacyHooks';
+import { showSuccess } from '@/shared/components/ui/toast';
 
 export default function PharmacyOverviewComponent() {
   const { user } = useAuth();
@@ -259,7 +260,7 @@ export default function PharmacyOverviewComponent() {
               ))}
 
               <button
-                onClick={() => alert(isAr ? 'تم إرسال طلب توريد عاجل للمورد المعتمد' : 'Supplier restock order placed!')}
+                onClick={() => showSuccess(isAr ? 'تم إرسال طلب توريد عاجل للمورد المعتمد' : 'Supplier restock order placed!', isAr ? 'تم الطلب' : 'Restock Placed')}
                 className="w-full py-2.5 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 mt-2"
               >
                 <span className="material-symbols-outlined text-base">local_shipping</span>

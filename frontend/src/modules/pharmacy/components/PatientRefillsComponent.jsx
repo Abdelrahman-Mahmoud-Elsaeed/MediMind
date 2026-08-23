@@ -7,6 +7,7 @@ import { useRefillOrders, useCreateRefillOrder, usePharmacies } from '../hooks/u
 import { useMedications } from '@/modules/medication/hooks/useMedicationHooks';
 import { usePatientProfileQuery } from '@/modules/patient/hooks/usePatientQueries';
 import { getSocket } from '@/shared/lib/socketClient';
+import { showSuccess, showError, showWarning } from '@/shared/components/ui/toast';
 
 export default function PatientRefillsComponent() {
   const { locale } = useTranslation();
@@ -64,7 +65,7 @@ export default function PatientRefillsComponent() {
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     if (!selectedMedId) {
-      alert(isAr ? 'الرجاء اختيار الدواء المراد تعبئته' : 'Please select a medication');
+      showWarning(isAr ? 'الرجاء اختيار الدواء المراد تعبئته' : 'Please select a medication', isAr ? 'تنبيـه' : 'Required Field');
       return;
     }
     const targetPharm = (selectedPharmacyId && selectedPharmacyId.length === 24) ? selectedPharmacyId : undefined;
@@ -90,15 +91,15 @@ export default function PatientRefillsComponent() {
     if (paymentMethod === 'CARD') {
       const cleanCard = cardNumber.replace(/\s+/g, '');
       if (cleanCard.length < 15) {
-        alert(isAr ? 'الرجاء إدخال رقم بطاقة ائتمان صحيح (16 رقم)' : 'Please enter a valid 16-digit card number');
+        showWarning(isAr ? 'الرجاء إدخال رقم بطاقة ائتمان صحيح (16 رقم)' : 'Please enter a valid 16-digit card number', isAr ? 'تنبيـه' : 'Card Error');
         return;
       }
       if (!cardExpiry || cardExpiry.length < 4) {
-        alert(isAr ? 'الرجاء إدخال تاريخ انتهاء البطاقة (MM/YY)' : 'Please enter a valid expiry date (MM/YY)');
+        showWarning(isAr ? 'الرجاء إدخال تاريخ انتهاء البطاقة (MM/YY)' : 'Please enter a valid expiry date (MM/YY)', isAr ? 'تنبيـه' : 'Expiry Date');
         return;
       }
       if (!cardCvc || cardCvc.length < 3) {
-        alert(isAr ? 'الرجاء إدخال رمز الأمان CVC (3 أرقام)' : 'Please enter a valid CVC (3 digits)');
+        showWarning(isAr ? 'الرجاء إدخال رمز الأمان CVC (3 أرقام)' : 'Please enter a valid CVC (3 digits)', isAr ? 'تنبيـه' : 'CVC Required');
         return;
       }
     }
@@ -126,16 +127,15 @@ export default function PatientRefillsComponent() {
           setCardHolder('');
           setCardExpiry('');
           setCardCvc('');
-          setLiveToast({
-            title: isAr ? 'تم الدفع وتأكيد الطلب بنجاح' : 'Payment Confirmed & Order Sent',
-            message: isAr
+          showSuccess(
+            isAr
               ? `تم تأكيد سداد ${estimatedAmount} ج.م عبر Stripe وإرسال طلبك للصيدلية المعتمدة.`
               : `Payment of ${estimatedAmount} EGP confirmed via Stripe. Order sent to pharmacy.`,
-          });
-          setTimeout(() => setLiveToast(null), 5000);
+            isAr ? 'تم تأكيد الطلب' : 'Payment Confirmed'
+          );
         },
         onError: (err) => {
-          alert(err?.response?.data?.message || (isAr ? 'حدث خطأ أثناء إرسال طلب التعبئة' : 'Failed to submit refill order'));
+          showError(err?.response?.data?.message || (isAr ? 'حدث خطأ أثناء إرسال طلب التعبئة' : 'Failed to submit refill order'), isAr ? 'خطـأ' : 'Order Error');
         },
       }
     );

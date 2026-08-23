@@ -19,8 +19,17 @@ export function CaregiverPatientDetailComponent() {
   const { data: relationships = [], isLoading: isRelLoading } = useCaregiverRelationshipsQuery();
   const { data: medications = [], isLoading: isMedsLoading } = usePatientMedicationsQuery(patientId);
 
-  const relationship = relationships.find(r => r.patientId === patientId || r.patient?.id === patientId);
-  const patient = relationship?.patient || { id: patientId };
+  const relationship = relationships.find(r => 
+    String(r.id) === String(patientId) ||
+    String(r._id) === String(patientId) ||
+    String(r.relationshipId) === String(patientId) ||
+    String(r.patientId?.id) === String(patientId) ||
+    String(r.patientId?._id) === String(patientId) ||
+    String(r.patientId) === String(patientId) ||
+    String(r.patient?.id) === String(patientId) ||
+    String(r.patient?._id) === String(patientId)
+  );
+  const patient = relationship?.patientId || relationship?.patient || { id: patientId };
 
   const isLoading = isRelLoading || isMedsLoading;
 
@@ -66,21 +75,28 @@ export function CaregiverPatientDetailComponent() {
               </p>
             ) : (
               <div className="space-y-4">
-                {medications.map((med) => (
-                  <div key={med.id} className="p-4 bg-surface-container-low rounded-2xl flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-on-surface text-base">{med.name}</h3>
-                      <p className="text-xs text-on-surface-variant">
-                        {med.dosage} • {med.instructions || t('caregiver.patientHub.noInstructions')}
-                      </p>
-                    </div>
+                {medications.map((med, index) => {
+                  const dosageText = typeof med.dosage === 'object' ? `${med.dosage?.amount || ''} ${med.dosage?.unit || ''}`.trim() : (med.dosage || '');
+                  const instructionsText = typeof med.instructions === 'object'
+                    ? ([med.instructions?.relationToMeals?.replace(/_/g, ' '), med.instructions?.notes, med.instructions?.specialInstructions].filter(Boolean).join(' - ') || t('caregiver.patientHub.noInstructions'))
+                    : (med.instructions || t('caregiver.patientHub.noInstructions'));
 
-                    <AppBadge variant="outline" className="text-xs">
-                      <Calendar className="w-3 h-3 me-1 inline" />
-                      {med.frequency || 'Daily'}
-                    </AppBadge>
-                  </div>
-                ))}
+                  return (
+                    <div key={med.id || med._id || `med-${index}`} className="p-4 bg-surface-container-low rounded-2xl flex items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <h3 className="font-bold text-on-surface text-base">{med.name}</h3>
+                        <p className="text-xs text-on-surface-variant">
+                          {dosageText ? `${dosageText} • ` : ''}{instructionsText}
+                        </p>
+                      </div>
+
+                      <AppBadge variant="outline" className="text-xs">
+                        <Calendar className="w-3 h-3 me-1 inline" />
+                        {typeof med.frequency === 'object' ? (med.frequency.type || 'Daily') : (med.frequency || 'Daily')}
+                      </AppBadge>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </AppCard>

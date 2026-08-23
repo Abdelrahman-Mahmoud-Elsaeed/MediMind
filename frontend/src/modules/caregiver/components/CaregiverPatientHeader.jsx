@@ -11,9 +11,15 @@ export function CaregiverPatientHeader({ patient, relationship }) {
   const isAr = locale === 'ar';
   const BackIcon = isAr ? ArrowRight : ArrowLeft;
 
-  const user = patient?.user || {};
-  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || t('caregiver.patientHub.unnamedPatient');
+  const p = patient || relationship?.patientId || relationship?.patient || {};
+  const user = p.user || {};
+  const firstName = p.firstName || user.firstName || '';
+  const lastName = p.lastName || user.lastName || '';
+  const email = p.email || user.email || p.accountId?.email || '';
+  const phone = p.phone || user.phone || '';
+  const fullName = `${firstName} ${lastName}`.trim() || email || t('caregiver.patientHub.unnamedPatient');
   const initials = (fullName[0] || 'P').toUpperCase();
+  const isStatusActive = relationship?.status === 'ACTIVE' || relationship?.status === 'ACCEPTED';
 
   return (
     <div className="space-y-6">
@@ -41,14 +47,14 @@ export function CaregiverPatientHeader({ patient, relationship }) {
                 <h1 className="text-2xl font-extrabold text-on-surface">
                   {fullName}
                 </h1>
-                <AppBadge variant={relationship?.status === 'ACTIVE' ? 'primaryContainer' : 'secondary'}>
-                  {relationship?.status === 'ACTIVE' 
+                <AppBadge variant={isStatusActive ? 'primaryContainer' : 'secondary'}>
+                  {isStatusActive 
                     ? t('caregiver.patientHub.activeConnection') 
                     : t('common.actions.pending')}
                 </AppBadge>
               </div>
               <p className="text-xs text-on-surface-variant font-medium">
-                {user.email || t('caregiver.patientHub.noEmail')}
+                {email || phone || t('caregiver.patientHub.noEmail')}
               </p>
             </div>
           </div>

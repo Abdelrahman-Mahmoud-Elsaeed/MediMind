@@ -314,9 +314,9 @@ export default function PatientProfileComponent() {
                   <h1 className="text-3xl font-extrabold text-[#0b1c30] dark:text-slate-100 tracking-tight">
                     {displayName}
                   </h1>
-                  <Badge variant="success" className="bg-teal-600 text-white px-3 py-1 font-bold text-xs rounded-full">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {isAr ? "عضو متميز" : "Premium Member"}
+                  <Badge variant="success" className="bg-teal-600 text-white px-3 py-1 font-bold text-xs rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                    <span>{isAr ? "حساب نشط" : "Active Account"}</span>
                   </Badge>
                 </div>
 

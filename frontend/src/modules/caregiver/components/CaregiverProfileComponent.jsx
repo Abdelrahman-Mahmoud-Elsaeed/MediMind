@@ -110,6 +110,11 @@ export function CaregiverProfileComponent() {
                   ? t('caregiver.profile.professionalTitle') 
                   : t('caregiver.profile.familyTitle')}
               </AppBadge>
+
+              <AppBadge variant="outline" className="inline-flex items-center gap-1.5 border-teal-500/30 text-teal-600 dark:text-teal-400 font-bold text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{t('caregiver.careCircle.statusActive', 'Active Account')}</span>
+              </AppBadge>
             </div>
             
             <p className="text-sm text-on-surface-variant max-w-lg">
