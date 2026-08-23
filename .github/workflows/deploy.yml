@@ -97,14 +97,15 @@ jobs:
       # 6. Standalone Automated Database Seeding via ECS Run-Task
       - name: Seed Database on AWS ECS
         run: |
-          echo "Extracting network configuration from backend service..."
+          echo "Extracting network configuration & active task definition from backend service..."
+          TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].taskDefinition" --output text)
           SUBNETS=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.subnets" --output json | jq -c '.')
           SGS=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.securityGroups" --output json | jq -c '.')
 
-          echo "Running standalone database seed task on ECS Fargate..."
+          echo "Running standalone database seed task ($TASK_DEF_ARN) on ECS Fargate..."
           aws ecs run-task \
             --cluster ${{ env.ECS_CLUSTER }} \
-            --task-definition medtrack-development-backend \
+            --task-definition $TASK_DEF_ARN \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=$SUBNETS,securityGroups=$SGS,assignPublicIp=DISABLED}" \
             --overrides '{"containerOverrides":[{"name":"backend","command":["node","src/seed.js"]}]}' \
