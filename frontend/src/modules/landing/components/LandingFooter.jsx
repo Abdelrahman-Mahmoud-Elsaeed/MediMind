@@ -18,7 +18,7 @@ export function LandingFooter({ isUserLoggedIn }) {
 
       {/* Main footer content */}
       <div className="relative z-10 pt-16 pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 px-6 sm:px-12 md:px-16 max-w-[1440px] mx-auto mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 px-6 sm:px-12 md:px-16 max-w-[1440px] mx-auto mb-14">
           <div className="space-y-5 lg:col-span-1">
             <div className="text-xl font-black flex items-center gap-2.5">
               <div className="p-1.5 rounded-xl bg-gradient-to-br from-teal-500/20 to-blue-500/20 border border-teal-500/15">
@@ -72,6 +72,35 @@ export function LandingFooter({ isUserLoggedIn }) {
                 <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-teal-500 transition-all" />
                 {t('landing.footer.safety')}
               </a>
+            </nav>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-bold text-white uppercase tracking-widest text-xs pb-2 border-b border-slate-800/80">
+              {isRtl ? 'بوابات المهنيين' : 'Professional Portals'}
+            </h4>
+            <nav className="flex flex-col gap-2.5 text-sm">
+              <Link
+                href="/register/pharmacy"
+                className="text-slate-400 hover:text-teal-400 transition-colors flex items-center gap-2 group"
+              >
+                <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-teal-500 transition-all" />
+                {isRtl ? 'تسجيل الصيدليات' : 'Pharmacy Registration'}
+              </Link>
+              <Link
+                href="/register/doctor"
+                className="text-slate-400 hover:text-teal-400 transition-colors flex items-center gap-2 group"
+              >
+                <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-teal-500 transition-all" />
+                {isRtl ? 'تسجيل الأطباء' : 'Doctor Registration'}
+              </Link>
+              <Link
+                href="/register/caregiver"
+                className="text-slate-400 hover:text-teal-400 transition-colors flex items-center gap-2 group"
+              >
+                <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-teal-500 transition-all" />
+                {isRtl ? 'تسجيل مقدمي الرعاية' : 'Caregiver Registration'}
+              </Link>
             </nav>
           </div>
 
