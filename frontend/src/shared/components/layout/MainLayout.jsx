@@ -7,11 +7,9 @@ import { useTranslation } from '@/shared/lib/i18nContext';
 
 export const MainLayout = ({ children, activePath = '/home' }) => {
     const { dir } = useTranslation();
-    const [mounted, setMounted] = useState(false);
     const [isSidebarSlim, setIsSidebarSlimState] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         try {
             const saved = localStorage.getItem('medimind_sidebar_slim');
             if (saved !== null) {
@@ -39,11 +37,7 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
     return (
       <div className="min-h-screen w-full bg-background text-on-surface flex font-sans antialiased" dir={containerDir} suppressHydrationWarning>
         {/* Desktop Application Sidebar */}
-        {mounted ? (
-          <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
-        ) : (
-          <aside className="hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 w-[280px] p-6" />
-        )}
+        <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
 
         {/* Main Container Area */}
         <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0" suppressHydrationWarning>
@@ -57,7 +51,7 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
         </div>
 
         {/* Bottom Mobile Navigation Bar */}
-        {mounted && <MobileNav />}
+        <MobileNav />
       </div>
     );
 };
