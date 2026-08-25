@@ -60,7 +60,12 @@ const env = {
   RATE_LIMIT_MEDIA_MAX: parseInt(process.env.RATE_LIMIT_MEDIA_MAX, 10) || 20,
   RATE_LIMIT_MEDIA_WINDOW_MS: parseInt(process.env.RATE_LIMIT_MEDIA_WINDOW_MS, 10) || 3600000,
 
-  // GOOGLE GEMINI AI OCR SERVICE
+  // AI OCR SERVICES (QWEN / GEMINI)
+  OCR_PROVIDER: process.env.OCR_PROVIDER || 'auto',
+  QWEN_API_KEY: process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY,
+  QWEN_API_BASE_URL: process.env.QWEN_API_BASE_URL || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+  QWEN_MODEL: process.env.QWEN_MODEL || 'qwen-vl-max',
+
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 };
