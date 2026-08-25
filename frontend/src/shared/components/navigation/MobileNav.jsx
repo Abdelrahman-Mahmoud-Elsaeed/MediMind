@@ -9,9 +9,14 @@ export const MobileNav = () => {
   const pathname = usePathname();
   const { t, locale } = useTranslation();
   const { user } = useAuth();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isAr = locale === 'ar';
-  const userRole = user?.role;
+  const userRole = mounted ? user?.role : undefined;
 
   const isPharmacist = userRole === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
