@@ -4,17 +4,17 @@
 
 ## 👤 Mostafa Nagdy
 
-- [ ] **Medication Alarms & Logs**: Add alarm triggers when medication is due, configure max snooze functionality, and record missed medication doses when the day passes.
-- [ ] **PWA Configuration**: Set up Progressive Web App (PWA) configuration for offline capability and mobile experience.
-- [ ] **Multi-Step Self-Registration**: Build multi-step self-registration flows for:
-  - Pharmacy
-  - Doctor
-  - Professional Caregiver
+- [x] **Medication Alarms & Logs**: Add alarm triggers when medication is due, configure max snooze functionality, and record missed medication doses when the day passes.
+- [x] **PWA Configuration**: Set up Progressive Web App (PWA) configuration for offline capability and mobile experience.
+- [x] **Multi-Step Self-Registration**: Build separate multi-step self-registration flows (separated from `http://localhost:3000/register`) for:
+  - Pharmacy (`/register/pharmacy`)
+  - Doctor (`/register/doctor`)
+  - Professional Caregiver (`/register/caregiver`)
   *(Reusing existing backend endpoints and frontend components)*
 - [ ] **Admin Dashboard MVP**: Implement Admin Dashboard MVP featuring:
   - Approval workflow for Doctors, Pharmacies, and Professional Caregivers
   - Add single-entry creation capabilities
-- [ ] **Worker Backend & Queueing Configuration**: Configure worker backend (`worker/`), BullMQ message queues (`MedicationScheduler`, `NotificationEscalation`), Redis integration, and recurring cron jobs (daily dose generation, missed dose tracking, max snooze evaluation). Write comprehensive implementation documentation (`worker-configuration-plan.md`) explaining architecture and execution plan based on current code.
+- [x] **Worker Backend & Queueing Configuration**: Configure worker backend (`worker/`), BullMQ message queues (`MedicationScheduler`, `NotificationEscalation`), Redis integration, and recurring cron jobs (daily dose generation, missed dose tracking, max snooze evaluation). Write comprehensive implementation documentation (`worker-configuration-plan.md`) explaining architecture and execution plan based on current code.
 
 ---
 

@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../modules/auth/hooks/useAuth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import MedicationAlarmManager from '../modules/dose/components/MedicationAlarmManager';
 
 function AuthInitializer({ children }) {
   const pathname = usePathname();
@@ -56,7 +57,12 @@ function AuthInitializer({ children }) {
     }
   }, [isAuthenticated, user, isAuthLoading, pathname, router]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {isAuthenticated && <MedicationAlarmManager />}
+    </>
+  );
 }
 
 export function Providers({ children, locale }) {

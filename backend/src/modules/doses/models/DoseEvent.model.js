@@ -37,6 +37,10 @@ const DoseEventSchema = new mongoose.Schema({
     type: String,
     enum: ['NONE', 'PUSH_SENT', 'SMS_SENT', 'CAREGIVER_NOTIFIED'],
     default: 'NONE'
+  },
+  snoozeCount: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

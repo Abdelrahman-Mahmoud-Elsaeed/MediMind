@@ -177,6 +177,36 @@ export function validateStep3(formData, t, countryCode = "EG") {
       errors.licenseNumber = t("auth.validation.licenseNumberRequired") || "Professional license number is required";
       valid = false;
     }
+  } else if (formData.role === "doctor") {
+    const clinicName = formData.clinicName ? formData.clinicName.trim() : "";
+    if (!clinicName) {
+      errors.clinicName = t("auth.validation.clinicNameRequired") || "Clinic name is required";
+      valid = false;
+    }
+
+    const specialty = formData.specialty ? formData.specialty.trim() : "";
+    if (!specialty) {
+      errors.specialty = t("auth.validation.specialtyRequired") || "Specialty is required";
+      valid = false;
+    }
+
+    const licenseNumber = formData.licenseNumber ? formData.licenseNumber.trim() : "";
+    if (!licenseNumber) {
+      errors.licenseNumber = t("auth.validation.licenseNumberRequired") || "Professional license number is required";
+      valid = false;
+    }
+  } else if (formData.role === "professional_caregiver") {
+    const organizationName = formData.organizationName ? formData.organizationName.trim() : "";
+    if (!organizationName) {
+      errors.organizationName = t("auth.validation.organizationNameRequired") || "Organization name is required";
+      valid = false;
+    }
+
+    const licenseNumber = formData.licenseNumber ? formData.licenseNumber.trim() : "";
+    if (!licenseNumber) {
+      errors.licenseNumber = t("auth.validation.licenseNumberRequired") || "Professional license number is required";
+      valid = false;
+    }
   }
 
   return { valid, errors };

@@ -11,6 +11,7 @@ const { routes: notesRoutes } = require('./modules/notes');
 const { routes: paymentsRoutes } = require('./modules/payments');
 const { routes: contentRoutes } = require('./modules/content');
 const { routes: notificationsRoutes } = require('./modules/notifications');
+const { routes: internalRoutes } = require('./modules/internal');
 
 const router = express.Router();
 
@@ -32,5 +33,6 @@ router.use('/notes', notesRoutes);
 router.use('/payments', paymentsRoutes);
 router.use('/content', contentRoutes);
 router.use('/notifications', notificationsRoutes);
+router.use('/internal', internalRoutes);
 
 module.exports = router;

@@ -39,6 +39,10 @@ export function formatRegistrationPayload(formData, registrationData, isPhoneInp
       ? "FAMILY_CAREGIVER"
       : formData.role === "pharmacist"
       ? "PHARMACIST"
+      : formData.role === "doctor"
+      ? "DOCTOR"
+      : formData.role === "professional_caregiver"
+      ? "PROFESSIONAL_CAREGIVER"
       : "PATIENT";
 
   const credentials = {
@@ -94,6 +98,31 @@ export function formatRegistrationPayload(formData, registrationData, isPhoneInp
       pharmacyName: formData.pharmacyName ? formData.pharmacyName.trim() : "",
       licenseNumber: formData.licenseNumber ? formData.licenseNumber.trim() : "",
       pharmacyPhone: formData.pharmacyPhone ? formData.pharmacyPhone.trim() : undefined,
+      whatsappOptIn: Boolean(formData.whatsappOptIn),
+      preferredLanguage: locale || "ar",
+    };
+  }
+
+  if (role === "DOCTOR") {
+    return {
+      ...basePayload,
+      firstName: formData.firstName ? formData.firstName.trim() : "",
+      lastName: formData.lastName ? formData.lastName.trim() : "",
+      clinicName: formData.clinicName ? formData.clinicName.trim() : "",
+      specialty: formData.specialty ? formData.specialty.trim() : "",
+      licenseNumber: formData.licenseNumber ? formData.licenseNumber.trim() : "",
+      whatsappOptIn: Boolean(formData.whatsappOptIn),
+      preferredLanguage: locale || "ar",
+    };
+  }
+
+  if (role === "PROFESSIONAL_CAREGIVER") {
+    return {
+      ...basePayload,
+      firstName: formData.firstName ? formData.firstName.trim() : "",
+      lastName: formData.lastName ? formData.lastName.trim() : "",
+      organizationName: formData.organizationName ? formData.organizationName.trim() : "",
+      licenseNumber: formData.licenseNumber ? formData.licenseNumber.trim() : "",
       whatsappOptIn: Boolean(formData.whatsappOptIn),
       preferredLanguage: locale || "ar",
     };

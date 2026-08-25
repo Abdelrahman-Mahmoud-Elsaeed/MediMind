@@ -15,7 +15,7 @@ import { usePasswordVisibility } from "./hooks/usePasswordVisibility";
 import { getCountryCallingCode, flags } from "./constants/countries";
 import { useAuth } from "../hooks/useAuth";
 
-export default function RegistrationContainer() {
+export default function RegistrationContainer({ initialRole = 'patient' }) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -40,7 +40,9 @@ export default function RegistrationContainer() {
     handleBack,
     dir,
     countrySelectorProps,
-  } = useRegistration();
+  } = useRegistration(initialRole);
+
+  const isRoleFixed = initialRole !== 'patient';
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -94,6 +96,7 @@ export default function RegistrationContainer() {
                 getCountryCallingCode,
                 flags,
               }}
+              isRoleFixed={isRoleFixed}
             />
 
             <StepNavigation

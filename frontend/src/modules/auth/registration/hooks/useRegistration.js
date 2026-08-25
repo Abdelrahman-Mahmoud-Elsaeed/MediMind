@@ -8,7 +8,7 @@ import { parseApiMessage } from "@/shared/lib/parseApiMessage";
 import { authService } from "@/modules/auth/services/authService";
 import { useCountrySelector } from "./useCountrySelector";
 
-export function useRegistration() {
+export function useRegistration(initialRole = 'patient') {
   const router = useRouter();
   const { error, loading, registrationData, setRegistrationData, resetError, clearRegistrationData, register } = useAuth();
   const { locale, isRtl, dir, t } = useRTL();
@@ -18,7 +18,7 @@ export function useRegistration() {
     // Step 1
     loginInput: "",
     password: "",
-    role: "patient",
+    role: initialRole,
 
     // Step 2 & 3
     firstName: "",
@@ -47,6 +47,13 @@ export function useRegistration() {
       weeklyReport: true,
       monthlyReport: false,
     },
+    
+    // Doctor specific
+    clinicName: "",
+    specialty: "",
+    
+    // Professional Caregiver specific
+    organizationName: "",
   });
 
   // touchedFields: tracks fields the user has explicitly interacted with OR that were autofilled
