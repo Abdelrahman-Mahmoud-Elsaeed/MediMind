@@ -2,16 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useSelector } from 'react-redux';
 import { useTranslation } from '@/shared/lib/i18nContext';
-
-const LandingHeader = dynamic(() => import('./LandingHeader'), {
-  ssr: false,
-  loading: () => (
-    <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm h-20" />
-  ),
-});
+import LandingHeader from './LandingHeader';
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -50,7 +43,11 @@ export default function LandingPage() {
   return (
     <div className="bg-[#f8f9ff] text-[#0b1c30] dark:bg-[#080d1a] dark:text-slate-100 min-h-screen font-sans transition-colors duration-300" suppressHydrationWarning>
       {/* Navigation Header */}
-      <LandingHeader />
+      {mounted ? (
+        <LandingHeader />
+      ) : (
+        <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm h-20" />
+      )}
 
       <main className="pt-20">
         {/* Hero Section */}

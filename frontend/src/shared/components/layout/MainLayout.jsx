@@ -1,19 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import { Sidebar } from '@/shared/components/sidebar/Sidebar';
 import { Header } from '@/shared/components/header/Header';
+import { MobileNav } from '@/shared/components/navigation/MobileNav';
 import { useTranslation } from '@/shared/lib/i18nContext';
-
-const Sidebar = dynamic(() => import('@/shared/components/sidebar/Sidebar').then((mod) => mod.Sidebar), {
-  ssr: false,
-  loading: () => (
-    <aside className="hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 w-[280px] p-6" />
-  ),
-});
-
-const MobileNav = dynamic(() => import('@/shared/components/navigation/MobileNav').then((mod) => mod.MobileNav), {
-  ssr: false,
-});
 
 export const MainLayout = ({ children, activePath = '/home' }) => {
     const { dir } = useTranslation();
@@ -49,7 +39,11 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
     return (
       <div className="min-h-screen w-full bg-background text-on-surface flex font-sans antialiased" dir={containerDir} suppressHydrationWarning>
         {/* Desktop Application Sidebar */}
-        <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
+        {mounted ? (
+          <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
+        ) : (
+          <aside className="hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 w-[280px] p-6" />
+        )}
 
         {/* Main Container Area */}
         <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0" suppressHydrationWarning>
@@ -63,7 +57,7 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
         </div>
 
         {/* Bottom Mobile Navigation Bar */}
-        <MobileNav />
+        {mounted && <MobileNav />}
       </div>
     );
 };
