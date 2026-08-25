@@ -291,5 +291,58 @@ class AdminService {
       },
     });
   }
+
+  async getPendingApprovals(adminAccountId) {
+    await this._requireAdmin(adminAccountId);
+    const unverifiedDoctors = await Doctor.find({ isVerified: false }).populate("accountId", "email phone isActive createdAt");
+    const unverifiedPharmacists = await Pharmacist.find({
+      $or: [{ isVerified: false }, { "subscription.status": { $ne: "active" } }]
+    }).populate("accountId", "email phone isActive createdAt");
+    const unverifiedCaregivers = await ProfessionalCaregiver.find({ isVerified: false }).populate("accountId", "email phone isActive createdAt");
+
+    return new ServiceResponse({
+      status: "SUCCESS",
+      en: "Pending approvals retrieved.",
+      ar: "تم جلب طلبات الاعتماد المعلقة.",
+      data: {
+        doctors: unverifiedDoctors,
+        pharmacists: unverifiedPharmacists,
+        caregivers: unverifiedCaregivers,
+      },
+    });
+  }
+
+  async verifyCaregiver(adminAccountId, caregiverProfileId) {
+    const adminProfile = await this._requireAdmin(adminAccountId, "users.verify");
+    const caregiver = await ProfessionalCaregiver.findById(caregiverProfileId);
+    if (!caregiver) {
+      throw new AppError("Professional caregiver not found", 404, "NOT_FOUND");
+    }
+    caregiver.isVerified = true;
+    await caregiver.save();
+    await Account.findByIdAndUpdate(caregiver.accountId, { isActive: true });
+    return new ServiceResponse({
+      status: "SUCCESS",
+      en: "Professional caregiver verified.",
+      ar: "تم التحقق من مقدم الرعاية المحترف.",
+      data: {
+        profileId: caregiver._id,
+        isVerified: true,
+        verifiedBy: adminProfile._id,
+      },
+    });
+  }
+
+  async getAllAccounts(adminAccountId) {
+    await this._requireAdmin(adminAccountId);
+    const accounts = await Account.find().select("-passwordHash").sort({ createdAt: -1 }).limit(100);
+    return new ServiceResponse({
+      status: "SUCCESS",
+      en: "Accounts retrieved.",
+      ar: "تم جلب الحسابات.",
+      data: accounts,
+    });
+  }
 }
 module.exports = new AdminService();
+

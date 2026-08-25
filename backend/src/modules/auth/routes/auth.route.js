@@ -115,12 +115,15 @@ router.post(
   validate(adminRegisterProviderSchema),
   adminController.registerProvider,
 );
+router.get("/admin/pending-approvals", adminController.getPendingApprovals);
+router.get("/admin/accounts", adminController.getAllAccounts);
 router.patch("/admin/verify/doctor/:id", adminController.verifyDoctor);
 router.patch("/admin/verify/pharmacist/:id", adminController.verifyPharmacist);
+router.patch("/admin/verify/caregiver/:id", adminController.verifyCaregiver);
 router.patch(
   "/admin/accounts/:id/status",
   validate(updateAccountStatusSchema),
   adminController.updateAccountStatus,
 );
 
-module.exports = router;
+module.exports = router;

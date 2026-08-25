@@ -77,10 +77,46 @@ class AdminController {
       );
       return result.send(res);
     } catch (error) {
-      logger.error(error, 'Error in admin.updateAccountStatus');
+  /**
+   * GET /api/v1/auth/admin/pending-approvals
+   */
+  async getPendingApprovals(req, res, next) {
+    try {
+      const result = await adminService.getPendingApprovals(req.accountId);
+      return result.send(res);
+    } catch (error) {
+      logger.error(error, 'Error in admin.getPendingApprovals');
+      next(error);
+    }
+  }
+
+  /**
+   * PATCH /api/v1/auth/admin/verify/caregiver/:id
+   */
+  async verifyCaregiver(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await adminService.verifyCaregiver(req.accountId, id);
+      return result.send(res);
+    } catch (error) {
+      logger.error(error, 'Error in admin.verifyCaregiver');
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/v1/auth/admin/accounts
+   */
+  async getAllAccounts(req, res, next) {
+    try {
+      const result = await adminService.getAllAccounts(req.accountId);
+      return result.send(res);
+    } catch (error) {
+      logger.error(error, 'Error in admin.getAllAccounts');
       next(error);
     }
   }
 }
 
 module.exports = new AdminController();
+
