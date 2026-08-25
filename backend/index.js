@@ -5,10 +5,13 @@ const { socketService } = require('./src/modules/socket');
 const { logger } = require('./src/shared/utils/logger');
 const { PORT } = require('./src/config/env');
 
+const { registerCronJobs } = require('./src/shared/queues/cronScheduler');
+
 const port = PORT || 8080;
 
 const startServer = async () => {
   await connectDB();
+  await registerCronJobs();
 
   const server = http.createServer(app);
 

@@ -24,6 +24,8 @@ export const metadata = {
     shortcut: '/images/logo.png',
     apple: '/images/logo.png',
   },
+  manifest: '/manifest.json',
+  themeColor: '#0ea5e9',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
 };
 

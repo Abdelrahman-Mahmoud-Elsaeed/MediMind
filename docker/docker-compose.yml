@@ -27,6 +27,7 @@ services:
   #     - MONGO_URI=${MONGO_URI}
   #     - REDIS_URL=redis://redis:6379
   #     - WORKER_URL=http://worker:3001
+  #     - WORKER_INTERNAL_SECRET=${WORKER_INTERNAL_SECRET}
   #     - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
   #     - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
   #     - COOKIE_SECRET=${COOKIE_SECRET}
@@ -48,9 +49,12 @@ services:
   #     - PORT=${WORKER_PORT:-3001}
   #     - MONGO_URI=${MONGO_URI}
   #     - REDIS_URL=redis://redis:6379
+  #     - WORKER_INTERNAL_SECRET=${WORKER_INTERNAL_SECRET}
+  #     - BACKEND_API_URL=http://api:8080/api/v1
   #   depends_on:
   #     - mongodb
   #     - redis
+
 
   mongodb:
     image: mongo:7.0

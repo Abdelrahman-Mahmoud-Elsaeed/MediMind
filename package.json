@@ -7,12 +7,13 @@
     "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install && npm --prefix worker install",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:db": "docker compose -f docker/docker-compose.yml up -d mongodb redis",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:worker": "npm --prefix worker run dev",
     "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:worker\"",
     "dev:no-docker": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
-    "setup": "npm run install:all && npm run docker:up",
+    "setup": "npm run install:all && npm run docker:db",
     "start": "npm run setup && npm run dev"
   },
   "devDependencies": {

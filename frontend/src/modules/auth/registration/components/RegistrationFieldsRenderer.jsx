@@ -5,7 +5,7 @@ import { PhoneInput } from "./PhoneInput";
 import { PasswordInput } from "./PasswordInput";
 import { RoleCard } from "./RoleCard";
 import { FormField } from "./FormField";
-export function RegistrationFieldsRenderer({ currentStep, formData, handleChange, handleBlur, handleRoleSelect, errors, touchedFields, showPassword, onTogglePassword, isPhoneInput, countrySelectorProps, }) {
+export function RegistrationFieldsRenderer({ currentStep, formData, handleChange, handleBlur, handleRoleSelect, errors, touchedFields, showPassword, onTogglePassword, isPhoneInput, countrySelectorProps, isRoleFixed }) {
     const { isRtl, t } = useRTL();
     return (<>
       {/* ================= STEP 1 ================= */}
@@ -14,15 +14,17 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
 
           <PasswordInput id="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} error={errors.password} touched={touchedFields.password} showPassword={showPassword} onTogglePassword={onTogglePassword} showAsterisk={true}/>
 
-          <div className="pt-2">
-            <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-3">
-              {t("auth.register.roleTitle")}
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-              <RoleCard roleKey="patient" icon="person" title={t("auth.register.patientRole")} isSelected={formData.role === "patient"} onClick={() => handleRoleSelect("patient")}/>
-              <RoleCard roleKey="caregiver" icon="favorite" title={t("auth.register.caregiverRole")} isSelected={formData.role === "caregiver"} onClick={() => handleRoleSelect("caregiver")}/>
+          {!isRoleFixed && (
+            <div className="pt-2">
+              <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface mb-3">
+                {t("auth.register.roleTitle")}
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <RoleCard roleKey="patient" icon="person" title={t("auth.register.patientRole")} isSelected={formData.role === "patient"} onClick={() => handleRoleSelect("patient")}/>
+                <RoleCard roleKey="caregiver" icon="favorite" title={t("auth.register.caregiverRole")} isSelected={formData.role === "caregiver"} onClick={() => handleRoleSelect("caregiver")}/>
+              </div>
             </div>
-          </div>
+          )}
         </>)}
 
       {/* ================= STEP 2 ================= */}
@@ -34,7 +36,7 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
 
           {isPhoneInput ? (<FormField id="email" type="email" label={t("auth.register.emailLabelOptional")} value={formData.email} onChange={handleChange} onBlur={handleBlur} error={errors.email} touched={touchedFields.email} placeholder={t("auth.register.emailPlaceholder")} icon="mail" dir="ltr"/>) : (<PhoneInput id="phone" value={formData.phone} onChange={handleChange} onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)} error={errors.phone} touched={touchedFields.phone} isPhoneInput={true} countrySelectorProps={countrySelectorProps} label={t("auth.register.phoneLabel")} placeholder={t("auth.register.phonePlaceholder")} required={false}/>)}
 
-          {formData.role === "caregiver" || formData.role === "pharmacist" ? null : (<>
+          {formData.role === "caregiver" || formData.role === "pharmacist" || formData.role === "doctor" || formData.role === "professional_caregiver" ? null : (<>
               <FormField id="dateOfBirth" type="date" label={t("auth.register.dobLabel")} value={formData.dateOfBirth} onChange={handleChange} onBlur={handleBlur} error={errors.dateOfBirth} touched={touchedFields.dateOfBirth} icon="calendar_today" required showAsterisk={true}/>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -72,6 +74,16 @@ export function RegistrationFieldsRenderer({ currentStep, formData, handleChange
               <FormField id="licenseNumber" label={t("auth.register.licenseNumberLabel")} value={formData.licenseNumber} onChange={handleChange} onBlur={handleBlur} error={errors.licenseNumber} touched={touchedFields.licenseNumber} placeholder={t("auth.register.licenseNumberPlaceholder")} icon="badge" required showAsterisk={true}/>
 
               <PhoneInput id="pharmacyPhone" value={formData.pharmacyPhone} onChange={handleChange} onBlur={(e) => handleBlur(e, countrySelectorProps?.callingCode)} error={errors.pharmacyPhone} touched={touchedFields.pharmacyPhone} isPhoneInput={true} countrySelectorProps={countrySelectorProps} label={t("auth.register.pharmacyPhoneLabel")} required={false}/>
+            </div>) : formData.role === "doctor" ? (<div className="space-y-4">
+              <FormField id="clinicName" label={t("auth.register.clinicNameLabel") || "Clinic / Hospital Name"} value={formData.clinicName} onChange={handleChange} onBlur={handleBlur} error={errors.clinicName} touched={touchedFields.clinicName} placeholder={t("auth.register.clinicNamePlaceholder") || "Enter clinic name"} icon="local_hospital" required showAsterisk={true}/>
+
+              <FormField id="specialty" label={t("auth.register.specialtyLabel") || "Specialty"} value={formData.specialty} onChange={handleChange} onBlur={handleBlur} error={errors.specialty} touched={touchedFields.specialty} placeholder={t("auth.register.specialtyPlaceholder") || "e.g. Cardiology"} icon="medical_services" required showAsterisk={true}/>
+
+              <FormField id="licenseNumber" label={t("auth.register.licenseNumberLabel")} value={formData.licenseNumber} onChange={handleChange} onBlur={handleBlur} error={errors.licenseNumber} touched={touchedFields.licenseNumber} placeholder={t("auth.register.licenseNumberPlaceholder")} icon="badge" required showAsterisk={true}/>
+            </div>) : formData.role === "professional_caregiver" ? (<div className="space-y-4">
+              <FormField id="organizationName" label={t("auth.register.organizationNameLabel") || "Organization Name"} value={formData.organizationName} onChange={handleChange} onBlur={handleBlur} error={errors.organizationName} touched={touchedFields.organizationName} placeholder={t("auth.register.organizationNamePlaceholder") || "Enter organization name"} icon="business" required showAsterisk={true}/>
+
+              <FormField id="licenseNumber" label={t("auth.register.licenseNumberLabel")} value={formData.licenseNumber} onChange={handleChange} onBlur={handleBlur} error={errors.licenseNumber} touched={touchedFields.licenseNumber} placeholder={t("auth.register.licenseNumberPlaceholder")} icon="badge" required showAsterisk={true}/>
             </div>) : (<div className="space-y-4 bg-surface-container-low p-4 rounded-[16px] border border-outline-variant/40">
               <span className="block font-['Inter'] text-sm md:text-base font-semibold text-on-surface">
                 {t("auth.register.caregiverAlertsTitle") || "إعدادات التنبيهات"}

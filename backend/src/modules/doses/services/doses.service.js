@@ -198,14 +198,64 @@ class DosesService {
     const snoozedTime = new Date(currentSchedule.getTime() + minutes * 60 * 1000);
 
     dose.scheduledFor = snoozedTime;
+    dose.snoozeCount = (dose.snoozeCount || 0) + 1;
     await dose.save();
 
     return {
       doseEventId: dose._id,
       status: dose.status,
       scheduledFor: dose.scheduledFor,
-      snoozedMinutes: minutes
+      snoozedMinutes: minutes,
+      snoozeCount: dose.snoozeCount
     };
+  }
+
+  // --- Background Worker / Cron Methods ---
+
+  async generateDailyDoses() {
+    // Generate daily doses for all active patients
+    const activePatients = await Patient.find({});
+    for (const patient of activePatients) {
+      // Re-using getDailySchedule which generates doses if they don't exist
+      await this.getDailySchedule(patient.accountId, 'PATIENT', null, new Date().toISOString());
+    }
+  }
+
+  async evaluateMissedDoses() {
+    const gracePeriodMs = 60 * 60 * 1000; // 60 minutes default grace period
+    const now = new Date();
+    const thresholdTime = new Date(now.getTime() - gracePeriodMs);
+
+    // Find all PENDING doses where (scheduledFor + gracePeriod) < now
+    const missedDoses = await DoseEvent.find({
+      status: 'PENDING',
+      scheduledFor: { $lt: thresholdTime }
+    });
+
+    for (const dose of missedDoses) {
+      dose.status = 'MISSED';
+      await dose.save();
+      // Logic to enqueue to NotificationEscalation queue could go here, handled by controller/worker
+    }
+    return missedDoses.length;
+  }
+
+  async evaluateSnoozeLimits() {
+    const maxSnoozes = 3;
+    const now = new Date();
+
+    const overSnoozedDoses = await DoseEvent.find({
+      status: 'PENDING',
+      snoozeCount: { $gte: maxSnoozes },
+      scheduledFor: { $lt: now } // Past their last snoozed time
+    });
+
+    for (const dose of overSnoozedDoses) {
+      dose.status = 'MISSED';
+      await dose.save();
+      // Logic for escalation
+    }
+    return overSnoozedDoses.length;
   }
 }
 
