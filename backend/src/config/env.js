@@ -59,6 +59,10 @@ const env = {
 
   RATE_LIMIT_MEDIA_MAX: parseInt(process.env.RATE_LIMIT_MEDIA_MAX, 10) || 20,
   RATE_LIMIT_MEDIA_WINDOW_MS: parseInt(process.env.RATE_LIMIT_MEDIA_WINDOW_MS, 10) || 3600000,
+
+  // GOOGLE GEMINI AI OCR SERVICE
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 };
 
 
