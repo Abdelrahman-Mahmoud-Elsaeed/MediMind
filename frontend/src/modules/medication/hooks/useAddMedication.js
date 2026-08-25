@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { toast } from "@/shared/components/ui/sonner";
 import { addMedicationSchema } from "@/modules/patient/validation/patientValidation";
 import {
   usePatientConditionsQuery,
@@ -183,11 +184,17 @@ export function useAddMedication(onSuccess) {
 
       const result = await addMedicationMutation.mutateAsync(payload);
       const resData = result?.data || result;
+      toast.success(isAr ? `تمت إضافة "${form.name}" بنجاح!` : `Added "${form.name}" Successfully!`, {
+        description: isAr ? 'تم حفظ الدواء في خزانة الأدوية الخاصة بك.' : 'Medication has been saved to your cabinet.',
+      });
       if (resData && onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      alert("Failed to add medication");
+      const errMsg = err?.response?.data?.message || err?.message || '';
+      toast.error(isAr ? 'فشل إضافة الدواء' : 'Failed to add medication', {
+        description: errMsg || (isAr ? 'يرجى مراجعة البيانات المدخلة والمحاولة مجدداً.' : 'Please check your inputs and try again.'),
+      });
     }
   };
 

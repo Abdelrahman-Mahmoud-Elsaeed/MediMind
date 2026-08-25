@@ -6,6 +6,7 @@ import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useCreateMedication, useScanMedication } from '@/modules/medication/hooks/useMedicationHooks';
 import { Card, Badge, Button, ProgressBar } from '@/shared/components/ui';
+import { toast } from '@/shared/components/ui/sonner';
 import {
   ArrowLeft,
   Camera,
@@ -48,7 +49,9 @@ export default function PatientOcrScanPage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert(isAr ? 'يرجى رفع ملف صورة صالح (JPEG, PNG, WebP)' : 'Please upload a valid image file (JPEG, PNG, WebP)');
+      toast.error(isAr ? 'نوع الملف غير صالح' : 'Invalid File Type', {
+        description: isAr ? 'يرجى رفع ملف صورة صالح (JPEG, PNG, WebP)' : 'Please upload a valid image file (JPEG, PNG, WebP)',
+      });
       return;
     }
 
@@ -65,11 +68,17 @@ export default function PatientOcrScanPage() {
         const medList = Array.isArray(data) ? data : [data];
 
         if (medList.length === 0) {
-          throw new Error('No medications found');
+          throw new Error(isAr ? 'لم يتم العثور على أدوية في الصورة' : 'No medications found in image');
         }
 
         setParsedMedications(medList);
         setScanStage('complete');
+
+        toast.success(isAr ? 'تم استخراج الأدوية بنجاح!' : 'Medications Extracted Successfully!', {
+          description: isAr
+            ? `تم التعرف على ${medList.length} دواء من صورة الوصفة الطبية.`
+            : `Identified ${medList.length} medication(s) from the prescription.`,
+        });
       } catch (err) {
         console.error('OCR scan failed:', err);
         const errMsg =
@@ -81,6 +90,10 @@ export default function PatientOcrScanPage() {
             : 'OCR confidence is below the required 90% threshold. Please retake the photo clearly or enter data manually.');
         setErrorMessage(errMsg);
         setScanStage('error');
+
+        toast.error(isAr ? 'فشل فحص الروشتة' : 'Prescription Scan Failed', {
+          description: errMsg,
+        });
       }
     };
     reader.readAsDataURL(file);
@@ -143,11 +156,15 @@ export default function PatientOcrScanPage() {
         expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       });
 
-      alert(isAr ? `تمت إضافة "${med.name}" إلى خزانة الأدوية بنجاح!` : `Added "${med.name}" to cabinet successfully!`);
+      toast.success(isAr ? `تمت إضافة "${med.name}" بنجاح!` : `Added "${med.name}" Successfully!`, {
+        description: isAr ? 'تم حفظ الدواء في خزانة الأدوية الخاصة بك.' : 'Medication added to your cabinet.',
+      });
     } catch (err) {
       console.error('Failed to save medication:', err);
       const errMsg = err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || '';
-      alert(isAr ? `تعذر حفظ ${med.name}: ${errMsg}` : `Failed to save ${med.name}: ${errMsg}`);
+      toast.error(isAr ? `تعذر حفظ ${med.name}` : `Failed to save ${med.name}`, {
+        description: errMsg,
+      });
     } finally {
       setSavingIndex(null);
     }
@@ -156,6 +173,7 @@ export default function PatientOcrScanPage() {
   // Save all parsed medications in batch
   const handleSaveAll = async () => {
     setIsSavingAll(true);
+    const toastId = toast.loading(isAr ? 'جاري حفظ الأدوية في الخزانة...' : 'Saving medications to your cabinet...');
     let successCount = 0;
 
     for (const med of parsedMedications) {
@@ -194,12 +212,25 @@ export default function PatientOcrScanPage() {
     }
 
     setIsSavingAll(false);
-    alert(
-      isAr
-        ? `تمت إضافة ${successCount} من أصل ${parsedMedications.length} دواء إلى الخزانة بنجاح!`
-        : `Successfully saved ${successCount} of ${parsedMedications.length} medications to your cabinet!`
-    );
-    router.push('/medications');
+    toast.dismiss(toastId);
+
+    if (successCount > 0) {
+      toast.success(
+        isAr
+          ? `تمت إضافة ${successCount} من أصل ${parsedMedications.length} دواء بنجاح!`
+          : `Successfully saved ${successCount} of ${parsedMedications.length} medications!`,
+        {
+          description: isAr ? 'تم تحديث خزانة الأدوية الخاصة بك.' : 'Your medication cabinet has been updated.',
+        }
+      );
+      setTimeout(() => {
+        router.push('/medications');
+      }, 700);
+    } else {
+      toast.error(isAr ? 'تعذر حفظ الأدوية' : 'Failed to save medications', {
+        description: isAr ? 'حدث خطأ أثناء محاولة حفظ الأدوية في الخزانة.' : 'An error occurred while saving medications to cabinet.',
+      });
+    }
   };
 
   const handleReset = () => {
