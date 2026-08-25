@@ -1,9 +1,19 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/shared/components/sidebar/Sidebar';
+import dynamic from 'next/dynamic';
 import { Header } from '@/shared/components/header/Header';
-import { MobileNav } from '@/shared/components/navigation/MobileNav';
 import { useTranslation } from '@/shared/lib/i18nContext';
+
+const Sidebar = dynamic(() => import('@/shared/components/sidebar/Sidebar').then((mod) => mod.Sidebar), {
+  ssr: false,
+  loading: () => (
+    <aside className="hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 w-[280px] p-6" />
+  ),
+});
+
+const MobileNav = dynamic(() => import('@/shared/components/navigation/MobileNav').then((mod) => mod.MobileNav), {
+  ssr: false,
+});
 
 export const MainLayout = ({ children, activePath = '/home' }) => {
     const { dir } = useTranslation();
