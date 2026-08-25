@@ -39,12 +39,10 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
     return (
       <div className="min-h-screen w-full bg-background text-on-surface flex font-sans antialiased" dir={containerDir} suppressHydrationWarning>
         {/* Desktop Application Sidebar */}
-        {mounted && (
-          <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
-        )}
+        <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
 
         {/* Main Container Area */}
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0" suppressHydrationWarning>
           {/* Fixed Top Application Header */}
           <Header />
 
@@ -55,7 +53,7 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
         </div>
 
         {/* Bottom Mobile Navigation Bar */}
-        {mounted && <MobileNav />}
+        <MobileNav />
       </div>
     );
 };
