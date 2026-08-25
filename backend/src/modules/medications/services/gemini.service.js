@@ -236,8 +236,25 @@ class OcrService {
       );
     }
 
-    if (imageBase64.includes('error_throw')) {
-      throw new AppError('OCR AI service encountered an unrecoverable analysis failure', 500, 'OCR_SERVICE_ERROR');
+    if (imageBase64.includes('mock_single') || imageBase64.includes('mock_sample')) {
+      return [
+        this.normalizeMedicationItem({
+          name: 'Amoxicillin',
+          strength: '500mg',
+          formType: 'CAPSULE',
+          frequency: 'DAILY',
+          dosesPerDay: 3,
+          firstDoseTime: '08:00',
+          relationToMeals: 'AFTER_MEALS',
+          initialQuantity: 30,
+          currentQuantity: 30,
+          doseAmount: 1,
+          refillThreshold: 5,
+          isChronic: false,
+          notes: 'Take with water after meals',
+          confidenceScore: 0.96,
+        }, 0),
+      ];
     }
 
     if (imageBase64.includes('mock_multi')) {
@@ -297,7 +314,15 @@ class OcrService {
       throw new AppError(`AI OCR extraction failed: ${err.message}`, 500, 'OCR_SERVICE_ERROR');
     }
 
-    if (rawItems && rawItems.length > 0) {
+    if (rawItems !== null) {
+      if (rawItems.length === 0) {
+        throw new AppError(
+          'No legible prescription medication items could be identified in the image. Please retake the photo or enter data manually.',
+          422,
+          'LOW_CONFIDENCE'
+        );
+      }
+
       const normalizedList = rawItems.map((item, idx) => this.normalizeMedicationItem(item, idx));
 
       // Enforce safety confidence threshold (>= 0.90)

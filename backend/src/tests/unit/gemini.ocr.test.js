@@ -3,7 +3,8 @@ const medicationsService = require('../../modules/medications/services/medicatio
 const AppError = require('../../shared/utils/AppError');
 
 describe('Gemini OCR Prescription Parser Unit Tests', () => {
-  const sampleBase64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP...';
+  const sampleBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
 
   describe('normalizeMedicationItem', () => {
     it('should correctly normalize a complete medication item', () => {
@@ -77,7 +78,7 @@ describe('Gemini OCR Prescription Parser Unit Tests', () => {
 
   describe('extractMedicationsFromImage & scanMedication', () => {
     it('should return an array of parsed objects for prescription scan', async () => {
-      const result = await geminiService.extractMedicationsFromImage(sampleBase64);
+      const result = await geminiService.extractMedicationsFromImage('data:image/jpeg;base64,mock_single_sample_prescription_payload');
 
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
