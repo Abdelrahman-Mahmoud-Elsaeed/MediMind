@@ -74,7 +74,8 @@ class MedicationsService {
     if (payload.isChronic) {
       payload.schedule.endDate = null;
     } else if (!payload.schedule.endDate) {
-      throw new AppError('endDate is required for acute medications', 400, 'VALIDATION_ERROR');
+      const start = payload.schedule?.startDate ? new Date(payload.schedule.startDate) : new Date();
+      payload.schedule.endDate = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
     }
 
     // Generate times of day

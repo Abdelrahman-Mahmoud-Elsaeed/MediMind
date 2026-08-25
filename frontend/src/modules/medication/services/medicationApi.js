@@ -74,19 +74,43 @@ export const medicationApi = {
       };
 
       const validMealRelations = ['BEFORE_MEALS', 'AFTER_MEALS', 'WITH_FOOD', 'ON_EMPTY_STOMACH', 'NONE'];
-      const relationToMeals = validMealRelations.includes(payload.relationToMeals) ? payload.relationToMeals : 'NONE';
+      const rawMeal = payload.instructions?.relationToMeals || payload.relationToMeals;
+      const relationToMeals = validMealRelations.includes(rawMeal) ? rawMeal : 'NONE';
 
       const formType = formTypeMap[payload.type || payload.formType || payload.iconType] || 'TABLET';
-      const startDate = payload.startDate
-        ? new Date(payload.startDate).toISOString().split('T')[0]
+      const startDate = payload.schedule?.startDate || payload.startDate
+        ? new Date(payload.schedule?.startDate || payload.startDate).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0];
+
+      const isChronic = payload.isChronic !== undefined ? Boolean(payload.isChronic) : true;
+      const rawEndDate = payload.schedule?.endDate || payload.endDate;
+      const endDate = isChronic
+        ? null
+        : rawEndDate
+        ? new Date(rawEndDate).toISOString().split('T')[0]
+        : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       const expDate = payload.expirationDate
         ? new Date(payload.expirationDate).toISOString().split('T')[0]
         : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      const initialQty = Number(payload.stock || payload.totalStock || payload.initialQuantity || 30);
-      const currentQty = Number(payload.currentStock || payload.stock || initialQty);
+      const initialQty = Number(
+        payload.inventory?.initialQuantity || payload.stock || payload.totalStock || payload.initialQuantity || 30
+      );
+      const currentQty = Number(
+        payload.inventory?.currentQuantity || payload.currentStock || payload.stock || initialQty
+      );
+      const doseAmount = Number(payload.inventory?.doseAmount || payload.doseAmount || 1);
+      const refillThreshold = Number(payload.inventory?.refillThreshold || payload.refillThreshold || 5);
+
+      const freq = payload.schedule?.frequency || payload.frequency;
+      const frequency = ['DAILY', 'WEEKLY', 'AS_NEEDED'].includes(freq) ? freq : 'DAILY';
+      const dosesPerDay = Number(payload.schedule?.dosesPerDay || payload.dosesPerDay || 1);
+      const firstDoseTime = payload.schedule?.firstDoseTime || payload.time || payload.firstDoseTime || '08:00';
+
+      const notes = String(
+        payload.instructions?.notes || payload.notes || payload.dosage || payload.strength || ''
+      );
 
       backendPayload = {
         patientId: payload.patientId || undefined,
@@ -94,23 +118,23 @@ export const medicationApi = {
         name: payload.name || 'Medication',
         imageURL: payload.imageURL || null,
         formType,
-        isChronic: payload.isChronic !== undefined ? Boolean(payload.isChronic) : true,
+        isChronic,
         inventory: {
           initialQuantity: Math.max(1, initialQty),
           currentQuantity: Math.max(0, currentQty),
-          doseAmount: Number(payload.doseAmount || 1),
-          refillThreshold: Number(payload.refillThreshold || 5),
+          doseAmount: Math.max(0.1, doseAmount),
+          refillThreshold: Math.max(1, refillThreshold),
         },
         instructions: {
           relationToMeals,
-          notes: payload.notes || payload.dosage || payload.strength || '',
+          notes,
         },
         schedule: {
-          frequency: ['DAILY', 'WEEKLY', 'AS_NEEDED'].includes(payload.frequency) ? payload.frequency : 'DAILY',
-          dosesPerDay: Number(payload.dosesPerDay || 1),
-          firstDoseTime: payload.time || payload.firstDoseTime || '08:00',
+          frequency,
+          dosesPerDay: Math.max(1, Math.min(24, dosesPerDay)),
+          firstDoseTime,
           startDate,
-          endDate: payload.isChronic ? null : payload.endDate || null,
+          endDate,
         },
         expirationDate: expDate,
       };

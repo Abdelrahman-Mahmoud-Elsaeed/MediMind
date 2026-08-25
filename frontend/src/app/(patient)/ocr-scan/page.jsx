@@ -115,10 +115,14 @@ export default function PatientOcrScanPage() {
   const handleSaveMedication = async (med, index) => {
     setSavingIndex(index);
     try {
+      const isChronic = med.isChronic !== undefined ? Boolean(med.isChronic) : true;
+      const startDate = new Date().toISOString().split('T')[0];
+      const endDate = isChronic ? null : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
       await createMedicationMutation.mutateAsync({
         name: med.name,
         formType: med.formType || 'TABLET',
-        isChronic: Boolean(med.isChronic),
+        isChronic,
         inventory: med.inventory || {
           initialQuantity: 30,
           currentQuantity: 30,
@@ -133,7 +137,8 @@ export default function PatientOcrScanPage() {
           frequency: med.schedule?.frequency || 'DAILY',
           dosesPerDay: med.schedule?.dosesPerDay || 1,
           firstDoseTime: med.schedule?.firstDoseTime || '08:00',
-          startDate: new Date().toISOString().split('T')[0],
+          startDate,
+          endDate,
         },
         expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       });
@@ -141,7 +146,8 @@ export default function PatientOcrScanPage() {
       alert(isAr ? `تمت إضافة "${med.name}" إلى خزانة الأدوية بنجاح!` : `Added "${med.name}" to cabinet successfully!`);
     } catch (err) {
       console.error('Failed to save medication:', err);
-      alert(isAr ? `تعذر حفظ ${med.name}` : `Failed to save ${med.name}`);
+      const errMsg = err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || '';
+      alert(isAr ? `تعذر حفظ ${med.name}: ${errMsg}` : `Failed to save ${med.name}: ${errMsg}`);
     } finally {
       setSavingIndex(null);
     }
@@ -154,10 +160,14 @@ export default function PatientOcrScanPage() {
 
     for (const med of parsedMedications) {
       try {
+        const isChronic = med.isChronic !== undefined ? Boolean(med.isChronic) : true;
+        const startDate = new Date().toISOString().split('T')[0];
+        const endDate = isChronic ? null : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
         await createMedicationMutation.mutateAsync({
           name: med.name,
           formType: med.formType || 'TABLET',
-          isChronic: Boolean(med.isChronic),
+          isChronic,
           inventory: med.inventory || {
             initialQuantity: 30,
             currentQuantity: 30,
@@ -172,7 +182,8 @@ export default function PatientOcrScanPage() {
             frequency: med.schedule?.frequency || 'DAILY',
             dosesPerDay: med.schedule?.dosesPerDay || 1,
             firstDoseTime: med.schedule?.firstDoseTime || '08:00',
-            startDate: new Date().toISOString().split('T')[0],
+            startDate,
+            endDate,
           },
           expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         });
