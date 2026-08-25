@@ -18,11 +18,7 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
     }, []);
     const isAr = (mounted || isMounted) && locale === 'ar';
     const { user } = useAuth();
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const userRole = mounted ? user?.role : undefined;
     const isPharmacist = userRole === 'PHARMACIST';
