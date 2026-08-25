@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { showError } from "@/shared/components/ui/toast";
 import { useTranslation } from "@/shared/lib/i18nContext";
+import { toast } from "@/shared/components/ui/sonner";
 import { addMedicationSchema } from "@/modules/patient/validation/patientValidation";
 import {
   usePatientConditionsQuery,
@@ -56,8 +57,10 @@ export function useAddMedication(onSuccess) {
       const data = await scanPrescriptionMutation.mutateAsync(
         forceFail ? "low_confidence_mock_data" : "normal_high_confidence_mock_data"
       );
-      if (data?.success) {
-        setScannedMedInfo(data.data);
+      const resPayload = data?.data || data;
+      const parsedItem = Array.isArray(resPayload) ? resPayload[0] : resPayload;
+      if (parsedItem && parsedItem.name) {
+        setScannedMedInfo(parsedItem);
         setScanResult("success");
       } else {
         setScanResult("error");
@@ -71,8 +74,14 @@ export function useAddMedication(onSuccess) {
     if (scannedMedInfo) {
       setForm((prev) => ({
         ...prev,
-        name: scannedMedInfo.name,
-        type: scannedMedInfo.formType
+        name: scannedMedInfo.name || prev.name,
+        type: scannedMedInfo.formType || prev.type,
+        strength: scannedMedInfo.strength || prev.strength,
+        stock: String(scannedMedInfo.inventory?.initialQuantity || prev.stock),
+        currentStock: String(scannedMedInfo.inventory?.currentQuantity || prev.currentStock),
+        doseAmount: String(scannedMedInfo.inventory?.doseAmount || prev.doseAmount),
+        relationToMeals: scannedMedInfo.instructions?.relationToMeals || prev.relationToMeals,
+        notes: scannedMedInfo.instructions?.notes || prev.notes,
       }));
     }
     setIsScanning(false);
@@ -176,11 +185,18 @@ export function useAddMedication(onSuccess) {
 
       const result = await addMedicationMutation.mutateAsync(payload);
       const resData = result?.data || result;
+      toast.success(isAr ? `تمت إضافة "${form.name}" بنجاح!` : `Added "${form.name}" Successfully!`, {
+        description: isAr ? 'تم حفظ الدواء في خزانة الأدوية الخاصة بك.' : 'Medication has been saved to your cabinet.',
+      });
       if (resData && onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      showError("Failed to add medication", "Error");
+      const errMsg = err?.response?.data?.message || err?.message || '';
+      toast.error(isAr ? 'فشل إضافة الدواء' : 'Failed to add medication', {
+        description: errMsg || (isAr ? 'يرجى مراجعة البيانات المدخلة والمحاولة مجدداً.' : 'Please check your inputs and try again.'),
+      });
+
     }
   };
 

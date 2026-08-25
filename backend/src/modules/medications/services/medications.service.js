@@ -2,6 +2,7 @@ const Medication = require('../models/Medication.model');
 const Patient = require('../../auth/models/Patient.model');
 const MedicalCondition = require('../../conditions/models/MedicalCondition.model');
 const relationshipsService = require('../../relationships/services/relationships.service');
+const geminiService = require('./gemini.service');
 const AppError = require('../../../shared/utils/AppError');
 const { logger } = require('../../../shared/utils/logger');
 
@@ -70,7 +71,20 @@ class MedicationsService {
       associatedCondition = await MedicalCondition.findById(payload.medicalConditionId);
     }
 
-    const timesOfDay = this.generateTimesOfDay(payload.schedule?.firstDoseTime, payload.schedule?.dosesPerDay || 1);
+    // Validate chronic / endDate logic
+    if (payload.isChronic) {
+      if (payload.schedule) payload.schedule.endDate = null;
+    } else if (payload.schedule && !payload.schedule.endDate) {
+      const start = payload.schedule?.startDate ? new Date(payload.schedule.startDate) : new Date();
+      payload.schedule.endDate = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    }
+
+    // Generate times of day
+    const timesOfDay = this.generateTimesOfDay(
+      payload.schedule?.firstDoseTime,
+      payload.schedule?.dosesPerDay || 1
+    );
+
 
     const medication = new Medication({
       patientId,
@@ -231,22 +245,7 @@ class MedicationsService {
   }
 
   async scanMedication(imageBase64) {
-    // OCR Simulation:
-    // If input contains low_confidence, return a 422 error
-    if (imageBase64.includes('low_confidence') || imageBase64.includes('error')) {
-      throw new AppError(
-        'OCR confidence score (0.85) is below required threshold (0.90). Please retake the photo or enter data manually.',
-        422,
-        'LOW_CONFIDENCE'
-      );
-    }
-
-    // Default high confidence response
-    return {
-      name: 'Amoxicillin',
-      formType: 'CAPSULE',
-      confidenceScore: 0.96
-    };
+    return await geminiService.extractMedicationsFromImage(imageBase64);
   }
 }
 

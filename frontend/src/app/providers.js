@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../modules/auth/hooks/useAuth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/shared/components/ui/sonner';
 
 function AuthInitializer({ children }) {
   const pathname = usePathname();
@@ -81,6 +82,7 @@ export function Providers({ children, locale }) {
             <AuthInitializer>
               {children}
             </AuthInitializer>
+            <Toaster />
           </LanguageProvider>
         </ThemeProvider>
       </QueryClientProvider>

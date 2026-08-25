@@ -28,7 +28,7 @@ export const MedicationCard = ({ medication, onEdit, onSchedule, onRefill, }) =>
       <div>
         {/* Card Header: Medicine Bottle Icon (matching reference) & Status Badge */}
         <div className="flex justify-between items-start mb-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${iconBgMap[medication.iconType]}`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${iconBgMap[medication.iconType] || 'bg-primary-container/20 text-primary'}`}>
             <BottleSpoonIcon className="w-6 h-6"/>
           </div>
           <MedicationStatusBadge status={medication.status}/>

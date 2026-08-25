@@ -15,12 +15,8 @@ export const MobileNav = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
-  }
-
   const isAr = locale === 'ar';
-  const userRole = user?.role;
+  const userRole = mounted ? user?.role : undefined;
 
   const isPharmacist = userRole === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
@@ -50,7 +46,7 @@ export const MobileNav = () => {
   const navItems = isPharmacist ? pharmacistItems : isCaregiver ? caregiverItems : patientItems;
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 sm:px-6 py-2 pb-safe bg-surface-container-lowest/90 dark:bg-surface-container-low/95 backdrop-blur-2xl border-t border-outline-variant/30 shadow-[0_-6px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.4)] transition-colors duration-300">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 sm:px-6 py-2 pb-safe bg-surface-container-lowest/90 dark:bg-surface-container-low/95 backdrop-blur-2xl border-t border-outline-variant/30 shadow-[0_-6px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.4)] transition-colors duration-300" suppressHydrationWarning>
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||

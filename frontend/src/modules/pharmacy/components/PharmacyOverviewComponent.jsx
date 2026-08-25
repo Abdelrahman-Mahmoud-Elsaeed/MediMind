@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
-import { useAuth } from '@/modules/auth/hooks/useAuth';
+import Link from 'next/link';
+import React from 'react';
 import { useRefillOrders, useUpdateRefillStatus } from '../hooks/usePharmacyHooks';
 import { showSuccess } from '@/shared/components/ui/toast';
 
@@ -19,7 +19,7 @@ export default function PharmacyOverviewComponent() {
   const totalOrders = refillOrders.length;
   const pendingOrders = refillOrders.filter((o) => o.orderStatus === 'SUBMITTED');
   const inProgressOrders = refillOrders.filter((o) =>
-    ['APPROVED', 'DISPENSED', 'READY_FOR_PICKUP'].includes(o.orderStatus)
+    ['APPROVED', 'DISPENSED', 'READY_FOR_PICKUP'].includes(o.orderStatus),
   ).length;
   const completedOrders = refillOrders.filter((o) => o.orderStatus === 'COMPLETED').length;
 
@@ -96,7 +96,9 @@ export default function PharmacyOverviewComponent() {
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{totalOrders}</span>
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {totalOrders}
+              </span>
               <span className="text-xs font-bold text-teal-600 dark:text-teal-400">+14% الشهر</span>
             </div>
           </div>
@@ -111,7 +113,9 @@ export default function PharmacyOverviewComponent() {
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{pendingOrders.length}</span>
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {pendingOrders.length}
+              </span>
               {pendingOrders.length > 0 && (
                 <span className="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-full">
                   {isAr ? 'يتطلب إجراء فورياً' : 'Immediate Action'}
@@ -130,7 +134,9 @@ export default function PharmacyOverviewComponent() {
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{inProgressOrders}</span>
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {inProgressOrders}
+              </span>
               <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
                 {isAr ? 'تجهيز بالفرع' : 'In Fulfillment'}
               </span>
@@ -147,7 +153,9 @@ export default function PharmacyOverviewComponent() {
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{completedOrders}</span>
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {completedOrders}
+              </span>
               <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                 {isAr ? 'نسبة نجاح 98.5%' : '98.5% Rate'}
               </span>
@@ -161,7 +169,9 @@ export default function PharmacyOverviewComponent() {
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-500 text-xl">priority_high</span>
+                <span className="material-symbols-outlined text-amber-500 text-xl">
+                  priority_high
+                </span>
                 <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                   {isAr ? 'طلبات التعبئة المنتظرة للاعتماد السريع' : 'Pending Signoff Queue'}
                 </h2>
@@ -171,7 +181,9 @@ export default function PharmacyOverviewComponent() {
                 className="text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 flex items-center gap-1"
               >
                 <span>{isAr ? 'عرض الكل' : 'View All'}</span>
-                <span className="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+                <span className="material-symbols-outlined text-sm rtl:rotate-180">
+                  arrow_forward
+                </span>
               </Link>
             </div>
 
@@ -179,8 +191,12 @@ export default function PharmacyOverviewComponent() {
               <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
             ) : pendingOrders.length === 0 ? (
               <div className="text-center py-10 text-slate-400 text-xs font-semibold">
-                <span className="material-symbols-outlined text-4xl block mb-1 text-slate-300">done_all</span>
-                {isAr ? 'لا توجد طلبات جديدة معلقة حالياً' : 'All pending refill requests are signed off!'}
+                <span className="material-symbols-outlined text-4xl block mb-1 text-slate-300">
+                  done_all
+                </span>
+                {isAr
+                  ? 'لا توجد طلبات جديدة معلقة حالياً'
+                  : 'All pending refill requests are signed off!'}
               </div>
             ) : (
               <div className="space-y-3">
@@ -204,7 +220,10 @@ export default function PharmacyOverviewComponent() {
                             {patientName}
                           </h4>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                            {medName} • <strong className="text-teal-600 dark:text-teal-400">{order.quantityRequested} units</strong>
+                            {medName} •{' '}
+                            <strong className="text-teal-600 dark:text-teal-400">
+                              {order.quantityRequested} units
+                            </strong>
                           </p>
                         </div>
                       </div>
@@ -249,7 +268,8 @@ export default function PharmacyOverviewComponent() {
                       {item.name}
                     </span>
                     <span className="text-[11px] text-rose-600 dark:text-rose-400 font-bold block mt-0.5">
-                      {isAr ? 'المتبقي بالمخزون:' : 'Current Stock:'} {item.stock} {isAr ? 'عبوات' : 'units'}
+                      {isAr ? 'المتبقي بالمخزون:' : 'Current Stock:'} {item.stock}{' '}
+                      {isAr ? 'عبوات' : 'units'}
                     </span>
                   </div>
 
@@ -261,6 +281,7 @@ export default function PharmacyOverviewComponent() {
 
               <button
                 onClick={() => showSuccess(isAr ? 'تم إرسال طلب توريد عاجل للمورد المعتمد' : 'Supplier restock order placed!', isAr ? 'تم الطلب' : 'Restock Placed')}
+
                 className="w-full py-2.5 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 mt-2"
               >
                 <span className="material-symbols-outlined text-base">local_shipping</span>

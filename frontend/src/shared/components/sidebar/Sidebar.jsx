@@ -18,8 +18,13 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
     }, []);
     const isAr = (mounted || isMounted) && locale === 'ar';
     const { user } = useAuth();
+    const [mounted, setMounted] = useState(false);
 
-    const userRole = user?.role;
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const userRole = mounted ? user?.role : undefined;
     const isPharmacist = userRole === 'PHARMACIST';
     const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
 
