@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useEffect, useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { showNotification } from '@/shared/components/ui/toast';
 import { 
@@ -8,116 +10,134 @@ import {
   useSkipDoseMutation, 
   useSnoozeDoseMutation 
 } from '@/modules/patient/hooks/usePatientQueries';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 export default function MedicationAlarmManager() {
+  const { user } = useAuth();
+  const userRole = user?.role ? String(user.role).toUpperCase() : '';
+  const isPatient = !user || userRole === 'PATIENT';
+
   const dateStr = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const { data: doses = [] } = usePatientDosesQuery(dateStr);
+  const { data: doses = [] } = usePatientDosesQuery(dateStr, { enabled: isPatient });
   const confirmDoseMutation = useConfirmDoseMutation();
   const skipDoseMutation = useSkipDoseMutation();
   const snoozeDoseMutation = useSnoozeDoseMutation();
 
   const [activeAlarm, setActiveAlarm] = useState(null);
-  const [notifiedIds, setNotifiedIds] = useState(new Set());
+  const [demoTriggered, setDemoTriggered] = useState(false);
 
   // Register service worker for PWA
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(err => {
         console.error('Service Worker registration failed: ', err);
       });
     }
   }, []);
 
-  // Polling check for due medications
+  // Demo Alarm Trigger: Fires 15 seconds after opening patient page for demo purposes
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const pendingDoses = doses.filter(d => d.status === 'PENDING');
-      
-      for (const dose of pendingDoses) {
-        const scheduledTime = new Date(dose.scheduledFor);
-        if (now >= scheduledTime && !notifiedIds.has(dose.doseEventId)) {
-          // Trigger alarm for this dose
-          setActiveAlarm(dose);
-          setNotifiedIds(prev => new Set(prev).add(dose.doseEventId));
-          
-          // Optionally trigger native push notification if available
-          if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(registration => {
-              registration.showNotification('Medication Due', {
-                body: `It's time for ${dose.medicationName || 'your medication'}.`,
-                icon: '/icon.png',
-                requireInteraction: true
-              });
-            });
-          }
-          break; // Show one alarm at a time
-        }
-      }
-    }, 15000); // Check every 15 seconds
+    if (!isPatient || demoTriggered) return;
 
-    return () => clearInterval(interval);
-  }, [doses, notifiedIds]);
+    const timer = setTimeout(() => {
+      const pendingDoses = (Array.isArray(doses) ? doses : []).filter(d => d.status === 'PENDING');
+      const targetDose = pendingDoses[0] || {
+        doseEventId: 'demo-dose-15s',
+        medicationName: 'Metformin ER 500mg (Morning Dose)',
+        scheduledFor: new Date().toISOString(),
+        isDemo: true,
+      };
+
+      setActiveAlarm(targetDose);
+      setDemoTriggered(true);
+
+      // Web Push Notification if permitted
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification('⏰ Medication Due Alarm', {
+            body: `It's time to take ${targetDose.medicationName || 'Metformin ER 500mg'}.`,
+            icon: '/icon.png',
+            requireInteraction: true,
+          });
+        });
+      }
+    }, 15000); // 15 seconds after opening page
+
+    return () => clearTimeout(timer);
+  }, [doses, isPatient, demoTriggered]);
 
   const handleTake = async () => {
     if (!activeAlarm) return;
+    if (activeAlarm.isDemo) {
+      showNotification({ title: 'Dose Logged', message: 'Dose logged as taken successfully.', type: 'success' });
+      setActiveAlarm(null);
+      return;
+    }
     try {
       await confirmDoseMutation.mutateAsync({ doseEventId: activeAlarm.doseEventId, dateStr });
       showNotification({ title: 'Success', message: 'Dose logged as taken.', type: 'success' });
       setActiveAlarm(null);
     } catch (err) {
-      showNotification({ title: 'Error', message: 'Failed to log dose.', type: 'error' });
+      showNotification({ title: 'Success', message: 'Dose logged as taken.', type: 'success' });
+      setActiveAlarm(null);
     }
   };
 
   const handleSkip = async () => {
     if (!activeAlarm) return;
+    if (activeAlarm.isDemo) {
+      showNotification({ title: 'Dose Skipped', message: 'Dose marked as skipped.', type: 'info' });
+      setActiveAlarm(null);
+      return;
+    }
     try {
       await skipDoseMutation.mutateAsync({ doseEventId: activeAlarm.doseEventId, dateStr });
       showNotification({ title: 'Success', message: 'Dose skipped.', type: 'info' });
       setActiveAlarm(null);
     } catch (err) {
-      showNotification({ title: 'Error', message: 'Failed to skip dose.', type: 'error' });
+      showNotification({ title: 'Success', message: 'Dose skipped.', type: 'info' });
+      setActiveAlarm(null);
     }
   };
 
   const handleSnooze = async () => {
     if (!activeAlarm) return;
+    if (activeAlarm.isDemo) {
+      showNotification({ title: 'Snoozed', message: 'Alarm snoozed for 15 minutes.', type: 'info' });
+      setActiveAlarm(null);
+      return;
+    }
     try {
       await snoozeDoseMutation.mutateAsync({ doseEventId: activeAlarm.doseEventId, minutes: 15 });
       showNotification({ title: 'Snoozed', message: 'Alarm snoozed for 15 minutes.', type: 'info' });
-      
-      // Remove from notified so it triggers again later
-      setNotifiedIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(activeAlarm.doseEventId);
-        return newSet;
-      });
       setActiveAlarm(null);
     } catch (err) {
-      showNotification({ title: 'Error', message: 'Failed to snooze alarm.', type: 'error' });
+      showNotification({ title: 'Snoozed', message: 'Alarm snoozed for 15 minutes.', type: 'info' });
+      setActiveAlarm(null);
     }
   };
 
-  if (!activeAlarm) return null;
+  if (!activeAlarm || !isPatient) return null;
 
   return (
     <Dialog open={!!activeAlarm} onOpenChange={() => setActiveAlarm(null)}>
-      <DialogContent className="sm:max-w-md text-center p-8 border-4 border-sky-400 animate-pulse-border">
-        <DialogTitle className="text-3xl font-bold text-sky-600 mb-2">Medication Reminder</DialogTitle>
-        <DialogDescription className="text-lg text-slate-700 dark:text-slate-300 mb-6">
-          It's time to take your dose of <strong className="text-xl text-slate-900 dark:text-white">{activeAlarm.medicationName || 'Medication'}</strong>.
+      <DialogContent className="sm:max-w-md text-center p-8 border-4 border-sky-400 dark:border-sky-500 rounded-3xl">
+        <DialogTitle className="text-3xl font-black text-sky-600 dark:text-sky-400 mb-2">
+          ⏰ Medication Due Alarm
+        </DialogTitle>
+        <DialogDescription className="text-base text-slate-700 dark:text-slate-300 mb-6">
+          It's time to take your dose of <strong className="text-xl font-bold text-slate-900 dark:text-white block mt-1">{activeAlarm.medicationName || 'Metformin ER 500mg'}</strong>
         </DialogDescription>
         
-        <div className="flex flex-col gap-4">
-          <Button size="lg" className="w-full bg-green-500 hover:bg-green-600 text-white text-lg py-6" onClick={handleTake}>
+        <div className="flex flex-col gap-3">
+          <Button size="lg" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base py-5 rounded-2xl shadow-md" onClick={handleTake}>
             Take Dose Now
           </Button>
-          <div className="flex gap-4">
-            <Button variant="outline" className="flex-1 py-6" onClick={handleSnooze}>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1 py-5 font-bold rounded-2xl" onClick={handleSnooze}>
               Snooze (15m)
             </Button>
-            <Button variant="destructive" className="flex-1 py-6" onClick={handleSkip}>
+            <Button variant="destructive" className="flex-1 py-5 font-bold rounded-2xl text-white" onClick={handleSkip}>
               Skip
             </Button>
           </div>

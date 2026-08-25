@@ -1,4 +1,4 @@
-import apiClient from '@/shared/services/apiClient';
+import apiClient from '@/shared/lib/apiClient';
 
 export const adminApi = {
   getPendingApprovals: async () => {

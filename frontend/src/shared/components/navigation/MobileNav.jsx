@@ -1,12 +1,15 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 export const MobileNav = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryString = searchParams?.toString();
+  const fullPath = queryString ? `${pathname}?${queryString}` : pathname;
   const { t, locale } = useTranslation();
   const { user } = useAuth();
   const [mounted, setMounted] = React.useState(false);
@@ -18,8 +21,17 @@ export const MobileNav = () => {
   const isAr = locale === 'ar';
   const userRole = mounted ? user?.role : undefined;
 
+  const isAdmin = userRole === 'ADMIN';
   const isPharmacist = userRole === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
+
+  const adminItems = [
+    { href: '/admin-dashboard/approvals', icon: 'fact_check', label: isAr ? 'الاعتمادات' : 'Approvals' },
+    { href: '/admin-dashboard/create', icon: 'person_add', label: isAr ? 'إنشاء حساب' : 'Create' },
+    { href: '/admin-dashboard/accounts', icon: 'manage_accounts', label: isAr ? 'الحسابات' : 'Accounts' },
+  ];
+
+
 
   const pharmacistItems = [
     { href: '/pharmacy', icon: 'local_pharmacy', labelKey: 'common.nav.pharmacyPortal' },
@@ -43,13 +55,17 @@ export const MobileNav = () => {
     { href: '/profile', icon: 'person', labelKey: 'patient.nav.profile' },
   ];
 
-  const navItems = isPharmacist ? pharmacistItems : isCaregiver ? caregiverItems : patientItems;
+  const navItems = isAdmin ? adminItems : isPharmacist ? pharmacistItems : isCaregiver ? caregiverItems : patientItems;
+
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-3 sm:px-6 py-2 pb-safe bg-surface-container-lowest/90 dark:bg-surface-container-low/95 backdrop-blur-2xl border-t border-outline-variant/30 shadow-[0_-6px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.4)] transition-colors duration-300" suppressHydrationWarning>
       {navItems.map((item) => {
         const isActive =
+          fullPath === item.href ||
           pathname === item.href ||
+          (item.href === '/admin-dashboard/approvals' && (pathname === '/admin-dashboard/approvals' || pathname === '/admin-dashboard')) ||
+
           (item.href === '/pharmacy' && (pathname === '/pharmacy' || pathname === '/pharmacy/dashboard')) ||
           (item.href === '/pharmacy/orders' && pathname === '/pharmacy/orders') ||
           (item.href === '/refills' && pathname?.startsWith('/refills')) ||

@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { Card, Badge, Button, Input } from '@/shared/components/ui';
@@ -35,10 +38,12 @@ import {
 export default function AdminDashboardComponent() {
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'approvals';
 
-  const [activeTab, setActiveTab] = useState('approvals'); // 'approvals' | 'create' | 'accounts'
   const [creationRole, setCreationRole] = useState('DOCTOR'); // 'DOCTOR' | 'PHARMACIST' | 'PROFESSIONAL_CAREGIVER'
   const [searchQuery, setSearchQuery] = useState('');
+
 
   // Form State for Single-Entry Creation
   const [createForm, setCreateForm] = useState({
@@ -267,41 +272,7 @@ export default function AdminDashboardComponent() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-outline-variant/30 pb-2">
-          <Button
-            variant={activeTab === 'approvals' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('approvals')}
-            className={`rounded-full font-bold text-xs px-6 py-2.5 ${
-              activeTab === 'approvals' ? 'bg-indigo-600 text-white shadow-md' : ''
-            }`}
-          >
-            <UserCheck className="w-4 h-4 mr-2" />
-            {isAr ? 'طلبات الاعتماد' : 'Approval Workflow'} ({totalPending})
-          </Button>
 
-          <Button
-            variant={activeTab === 'create' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('create')}
-            className={`rounded-full font-bold text-xs px-6 py-2.5 ${
-              activeTab === 'create' ? 'bg-indigo-600 text-white shadow-md' : ''
-            }`}
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            {isAr ? 'إنشاء حساب جديد (Single-Entry)' : 'Single-Entry Creation'}
-          </Button>
-
-          <Button
-            variant={activeTab === 'accounts' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('accounts')}
-            className={`rounded-full font-bold text-xs px-6 py-2.5 ${
-              activeTab === 'accounts' ? 'bg-indigo-600 text-white shadow-md' : ''
-            }`}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            {isAr ? 'إدارة جميع الحسابات' : 'System Accounts'}
-          </Button>
-        </div>
 
         {/* TAB 1: APPROVAL WORKFLOW QUEUE */}
         {activeTab === 'approvals' && (

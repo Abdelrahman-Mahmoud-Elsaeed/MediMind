@@ -320,6 +320,17 @@ export const Header = () => {
         setMounted(true);
     }, []);
     const isAr = locale === 'ar';
+
+    const handleLogout = async () => {
+        if (typeof window !== 'undefined') {
+            localStorage.clear();
+        }
+        await logout();
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
+    };
+
     return (<header className="sticky top-0 z-30 w-full bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant/30 transition-colors duration-200" suppressHydrationWarning>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
         {/* Left Section: Mobile Brand Logo */}

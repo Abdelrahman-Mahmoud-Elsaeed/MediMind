@@ -26,13 +26,16 @@ export default function LoginComponent() {
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
       const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
-      if (role === "PHARMACIST") {
+      if (role === "ADMIN") {
+        router.replace("/admin-dashboard");
+      } else if (role === "PHARMACIST") {
         router.replace("/pharmacy");
       } else {
         router.replace(role === "PATIENT" ? "/home" : "/dashboard");
       }
     }
   }, [isAuthenticated, isAuthLoading, user, router]);
+
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -205,9 +208,16 @@ export default function LoginComponent() {
       if (loginThunk.fulfilled.match(resultAction)) {
         const userRole = resultAction.payload?.user?.role || resultAction.payload?.role;
         const role = userRole ? String(userRole).toUpperCase() : "PATIENT";
-        router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+        if (role === "ADMIN") {
+          router.replace("/admin-dashboard");
+        } else if (role === "PHARMACIST") {
+          router.replace("/pharmacy");
+        } else {
+          router.replace(role === "PATIENT" ? "/home" : "/dashboard");
+        }
       }
     }
+
     catch (err) { }
   };
   const displayError = parseApiMessage(error, locale, t);

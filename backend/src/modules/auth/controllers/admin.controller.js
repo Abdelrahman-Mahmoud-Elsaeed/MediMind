@@ -77,6 +77,11 @@ class AdminController {
       );
       return result.send(res);
     } catch (error) {
+      logger.error(error, 'Error in admin.updateAccountStatus');
+      next(error);
+    }
+  }
+
   /**
    * GET /api/v1/auth/admin/pending-approvals
    */
@@ -119,4 +124,3 @@ class AdminController {
 }
 
 module.exports = new AdminController();
-

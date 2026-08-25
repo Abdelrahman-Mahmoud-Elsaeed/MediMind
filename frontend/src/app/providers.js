@@ -51,8 +51,17 @@ function AuthInitializer({ children }) {
         }
       } else {
         if (pathname === '/verify') {
-          router.replace(userRole === 'PATIENT' ? '/home' : userRole === 'PHARMACIST' ? '/pharmacy' : '/dashboard');
+          router.replace(
+            userRole === 'PATIENT'
+              ? '/home'
+              : userRole === 'PHARMACIST'
+              ? '/pharmacy'
+              : userRole === 'ADMIN'
+              ? '/admin-dashboard'
+              : '/dashboard'
+          );
         }
+
       }
     } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify') {
       router.replace('/login');

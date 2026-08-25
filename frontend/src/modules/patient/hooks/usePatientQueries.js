@@ -132,7 +132,7 @@ export function useSnoozeDoseMutation() {
 }
 
 // 4. Caregiver Relationships
-export function usePatientRelationshipsQuery() {
+export function usePatientRelationshipsQuery(options = {}) {
   return useQuery({
     queryKey: PATIENT_KEYS.relationships,
     queryFn: async () => {
@@ -140,8 +140,10 @@ export function usePatientRelationshipsQuery() {
       return res?.success ? res.data : (Array.isArray(res) ? res : []);
     },
     staleTime: 1000 * 60 * 5,
+    ...options,
   });
 }
+
 
 export function useInviteCaregiverMutation() {
   const queryClient = useQueryClient();

@@ -1,16 +1,20 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Pill, TrendingUp, Users, User, RefreshCw } from 'lucide-react';
+import { LayoutGrid, Pill, TrendingUp, Users, User, RefreshCw, UserCheck, UserPlus } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import Link from 'next/link';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, setIsSidebarSlim, isMounted = false }) => {
     const pathname = usePathname();
-    const activePath = propsActivePath || pathname || '/home';
+    const searchParams = useSearchParams();
+    const queryString = searchParams?.toString();
+    const fullPath = queryString ? `${pathname}?${queryString}` : pathname;
+    const activePath = propsActivePath || fullPath || '/home';
+
     const { t, locale } = useTranslation();
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -20,9 +24,31 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
     const { user } = useAuth();
 
 
+
     const userRole = mounted ? user?.role : undefined;
+    const isAdmin = userRole === 'ADMIN';
     const isPharmacist = userRole === 'PHARMACIST';
     const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
+
+    const adminNavItems = [
+        {
+            label: isAr ? 'طلبات الاعتماد' : 'Approval Workflow',
+            href: '/admin-dashboard/approvals',
+            icon: UserCheck,
+        },
+        {
+            label: isAr ? 'إنشاء حساب جديد' : 'Single-Entry Creation',
+            href: '/admin-dashboard/create',
+            icon: UserPlus,
+        },
+        {
+            label: isAr ? 'إدارة الحسابات' : 'System Accounts',
+            href: '/admin-dashboard/accounts',
+            icon: Users,
+        },
+    ];
+
+
 
     const pharmacistNavItems = [
         {
@@ -98,7 +124,14 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
         },
     ];
 
-    const navItems = isPharmacist ? pharmacistNavItems : isCaregiver ? caregiverNavItems : patientNavItems;
+    const navItems = isAdmin
+        ? adminNavItems
+        : isPharmacist
+        ? pharmacistNavItems
+        : isCaregiver
+        ? caregiverNavItems
+        : patientNavItems;
+
     return (<>
       <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 ${isMounted ? 'transition-all duration-300 opacity-100' : 'transition-none opacity-0'} ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
         <div className="space-y-8">
@@ -166,7 +199,10 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
             {navItems.map((item) => {
               const isActive =
                 activePath === item.href ||
+                (item.href === '/admin-dashboard/approvals' && (pathname === '/admin-dashboard/approvals' || pathname === '/admin-dashboard')) ||
+
                 (item.href === '/pharmacy' && (activePath === '/pharmacy' || activePath === '/pharmacy/dashboard')) ||
+
                 (item.href === '/pharmacy/orders' && activePath === '/pharmacy/orders') ||
                 (item.href === '/refills' && activePath.startsWith('/refills')) ||
                 (item.href === '/home' && (activePath === '/home' || activePath === '/dashboard' || activePath === '/')) ||
