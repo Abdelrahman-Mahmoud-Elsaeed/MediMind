@@ -34,16 +34,13 @@ export default function LandingHeader() {
   const { locale, t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  const isUserLoggedIn = Boolean(
-    isAuthenticated ||
-    user ||
-    (typeof window !== 'undefined' && (localStorage.getItem('accessToken') || localStorage.getItem('user')))
-  );
+    const hasToken = typeof window !== 'undefined' && (localStorage.getItem('accessToken') || localStorage.getItem('user'));
+    setIsUserLoggedIn(Boolean(isAuthenticated || user || hasToken));
+  }, [isAuthenticated, user]);
 
   const handleLogout = () => {
     dispatch(logoutThunk());

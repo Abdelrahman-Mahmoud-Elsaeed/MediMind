@@ -2,9 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useSelector } from 'react-redux';
-import LandingHeader from './LandingHeader';
 import { useTranslation } from '@/shared/lib/i18nContext';
+
+const LandingHeader = dynamic(() => import('./LandingHeader'), {
+  ssr: false,
+  loading: () => (
+    <header className="fixed top-0 w-full z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm h-20" />
+  ),
+});
 
 export default function LandingPage() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
