@@ -9,6 +9,8 @@ class NotificationsService {
    */
   async createNotification({
     recipientId,
+    recipientAccountId = null,
+    recipientRole = 'PATIENT',
     senderId = null,
     type = 'GENERAL',
     title,
@@ -17,13 +19,16 @@ class NotificationsService {
     messageAr = null,
     data = {},
   }) {
-    if (!recipientId || !title || !message) {
+    const targetId = recipientId || recipientAccountId;
+    if (!targetId || !title || !message) {
       throw new AppError('recipientId, title, and message are required for notifications', 400, 'INVALID_NOTIFICATION_DATA');
     }
 
     // 1. Save to Database (Persistent Source of Truth)
     const notification = await Notification.create({
-      recipientId,
+      recipientId: targetId,
+      recipientAccountId: targetId,
+      recipientRole,
       senderId,
       type,
       title,
@@ -36,7 +41,10 @@ class NotificationsService {
     const payload = {
       id: notification._id.toString(),
       notificationId: notification._id.toString(),
-      recipientId: notification.recipientId.toString(),
+      _id: notification._id.toString(),
+      recipientId: targetId.toString(),
+      recipientAccountId: targetId.toString(),
+      recipientRole,
       senderId: notification.senderId ? notification.senderId.toString() : null,
       type: notification.type,
       title: notification.title,
@@ -51,9 +59,10 @@ class NotificationsService {
 
     // 2. Real-time Delivery via Socket.IO
     try {
-      socketService.sendToUser(recipientId.toString(), 'notification:new', payload);
+      socketService.sendToUser(targetId.toString(), 'notification:new', payload);
+      socketService.sendToUser(targetId.toString(), 'notification', payload);
     } catch (err) {
-      logger.error(`Failed to emit socket notification to user ${recipientId}:`, err);
+      logger.error(`Failed to emit socket notification to user ${targetId}:`, err);
     }
 
     return notification;
@@ -63,7 +72,9 @@ class NotificationsService {
    * Lists persisted notifications for the authenticated user from DB.
    */
   async getUserNotifications(accountId, limit = 50) {
-    const list = await Notification.find({ recipientId: accountId })
+    const list = await Notification.find({
+      $or: [{ recipientAccountId: accountId }, { recipientId: accountId }],
+    })
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
@@ -71,8 +82,11 @@ class NotificationsService {
     return list.map((item) => ({
       id: item._id.toString(),
       notificationId: item._id.toString(),
-      recipientId: item.recipientId.toString(),
+      _id: item._id.toString(),
+      recipientId: item.recipientId ? item.recipientId.toString() : null,
+      recipientAccountId: item.recipientAccountId ? item.recipientAccountId.toString() : null,
       senderId: item.senderId ? item.senderId.toString() : null,
+      recipientRole: item.recipientRole,
       type: item.type,
       title: item.title,
       titleAr: item.titleAr,
@@ -90,7 +104,7 @@ class NotificationsService {
    */
   async getUnreadCount(accountId) {
     const count = await Notification.countDocuments({
-      recipientId: accountId,
+      $or: [{ recipientAccountId: accountId }, { recipientId: accountId }],
       isRead: false,
     });
     return count;
@@ -101,7 +115,10 @@ class NotificationsService {
    */
   async markAsRead(accountId, notificationId) {
     const notification = await Notification.findOneAndUpdate(
-      { _id: notificationId, recipientId: accountId },
+      {
+        _id: notificationId,
+        $or: [{ recipientAccountId: accountId }, { recipientId: accountId }],
+      },
       { isRead: true, readAt: new Date() },
       { new: true }
     );
@@ -118,7 +135,10 @@ class NotificationsService {
    */
   async markAllAsRead(accountId) {
     await Notification.updateMany(
-      { recipientId: accountId, isRead: false },
+      {
+        $or: [{ recipientAccountId: accountId }, { recipientId: accountId }],
+        isRead: false,
+      },
       { isRead: true, readAt: new Date() }
     );
     return { success: true };
@@ -126,3 +146,4 @@ class NotificationsService {
 }
 
 module.exports = new NotificationsService();
+

@@ -63,7 +63,12 @@ export function useSocketNotifications() {
         return [newNotif, ...list];
       });
 
-      // Invalidate relationships queries so UI roster/circle updates instantly
+      // Invalidate relevant queries so UI updates instantly across all views
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['pharmacy'] });
+      queryClient.invalidateQueries({ queryKey: ['refillOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
       queryClient.invalidateQueries({ queryKey: ['patient', 'relationships'] });
       queryClient.invalidateQueries({ queryKey: ['caregiver', 'relationships'] });
     };
@@ -73,14 +78,29 @@ export function useSocketNotifications() {
       queryClient.invalidateQueries({ queryKey: ['patient', 'relationships'] });
       queryClient.invalidateQueries({ queryKey: ['caregiver', 'relationships'] });
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+    };
+
+    const handleRefillOrderEvent = () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['refillOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['pharmacy'] });
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
     };
 
     socket.on('notification:new', handleNewNotification);
+    socket.on('notification', handleNewNotification);
     socket.on('relationship:updated', handleRelationshipUpdated);
+    socket.on('new_refill_order', handleRefillOrderEvent);
+    socket.on('refill_status_updated', handleRefillOrderEvent);
 
     return () => {
       socket.off('notification:new', handleNewNotification);
+      socket.off('notification', handleNewNotification);
       socket.off('relationship:updated', handleRelationshipUpdated);
+      socket.off('new_refill_order', handleRefillOrderEvent);
+      socket.off('refill_status_updated', handleRefillOrderEvent);
     };
   }, [hasToken, queryClient]);
 

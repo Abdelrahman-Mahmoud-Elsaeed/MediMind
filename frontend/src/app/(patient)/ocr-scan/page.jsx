@@ -6,6 +6,7 @@ import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useCreateMedication, useScanMedication } from '@/modules/medication/hooks/useMedicationHooks';
 import { toast } from '@/shared/components/ui/sonner';
+import { Button, Badge, Card, ProgressBar } from '@/shared/components/ui';
 import {
   ArrowLeft,
   Camera,
@@ -124,41 +125,62 @@ export default function PatientOcrScanPage() {
     }
   };
 
+  // Build robust medication payload ensuring all required schema fields exist
+  const buildSavePayload = (med) => {
+    const isChronic = med.isChronic !== undefined ? Boolean(med.isChronic) : true;
+    const startDate = new Date().toISOString().split('T')[0];
+    const endDate = isChronic ? null : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    const initialQuantity = Number(med.inventory?.initialQuantity ?? med.initialQuantity ?? 30) || 30;
+    const currentQuantity = Number(med.inventory?.currentQuantity ?? med.currentQuantity ?? initialQuantity) || initialQuantity;
+    const doseAmount = Number(med.inventory?.doseAmount ?? med.doseAmount ?? 1) || 1;
+    const refillThreshold = Number(med.inventory?.refillThreshold ?? med.refillThreshold ?? 5) || 5;
+
+    const relationToMeals = med.instructions?.relationToMeals || med.relationToMeals || 'NONE';
+    const notes = med.instructions?.notes || med.notes || med.strength || '';
+
+    const frequency = med.schedule?.frequency || med.frequency || 'DAILY';
+    const dosesPerDay = Number(med.schedule?.dosesPerDay || med.dosesPerDay || 1) || 1;
+    const firstDoseTime = med.schedule?.firstDoseTime || med.firstDoseTime || '08:00';
+
+    return {
+      name: med.name || 'Prescription Medication',
+      formType: med.formType || 'TABLET',
+      isChronic,
+      inventory: {
+        initialQuantity,
+        currentQuantity,
+        doseAmount,
+        refillThreshold,
+      },
+      instructions: {
+        relationToMeals,
+        notes,
+      },
+      schedule: {
+        frequency,
+        dosesPerDay,
+        firstDoseTime,
+        startDate,
+        endDate,
+      },
+      expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    };
+  };
+
   // Save single parsed medication
   const handleSaveMedication = async (med, index) => {
     setSavingIndex(index);
     try {
-      const isChronic = med.isChronic !== undefined ? Boolean(med.isChronic) : true;
-      const startDate = new Date().toISOString().split('T')[0];
-      const endDate = isChronic ? null : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-      await createMedicationMutation.mutateAsync({
-        name: med.name,
-        formType: med.formType || 'TABLET',
-        isChronic,
-        inventory: med.inventory || {
-          initialQuantity: 30,
-          currentQuantity: 30,
-          doseAmount: 1,
-          refillThreshold: 5,
-        },
-        instructions: med.instructions || {
-          relationToMeals: 'NONE',
-          notes: med.strength || '',
-        },
-        schedule: {
-          frequency: med.schedule?.frequency || 'DAILY',
-          dosesPerDay: med.schedule?.dosesPerDay || 1,
-          firstDoseTime: med.schedule?.firstDoseTime || '08:00',
-          startDate,
-          endDate,
-        },
-        expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      });
+      const payload = buildSavePayload(med);
+      await createMedicationMutation.mutateAsync(payload);
 
       toast.success(isAr ? `تمت إضافة "${med.name}" بنجاح!` : `Added "${med.name}" Successfully!`, {
         description: isAr ? 'تم حفظ الدواء في خزانة الأدوية الخاصة بك.' : 'Medication added to your cabinet.',
       });
+      setTimeout(() => {
+        router.push('/medications');
+      }, 700);
     } catch (err) {
       console.error('Failed to save medication:', err);
       const errMsg = err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || '';
@@ -178,33 +200,8 @@ export default function PatientOcrScanPage() {
 
     for (const med of parsedMedications) {
       try {
-        const isChronic = med.isChronic !== undefined ? Boolean(med.isChronic) : true;
-        const startDate = new Date().toISOString().split('T')[0];
-        const endDate = isChronic ? null : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-        await createMedicationMutation.mutateAsync({
-          name: med.name,
-          formType: med.formType || 'TABLET',
-          isChronic,
-          inventory: med.inventory || {
-            initialQuantity: 30,
-            currentQuantity: 30,
-            doseAmount: 1,
-            refillThreshold: 5,
-          },
-          instructions: med.instructions || {
-            relationToMeals: 'NONE',
-            notes: med.strength || '',
-          },
-          schedule: {
-            frequency: med.schedule?.frequency || 'DAILY',
-            dosesPerDay: med.schedule?.dosesPerDay || 1,
-            firstDoseTime: med.schedule?.firstDoseTime || '08:00',
-            startDate,
-            endDate,
-          },
-          expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        });
+        const payload = buildSavePayload(med);
+        await createMedicationMutation.mutateAsync(payload);
         successCount++;
       } catch (err) {
         console.error('Failed to save medication in batch:', med.name, err);

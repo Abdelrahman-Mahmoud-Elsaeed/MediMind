@@ -425,7 +425,7 @@ export default function PatientHomeComponent() {
   });
 
   return (
-    <MainLayout activeTab="home">
+    <MainLayout activePath="/home">
       <div className="space-y-8 pb-12">
         {/* Welcome Banner */}
         <WelcomeBanner

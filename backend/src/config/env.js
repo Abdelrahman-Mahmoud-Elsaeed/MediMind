@@ -70,7 +70,7 @@ const env = {
   QWEN_MODEL: process.env.QWEN_MODEL || 'qwen-vl-max',
 
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 };
 
 

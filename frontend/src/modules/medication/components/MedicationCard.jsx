@@ -14,8 +14,9 @@ const BottleSpoonIcon = ({ className = 'w-6 h-6' }) => (<svg className={classNam
     {/* Spoon beside bottle */}
     <path d="M17 7C16.17 7 15.5 7.67 15.5 8.5C15.5 9.15 15.91 9.7 16.5 9.9V18.5C16.5 19.33 17.17 20 18 20C18.83 20 19.5 19.33 19.5 18.5V9.9C20.09 9.7 20.5 9.15 20.5 8.5C20.5 7.67 19.83 7 19 7H17Z"/>
   </svg>);
-export const MedicationCard = ({ medication, onEdit, onSchedule, onRefill, }) => {
+export const MedicationCard = ({ medication, onEdit, onSchedule, onRefill, onDelete, }) => {
     const isUrgent = medication.status === 'urgent';
+    const medId = medication.id || medication._id;
     const iconBgMap = {
         pill: 'bg-primary-container/20 text-primary',
         bottle: 'bg-primary-container/20 text-primary',
@@ -47,6 +48,12 @@ export const MedicationCard = ({ medication, onEdit, onSchedule, onRefill, }) =>
       </div>
 
       {/* Action Buttons Row */}
-      <MedicationActions onEdit={() => onEdit?.(medication.id)} onSchedule={() => onSchedule?.(medication.id)} onRefill={() => onRefill?.(medication.id)} isUrgent={isUrgent}/>
+      <MedicationActions
+        onEdit={() => onEdit?.(medId)}
+        onSchedule={() => onSchedule?.(medId)}
+        onRefill={() => onRefill?.(medId)}
+        onDelete={() => onDelete?.(medId, medication.name)}
+        isUrgent={isUrgent}
+      />
     </motion.div>);
 };

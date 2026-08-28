@@ -12,20 +12,17 @@ import { useCaregiverProfileQuery } from '@/modules/caregiver/hooks/useCaregiver
 export const SidebarFooter = ({ isSidebarSlim = false }) => {
   const { t, locale } = useTranslation();
   const { user, logout } = useAuth();
+
   const isAr = locale === 'ar';
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const activeUser = mounted ? user : null;
+  const activeUser = user;
   const userRoleStr = activeUser?.role;
   const isPharmacist = userRoleStr === 'PHARMACIST';
   const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRoleStr);
 
-  const { data: patientProfile } = usePatientProfileQuery({ enabled: Boolean(mounted && activeUser && !isCaregiver && !isPharmacist) });
-  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: Boolean(mounted && activeUser && isCaregiver) });
+  const { data: patientProfile } = usePatientProfileQuery({ enabled: Boolean(activeUser && !isCaregiver && !isPharmacist) });
+  const { data: caregiverProfile } = useCaregiverProfileQuery({ enabled: Boolean(activeUser && isCaregiver) });
+
 
   const activeProfile = isCaregiver ? caregiverProfile : patientProfile;
 

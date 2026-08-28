@@ -6,7 +6,7 @@ import CaregiverProfileComponent from '@/modules/caregiver/components/CaregiverP
 
 export default function CaregiverProfile() {
   return (
-    <MainLayout>
+    <MainLayout activePath="/profile">
       <CaregiverProfileComponent />
     </MainLayout>
   );

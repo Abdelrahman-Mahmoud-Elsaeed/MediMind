@@ -50,14 +50,25 @@ export function useNotifications(params = {}) {
       queryClient.invalidateQueries({ queryKey: ['medications'] });
     };
 
+    const handleRelationshipUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['caregiver', 'relationships'] });
+    };
+
     socket.on('notification', handleNewNotification);
+    socket.on('notification:new', handleNewNotification);
     socket.on('new_refill_order', handleNewRefillOrder);
     socket.on('refill_status_updated', handleRefillStatusUpdated);
+    socket.on('relationship:updated', handleRelationshipUpdated);
 
     return () => {
       socket.off('notification', handleNewNotification);
+      socket.off('notification:new', handleNewNotification);
       socket.off('new_refill_order', handleNewRefillOrder);
       socket.off('refill_status_updated', handleRefillStatusUpdated);
+      socket.off('relationship:updated', handleRelationshipUpdated);
     };
   }, [isAuthenticated, queryClient]);
 

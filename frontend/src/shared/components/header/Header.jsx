@@ -18,12 +18,7 @@ import {
   useUpdateRelationshipStatusMutation as useUpdateCaregiverStatusMutation 
 } from '@/modules/caregiver/hooks/useCaregiverQueries';
 import { useRouter } from 'next/navigation';
-import {
-  useNotifications,
-  useUnreadNotificationCount,
-  useMarkNotificationRead,
-  useMarkAllNotificationsRead,
-} from '@/modules/notifications/hooks/useNotifications';
+
 
 // Helper for formatting relative time
 function formatRelativeTime(dateString, isAr) {
@@ -69,15 +64,12 @@ function NotificationPopover({ locale, t }) {
   const menuRef = useRef(null);
   const { user } = useAuth();
 
-  const { notifications: socketNotifs = [], unreadCount: socketUnreadCount = 0, markAsRead: socketMarkAsRead, markAllAsRead: socketMarkAllAsRead } = useSocketNotifications() || {};
-
-  const { data: notificationsData } = useNotifications();
-  const { data: apiUnreadCount = 0 } = useUnreadNotificationCount();
-  const markReadMutation = useMarkNotificationRead();
-  const markAllMutation = useMarkAllNotificationsRead();
-
-  const apiNotifications = notificationsData?.data || (Array.isArray(notificationsData) ? notificationsData : []);
-  const notifications = apiNotifications.length > 0 ? apiNotifications : socketNotifs;
+  const {
+    notifications = [],
+    unreadCount = 0,
+    markAsRead,
+    markAllAsRead,
+  } = useSocketNotifications() || {};
 
   const isCaregiverRole = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(user?.role);
 
@@ -91,8 +83,7 @@ function NotificationPopover({ locale, t }) {
     ? caregiverRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT')
     : patientRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
 
-  const notifUnreadCount = apiUnreadCount || socketUnreadCount || 0;
-  const totalUnread = pendingIncoming.length + notifUnreadCount;
+  const totalUnread = pendingIncoming.length + (unreadCount || 0);
 
   const handleResponse = (relationshipId, status) => {
     if (isCaregiverRole) {
@@ -103,14 +94,12 @@ function NotificationPopover({ locale, t }) {
   };
 
   const markAllRead = () => {
-    markAllMutation.mutate();
-    if (socketMarkAllAsRead) socketMarkAllAsRead();
+    if (markAllAsRead) markAllAsRead();
   };
 
   const markItemRead = (id) => {
-    if (id) {
-      markReadMutation.mutate(id);
-      if (socketMarkAsRead) socketMarkAsRead(id);
+    if (id && markAsRead) {
+      markAsRead(id);
     }
   };
 
@@ -186,7 +175,7 @@ function NotificationPopover({ locale, t }) {
                 </span>
               )}
             </div>
-            {notifUnreadCount > 0 && (
+            {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
                 className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
