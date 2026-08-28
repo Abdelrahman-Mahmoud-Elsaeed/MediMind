@@ -88,6 +88,7 @@ class MedicationsService {
 
     const medication = new Medication({
       patientId,
+      addedBy: userAccountId,
       medicalConditionId: associatedCondition ? associatedCondition._id : null,
       name: payload.name,
       dosage: payload.dosage,

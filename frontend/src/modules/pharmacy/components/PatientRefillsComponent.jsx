@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useRefillOrders, useCreateRefillOrder, usePharmacies } from '../hooks/usePharmacyHooks';
@@ -10,6 +11,7 @@ import { getSocket } from '@/shared/lib/socketClient';
 import { showSuccess, showError, showWarning } from '@/shared/components/ui/toast';
 
 export default function PatientRefillsComponent() {
+  const queryClient = useQueryClient();
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
   const [activeTab, setActiveTab] = useState('ALL');
@@ -49,18 +51,44 @@ export default function PatientRefillsComponent() {
 
     const handleStatusUpdate = (data) => {
       const statusTitle = isAr ? 'تحديث حالة طلب الدواء' : 'Refill Status Updated';
-      const statusMsg = isAr
-        ? `قام الصيدلي بتحديث حالة طلبك إلى: ${data.orderStatus}`
-        : `Pharmacy updated your refill order to: ${data.orderStatus}`;
+      const statusMsg = isAr && data?.messageAr
+        ? data.messageAr
+        : (isAr
+          ? `قام الصيدلي بتحديث حالة طلبك إلى: ${data?.orderStatus || ''}`
+          : `Pharmacy updated your refill order to: ${data?.orderStatus || ''}`);
+
       setLiveToast({ title: statusTitle, message: statusMsg });
+      showNotification({
+        title: statusTitle,
+        message: statusMsg,
+        type: 'info',
+        isRtl: isAr,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['pharmacy'] });
+      queryClient.invalidateQueries({ queryKey: ['refillOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
       setTimeout(() => setLiveToast(null), 5000);
     };
 
+    const handleNewNotif = (notif) => {
+      if (notif?.type === 'REFILL_ORDER_UPDATED') {
+        handleStatusUpdate(notif);
+      }
+    };
+
     socket.on('refill_status_updated', handleStatusUpdate);
+    socket.on('notification:new', handleNewNotif);
+    socket.on('notification', handleNewNotif);
+
     return () => {
       socket.off('refill_status_updated', handleStatusUpdate);
+      socket.off('notification:new', handleNewNotif);
+      socket.off('notification', handleNewNotif);
     };
-  }, [isAr]);
+  }, [isAr, queryClient]);
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();

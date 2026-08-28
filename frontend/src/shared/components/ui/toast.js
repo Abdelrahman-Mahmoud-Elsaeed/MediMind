@@ -123,7 +123,6 @@ export const showToast = (options = {}) => {
   showNotification({ title, message, type, duration, isRtl });
 };
 
-export { showToast };
 
 export function showError(message, title, options = {}) {
   showNotification({ message, title, type: 'error', ...options });

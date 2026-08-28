@@ -1,5 +1,16 @@
-const { initSocket, getIO, emitToUser, emitToPharmacy, emitToRole } = require('../../config/socket');
+const {
+  initSocket,
+  getIO,
+  emitToUser,
+  emitToUsers,
+  emitToPharmacy,
+  emitToRole,
+  emitToRoom,
+  broadcast,
+} = require('../../config/socket');
+const { socketService } = require('../../modules/socket');
 const notificationService = require('../../modules/notifications/services/notification.service');
+const notificationsService = require('../../modules/notifications/services/notifications.service');
 const Notification = require('../../modules/notifications/models/Notification.model');
 const http = require('http');
 const app = require('../../app');
@@ -21,13 +32,17 @@ describe('Notifications & Socket.IO Unit and Integration Tests', () => {
 
   it('should initialize Socket.IO server properly', () => {
     expect(getIO()).toBeDefined();
+    expect(socketService.getConnectedSocketsCount()).toBeGreaterThanOrEqual(0);
   });
 
-  it('should safely execute emitToUser, emitToPharmacy, and emitToRole without throwing', () => {
+  it('should safely execute all socket emit helpers without throwing', () => {
     expect(() => {
       emitToUser('account_123', 'test_event', { sample: 1 });
+      emitToUsers(['account_123', 'account_456'], 'test_event', { sample: 2 });
       emitToPharmacy('pharm_123', 'new_refill_order', { orderId: 'rx_99' });
       emitToRole('PHARMACIST', 'broadcast_alert', { text: 'Hello' });
+      emitToRoom('room_1', 'custom_event', { key: 'val' });
+      broadcast('system_ping', { ok: true });
     }).not.toThrow();
   });
 
@@ -54,5 +69,12 @@ describe('Notifications & Socket.IO Unit and Integration Tests', () => {
     expect(typeof notificationService.markAllAsRead).toBe('function');
     expect(typeof notificationService.getUnreadCount).toBe('function');
     expect(typeof notificationService.deleteNotification).toBe('function');
+
+    expect(typeof notificationsService.createNotification).toBe('function');
+    expect(typeof notificationsService.getUserNotifications).toBe('function');
+    expect(typeof notificationsService.getUnreadCount).toBe('function');
+    expect(typeof notificationsService.markAsRead).toBe('function');
+    expect(typeof notificationsService.markAllAsRead).toBe('function');
   });
 });
+

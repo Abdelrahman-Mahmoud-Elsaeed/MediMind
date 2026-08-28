@@ -315,7 +315,7 @@ function mapBackendMedicationToUi(item) {
     currentStock,
     totalStock,
     refillThreshold,
-    inventory: item.inventory || { currentQuantity: currentQuantity, initialQuantity: totalStock, refillThreshold },
+    inventory: item.inventory || { currentQuantity: currentStock, initialQuantity: totalStock, refillThreshold },
     instructions: item.instructions || { relationToMeals: item.relationToMeals || 'NONE', notes: item.dosage },
     schedule: item.schedule || { frequency: 'DAILY', firstDoseTime: item.time || '08:00' },
     unit: 'UNITS',

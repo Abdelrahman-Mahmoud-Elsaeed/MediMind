@@ -11,7 +11,7 @@ import { MedicationGrid } from './MedicationGrid';
 import { AddMedicationModal } from './AddMedicationModal';
 import { mockMedications, mockRefillRequests } from '../types/medication.data';
 import { useTranslation } from '@/shared/lib/i18nContext';
-import { useMedications, useCreateMedication, useRefillOrders, useCreateRefillOrder } from '@/modules/medication/hooks/useMedicationHooks';
+import { useMedications, useCreateMedication, useRefillOrders, useCreateRefillOrder, useDeleteMedication } from '@/modules/medication/hooks/useMedicationHooks';
 import { usePatientDosesQuery } from '@/modules/patient/hooks/usePatientQueries';
 import { Card, Badge, Button } from '@/shared/components/ui';
 import { showSuccess, showError, showInfo } from '@/shared/components/ui/toast';
@@ -96,6 +96,7 @@ export const MedicationCabinet = () => {
   const { data: apiRefillRequests } = useRefillOrders();
   const createMedicationMutation = useCreateMedication();
   const createRefillMutation = useCreateRefillOrder();
+  const deleteMedicationMutation = useDeleteMedication();
 
   const medicationsList = useMemo(() => {
     return apiMedications || [];
@@ -141,6 +142,32 @@ export const MedicationCabinet = () => {
         isAr ? 'حدث خطأ' : 'Error'
       ),
     });
+  };
+
+  const handleDeleteMedication = (id, name) => {
+    const targetId = id || id?._id;
+    if (!targetId) return;
+
+    const confirmMessage = isAr
+      ? `هل أنت تأكد من رغبتك في حذف الدواء${name ? ` "${name}"` : ''}؟`
+      : `Are you sure you want to delete ${name ? `"${name}"` : 'this medication'}?`;
+
+    if (window.confirm(confirmMessage)) {
+      deleteMedicationMutation.mutate(targetId, {
+        onSuccess: () => {
+          showSuccess(
+            isAr ? 'تم حذف الدواء بنجاح من الخزانة.' : 'Medication deleted from cabinet successfully.',
+            isAr ? 'تم بنجاح' : 'Success'
+          );
+        },
+        onError: (err) => {
+          showError(
+            err?.response?.data?.message || (isAr ? 'تعذر حذف الدواء. يرجى المحاولة لاحقًا.' : 'Unable to delete medication. Please try again.'),
+            isAr ? 'حدث خطأ' : 'Error'
+          );
+        },
+      });
+    }
   };
 
   const lowStockCount = useMemo(() => {
@@ -196,6 +223,7 @@ export const MedicationCabinet = () => {
             onEdit={(id) => router.push(`/medications/edit/${id}`)}
             onSchedule={(id) => router.push(`/medications/${id}`)}
             onRefill={handleRefillOrder}
+            onDelete={handleDeleteMedication}
           />
         )}
 

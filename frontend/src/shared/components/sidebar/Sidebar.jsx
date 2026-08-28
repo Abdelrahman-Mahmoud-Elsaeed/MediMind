@@ -1,6 +1,17 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Pill, TrendingUp, Users, User, RefreshCw, UserCheck, UserPlus } from 'lucide-react';
+import React from 'react';
+import {
+  LayoutGrid,
+  Pill,
+  TrendingUp,
+  Users,
+  User,
+  RefreshCw,
+  UserCheck,
+  UserPlus,
+  PanelLeftClose,
+  Menu,
+} from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { SidebarFooter } from './SidebarFooter';
 import { useTranslation } from '@/shared/lib/i18nContext';
@@ -8,7 +19,7 @@ import Link from 'next/link';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, setIsSidebarSlim, isMounted = false }) => {
+export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, setIsSidebarSlim }) => {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const queryString = searchParams?.toString();
@@ -16,16 +27,10 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
     const activePath = propsActivePath || fullPath || '/home';
 
     const { t, locale } = useTranslation();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-    const isAr = (mounted || isMounted) && locale === 'ar';
+    const isAr = locale === 'ar';
     const { user } = useAuth();
 
-
-
-    const userRole = mounted ? user?.role : undefined;
+    const userRole = user?.role;
     const isAdmin = userRole === 'ADMIN';
     const isPharmacist = userRole === 'PHARMACIST';
     const isCaregiver = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER'].includes(userRole);
@@ -47,8 +52,6 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
             icon: Users,
         },
     ];
-
-
 
     const pharmacistNavItems = [
         {
@@ -132,12 +135,15 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
         ? caregiverNavItems
         : patientNavItems;
 
-    return (<>
-      <aside className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 ${isMounted ? 'transition-all duration-300 opacity-100' : 'transition-none opacity-0'} ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`} suppressHydrationWarning>
-        <div className="space-y-8">
+    return (
+      <aside
+        className={`hidden lg:flex shrink-0 h-screen sticky top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 rtl:border-r-0 rtl:border-l flex-col justify-between z-30 transition-all duration-300 ${isSidebarSlim ? 'w-20 p-3' : 'w-[280px] p-6'}`}
+        suppressHydrationWarning
+      >
+        <div className="space-y-8" suppressHydrationWarning>
           {/* Brand Header & Toggle Button */}
           {!isSidebarSlim ? (
-            <div className="flex items-center gap-2 w-full transition-all duration-300">
+            <div className="flex items-center gap-2 w-full transition-all duration-300" suppressHydrationWarning>
               {setIsSidebarSlim && (
                 <button
                   type="button"
@@ -145,32 +151,31 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
                   className="hidden lg:flex p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer items-center justify-center shrink-0"
                   aria-label="Toggle Sidebar"
                   title="Toggle Sidebar"
+                  suppressHydrationWarning
                 >
-                  <span className="material-symbols-outlined !text-[24px]">
-                    menu_open
-                  </span>
+                  <PanelLeftClose className="w-5 h-5 text-on-surface-variant" />
                 </button>
               )}
 
-              <Link href="/home" className="flex items-center gap-3 group cursor-pointer overflow-hidden transition-all duration-300">
+              <Link href="/home" className="flex items-center gap-3 group cursor-pointer overflow-hidden transition-all duration-300" suppressHydrationWarning>
                 <img
                   src="/images/logo.png"
                   alt="MediMind Logo"
                   className="w-10 h-10 object-contain rounded-2xl shadow-md group-hover:scale-105 transition-transform shrink-0"
                 />
-                <div>
-                  <h1 className="text-xl font-black tracking-tight leading-tight whitespace-nowrap">
+                <div suppressHydrationWarning>
+                  <h1 className="text-xl font-black tracking-tight leading-tight whitespace-nowrap" suppressHydrationWarning>
                     <span className="text-[#0047ba] dark:text-[#3b82f6]">Medi</span>
                     <span className="text-[#00a396] dark:text-[#14b8a6]">Mind</span>
                   </h1>
-                  <p className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+                  <p className="text-xs font-semibold text-on-surface-variant whitespace-nowrap" suppressHydrationWarning>
                     {t('common.nav.healthcareDashboard')}
                   </p>
                 </div>
               </Link>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4 w-full transition-all duration-300">
+            <div className="flex flex-col items-center gap-4 w-full transition-all duration-300" suppressHydrationWarning>
               {setIsSidebarSlim && (
                 <button
                   type="button"
@@ -178,14 +183,13 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
                   className="hidden lg:flex p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer items-center justify-center shrink-0"
                   aria-label="Toggle Sidebar"
                   title="Toggle Sidebar"
+                  suppressHydrationWarning
                 >
-                  <span className="material-symbols-outlined !text-[24px]">
-                    menu
-                  </span>
+                  <Menu className="w-5 h-5 text-on-surface-variant" />
                 </button>
               )}
 
-              <Link href="/home" className="flex items-center justify-center group cursor-pointer" title="MediMind">
+              <Link href="/home" className="flex items-center justify-center group cursor-pointer" title="MediMind" suppressHydrationWarning>
                 <img
                   src="/images/logo.png"
                   alt="MediMind Logo"
@@ -194,6 +198,7 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
               </Link>
             </div>
           )}
+
 
           <nav className="space-y-1.5">
             {navItems.map((item) => {
@@ -229,5 +234,5 @@ export const Sidebar = ({ activePath: propsActivePath, isSidebarSlim = false, se
         {/* Sidebar Footer */}
         <SidebarFooter isSidebarSlim={isSidebarSlim} />
       </aside>
-    </>);
+    );
 };

@@ -64,7 +64,7 @@ export default function CareCircleComponent() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout activePath="/caregivers">
       <div dir={dir} className="p-6 md:p-10 max-w-6xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
@@ -153,52 +153,68 @@ export default function CareCircleComponent() {
                 const isStatusActive = rel.status === "ACTIVE" || rel.status === "ACCEPTED";
 
                 return (
-                  <Card key={rel.id || rel._id || rel.relationshipId} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-all space-y-5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 font-black text-xl flex items-center justify-center border border-teal-500/20">
+                  <Card key={rel.id || rel._id || rel.relationshipId} className="relative p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden space-y-4 group">
+                    <div className="space-y-4">
+                      {/* Card Header: Avatar, Name, Email, Status Badge */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-12 h-12 shrink-0 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 font-black text-xl flex items-center justify-center border border-teal-500/20 shadow-2xs">
                             {name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">{name}</h3>
-                            <p className="text-xs text-slate-500">{email || phone}</p>
-                            <span className="inline-block mt-1 text-[10px] uppercase font-semibold text-teal-600 bg-teal-50 dark:bg-teal-950/40 px-2 py-0.5 rounded-md">
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base tracking-tight truncate" title={name}>
+                              {name}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={email || phone}>
+                              {email || phone}
+                            </p>
+                            <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 dark:border-teal-900/40 px-2 py-0.5 rounded-lg mt-1">
                               {relationLabel}
                             </span>
                           </div>
                         </div>
 
-                        <Badge variant={isStatusActive ? "default" : "secondary"}>
+                        <Badge variant={isStatusActive ? "success" : "warning"} className="shrink-0 font-bold whitespace-nowrap shadow-2xs">
                           {isStatusActive ? t('caregiver.careCircle.statusActive', 'Active') : t('caregiver.careCircle.statusPending', 'Pending')}
                         </Badge>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <div className="flex justify-between">
-                          <span>{t('caregiver.careCircle.manageMeds', 'Manage Medications')}</span>
-                          <span className={canManageMeds ? "text-teal-600 font-bold" : "text-slate-400"}>
+                      {/* Permissions Container */}
+                      <div className="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-3.5 space-y-2.5 text-xs font-semibold">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-slate-600 dark:text-slate-300">{t('caregiver.careCircle.manageMeds', 'Manage Medications')}</span>
+                          <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold ${
+                            canManageMeds 
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' 
+                              : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-500 dark:text-slate-400'
+                          }`}>
                             {canManageMeds ? t('caregiver.careCircle.allowed', 'Allowed') : t('caregiver.careCircle.disabled', 'Disabled')}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>{t('caregiver.careCircle.viewRecords', 'View Medical Records')}</span>
-                          <span className={canViewRecords ? "text-teal-600 font-bold" : "text-slate-400"}>
+
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-slate-600 dark:text-slate-300">{t('caregiver.careCircle.viewRecords', 'View Medical Records')}</span>
+                          <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold ${
+                            canViewRecords 
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' 
+                              : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-500 dark:text-slate-400'
+                          }`}>
                             {canViewRecords ? t('caregiver.careCircle.allowed', 'Allowed') : t('caregiver.careCircle.disabled', 'Disabled')}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-2 flex items-center gap-2">
+                    {/* Revoke Action Button */}
+                    <div className="pt-3">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => revokeRelationship(rel.id || rel.relationshipId)}
-                        className="w-full text-rose-600 hover:bg-rose-50 border-rose-200 font-bold"
+                        className="w-full bg-rose-50/80 hover:bg-rose-100/80 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/40 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 py-2.5 cursor-pointer shadow-2xs"
                       >
-                        <Trash2 className="w-4 h-4 mr-1.5" />
-                        {t('caregiver.careCircle.revokeAccess', 'Revoke Access')}
+                        <Trash2 className="w-4 h-4" />
+                        <span>{t('caregiver.careCircle.revokeAccess', 'Revoke Access')}</span>
                       </Button>
                     </div>
                   </Card>

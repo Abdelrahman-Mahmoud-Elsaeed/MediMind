@@ -92,8 +92,10 @@ class RefillService {
         recipientAccountId: pharmacist.accountId,
         recipientRole: 'PHARMACIST',
         type: 'REFILL_ORDER_CREATED',
-        title: 'New Refill Request / طلب تعبئة جديد',
+        title: `New Refill Request: ${medication.name}`,
+        titleAr: `طلب صرف دواء جديد: ${medication.name}`,
         message: `New refill request for ${medication.name} (${order.quantityRequested} units).`,
+        messageAr: `طلب تعبئة جديد لدواء ${medication.name} (${order.quantityRequested} وحدة).`,
         data: {
           refillOrderId: order._id,
           medicationId: medication._id,
@@ -101,11 +103,13 @@ class RefillService {
           quantityRequested: order.quantityRequested,
           fulfillmentType: order.fulfillmentType,
           patientId: order.patientId,
+          orderStatus: order.orderStatus,
+          totalAmount: order.totalAmount,
         },
         targetPharmacyId: pharmacist._id,
       });
     } catch (notifErr) {
-      // Non-blocking
+      logger.error('Error creating refill order notification:', notifErr);
     }
 
     return order;
@@ -151,21 +155,31 @@ class RefillService {
       const { notificationService } = require('../../notifications');
       const patient = await Patient.findById(order.patientId);
       if (patient && patient.accountId) {
-        const statusLabels = {
-          APPROVED: 'Approved / تمت الموافقة عليه',
-          DISPENSED: 'Dispensed / تم تجهيز وصرف الدواء',
-          READY_FOR_PICKUP: 'Ready for Pickup / جاهز للاستلام أو التوصيل',
-          COMPLETED: 'Completed / تم التسليم بنجاح',
-          REJECTED: 'Rejected / تم رفض الطلب',
+        const statusLabelsEn = {
+          APPROVED: 'Approved',
+          DISPENSED: 'Dispensed',
+          READY_FOR_PICKUP: 'Ready for Pickup / Delivery',
+          COMPLETED: 'Completed',
+          REJECTED: 'Rejected',
         };
-        const statusText = statusLabels[payload.orderStatus] || payload.orderStatus;
+        const statusLabelsAr = {
+          APPROVED: 'تمت الموافقة على الطلب',
+          DISPENSED: 'تم تجهيز وصرف الدواء',
+          READY_FOR_PICKUP: 'جاهز للاستلام أو التوصيل',
+          COMPLETED: 'تم التسليم بنجاح',
+          REJECTED: 'تم رفض الطلب',
+        };
+        const statusTextEn = statusLabelsEn[payload.orderStatus] || payload.orderStatus;
+        const statusTextAr = statusLabelsAr[payload.orderStatus] || payload.orderStatus;
 
         await notificationService.createAndSendNotification({
           recipientAccountId: patient.accountId,
           recipientRole: 'PATIENT',
           type: 'REFILL_ORDER_UPDATED',
-          title: 'Refill Order Update / تحديث حالة طلب الدواء',
-          message: `Your refill request status has been updated to: ${statusText}`,
+          title: `Refill Order Status: ${statusTextEn}`,
+          titleAr: `حالة طلب الدواء: ${statusTextAr}`,
+          message: `Your refill request status has been updated to: ${statusTextEn}`,
+          messageAr: `تم تحديث حالة طلب الدواء الخاص بك إلى: ${statusTextAr}`,
           data: {
             refillOrderId: order._id,
             medicationId: order.medicationId,
@@ -175,8 +189,9 @@ class RefillService {
         });
       }
     } catch (notifErr) {
-      // Non-blocking
+      logger.error('Error creating refill order status notification:', notifErr);
     }
+
 
     return order;
   }

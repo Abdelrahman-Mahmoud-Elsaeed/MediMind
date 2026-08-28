@@ -11,20 +11,27 @@ class NotificationService {
    */
   async createAndSendNotification({
     recipientAccountId,
+    recipientId,
     recipientRole,
     type = 'GENERAL',
     title,
+    titleAr,
     message,
+    messageAr,
     data = {},
     targetPharmacyId = null,
   }) {
     try {
+      const targetId = recipientId || recipientAccountId;
       const notification = new Notification({
-        recipientAccountId,
+        recipientId: targetId,
+        recipientAccountId: targetId,
         recipientRole,
         type,
         title,
+        titleAr: titleAr || null,
         message,
+        messageAr: messageAr || null,
         data,
       });
 
@@ -33,22 +40,28 @@ class NotificationService {
       // Real-time dispatch via Socket.IO
       const payload = {
         _id: notification._id,
-        id: notification._id,
-        recipientAccountId,
+        id: notification._id.toString(),
+        notificationId: notification._id.toString(),
+        recipientId: targetId ? targetId.toString() : null,
+        recipientAccountId: targetId ? targetId.toString() : null,
         recipientRole,
         type,
         title,
+        titleAr: titleAr || null,
         message,
+        messageAr: messageAr || null,
         data,
         isRead: false,
         createdAt: notification.createdAt,
       };
 
-      // 1. Send generic 'notification' event to personal user room
-      if (recipientAccountId) {
-        emitToUser(recipientAccountId, 'notification', payload);
+      // 1. Send generic 'notification' & 'notification:new' event to personal user room
+      if (targetId) {
+        const targetIdStr = targetId.toString();
+        emitToUser(targetIdStr, 'notification', payload);
+        emitToUser(targetIdStr, 'notification:new', payload);
         // 1b. Dispatch PWA Web Push notification asynchronously
-        this.sendWebPushNotification(recipientAccountId, {
+        this.sendWebPushNotification(targetIdStr, {
           title,
           message,
           type,
@@ -60,14 +73,20 @@ class NotificationService {
       // 2. Specialized domain events for instant UI reactivity
       if (type === 'REFILL_ORDER_CREATED') {
         if (targetPharmacyId) {
-          emitToPharmacy(targetPharmacyId, 'new_refill_order', payload);
-        } else {
-          emitToRole('PHARMACIST', 'new_refill_order', payload);
+          emitToPharmacy(targetPharmacyId.toString(), 'new_refill_order', payload);
+        }
+        emitToRole('PHARMACIST', 'new_refill_order', payload);
+        if (targetId) {
+          emitToUser(targetId.toString(), 'new_refill_order', payload);
         }
       } else if (type === 'REFILL_ORDER_UPDATED') {
         if (recipientAccountId) {
-          emitToUser(recipientAccountId, 'refill_status_updated', payload);
+          emitToUser(recipientAccountId.toString(), 'refill_status_updated', payload);
         }
+        if (targetId && targetId.toString() !== recipientAccountId?.toString()) {
+          emitToUser(targetId.toString(), 'refill_status_updated', payload);
+        }
+        emitToRole('PATIENT', 'refill_status_updated', payload);
       }
 
       logger.info(`Notification created & dispatched: [${type}] to user ${recipientAccountId}`);

@@ -1,10 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/shared/components/layout/MainLayout';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { useRefillOrders, useUpdateRefillStatus } from '../hooks/usePharmacyHooks';
 import { getSocket } from '@/shared/lib/socketClient';
+import { showNotification } from '@/shared/components/ui/toast';
 
 export default function PharmacistOrdersComponent() {
+  const queryClient = useQueryClient();
   const { t, locale } = useTranslation();
   const isAr = locale === 'ar';
 
@@ -23,18 +26,41 @@ export default function PharmacistOrdersComponent() {
     if (!socket) return;
 
     const handleNewOrder = (data) => {
-      showToast(
-        isAr
-          ? '🔔 طلب صرف دواء جديد وارد الآن من المريض!'
-          : '🔔 New incoming refill request received!'
-      );
+      const orderTitle = isAr ? 'طلب صرف دواء جديد' : 'New Refill Request';
+      const orderMsg = isAr && data?.messageAr
+        ? data.messageAr
+        : (isAr ? '🔔 طلب صرف دواء جديد وارد الآن من المريض!' : '🔔 New incoming refill request received!');
+
+      showToast(orderMsg);
+      showNotification({
+        title: orderTitle,
+        message: orderMsg,
+        type: 'info',
+        isRtl: isAr,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['pharmacy'] });
+      queryClient.invalidateQueries({ queryKey: ['refillOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+    };
+
+    const handleNewNotif = (notif) => {
+      if (notif?.type === 'REFILL_ORDER_CREATED') {
+        handleNewOrder(notif);
+      }
     };
 
     socket.on('new_refill_order', handleNewOrder);
+    socket.on('notification:new', handleNewNotif);
+    socket.on('notification', handleNewNotif);
+
     return () => {
       socket.off('new_refill_order', handleNewOrder);
+      socket.off('notification:new', handleNewNotif);
+      socket.off('notification', handleNewNotif);
     };
-  }, [isAr]);
+  }, [isAr, queryClient]);
 
   // Metrics calculation
   const metrics = useMemo(() => {

@@ -4,17 +4,32 @@ const { logger } = require('../../../shared/utils/logger');
 
 /**
  * Socket.IO authentication middleware.
- * Verifies JWT token from handshake auth or headers and attaches account info to socket.
+ * Verifies JWT token from handshake auth, headers, query, or cookie and attaches account info to socket.
  */
 async function socketAuthMiddleware(socket, next) {
   try {
-    const token =
+    let token =
       socket.handshake.auth?.token ||
-      socket.handshake.headers?.authorization?.replace('Bearer ', '');
+      socket.handshake.headers?.authorization ||
+      socket.handshake.query?.token;
+
+    // If token passed in cookie
+    if (!token && socket.handshake.headers?.cookie) {
+      const cookies = socket.handshake.headers.cookie.split(';').reduce((acc, str) => {
+        const [k, v] = str.trim().split('=');
+        if (k && v) acc[k] = decodeURIComponent(v);
+        return acc;
+      }, {});
+      token = cookies.accessToken || cookies.token;
+    }
 
     if (!token) {
-      logger.warn('Socket connection attempt rejected: No token provided.');
+      logger.warn('Socket connection rejected: No authentication token provided.');
       return next(new Error('Authentication error: Token required.'));
+    }
+
+    if (typeof token === 'string' && token.startsWith('Bearer ')) {
+      token = token.slice(7).trim();
     }
 
     let decoded;
@@ -25,7 +40,7 @@ async function socketAuthMiddleware(socket, next) {
       return next(new Error('Authentication error: Invalid or expired token.'));
     }
 
-    const accountId = decoded.accountId || decoded.id || decoded.sub;
+    const accountId = decoded.accountId || decoded.id || decoded.sub || decoded._id;
     if (!accountId) {
       return next(new Error('Authentication error: Invalid token payload.'));
     }
@@ -40,6 +55,7 @@ async function socketAuthMiddleware(socket, next) {
     socket.user = account;
     socket.role = account.role;
 
+    logger.debug(`Socket authenticated for user: ${socket.accountId} (${socket.role})`);
     next();
   } catch (error) {
     logger.error('Socket authentication error:', error);
@@ -48,3 +64,4 @@ async function socketAuthMiddleware(socket, next) {
 }
 
 module.exports = { socketAuthMiddleware };
+

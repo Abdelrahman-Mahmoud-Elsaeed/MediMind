@@ -5,7 +5,11 @@ import { Header } from '@/shared/components/header/Header';
 import { MobileNav } from '@/shared/components/navigation/MobileNav';
 import { useTranslation } from '@/shared/lib/i18nContext';
 
-export const MainLayout = ({ children, activePath = '/home' }) => {
+import { usePathname } from 'next/navigation';
+
+export const MainLayout = ({ children, activePath: propsActivePath }) => {
+    const pathname = usePathname();
+    const activePath = propsActivePath || pathname || '/home';
     const { dir } = useTranslation();
     const [isSidebarSlim, setIsSidebarSlimState] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -34,12 +38,11 @@ export const MainLayout = ({ children, activePath = '/home' }) => {
         });
     };
 
-    const containerDir = mounted ? dir : 'ltr';
-
     return (
-      <div className="min-h-screen w-full bg-background text-on-surface flex font-sans antialiased" dir={containerDir} suppressHydrationWarning>
+      <div className="min-h-screen w-full bg-background text-on-surface flex font-sans antialiased" dir={dir} suppressHydrationWarning>
         {/* Desktop Application Sidebar */}
-        <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} isMounted={mounted} />
+        <Sidebar activePath={activePath} isSidebarSlim={isSidebarSlim} setIsSidebarSlim={setIsSidebarSlim} />
+
 
         {/* Main Container Area */}
         <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0" suppressHydrationWarning>
