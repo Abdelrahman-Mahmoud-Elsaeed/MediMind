@@ -12,13 +12,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# 0. Remote State Infrastructure Layer (S3 State Bucket)
-module "tf_backend" {
-  source       = "./modules/backend"
-  project_name = var.project_name
-  environment  = var.environment
-}
-
 # 1. Container Registry Layer (AWS ECR Repositories)
 module "ecr" {
   source       = "./modules/ecr"
@@ -96,6 +89,11 @@ module "security" {
   alb_dns_name            = module.alb.alb_dns_name
   redis_url               = module.redis.redis_url
   secret_rotation_version = var.secret_rotation_version
+  gemini_api_key          = var.gemini_api_key
+  qwen_api_key            = var.qwen_api_key
+  resend_api_key          = var.resend_api_key
+  vapid_public_key        = var.vapid_public_key
+  vapid_private_key       = var.vapid_private_key
 }
 
 # 9. Compute Layer (AWS ECS Fargate Services: Frontend, Backend, Worker, MongoDB)

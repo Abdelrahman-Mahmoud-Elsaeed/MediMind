@@ -1,8 +1,12 @@
 class ServiceResponse {
-  constructor({ success = true, status = "SUCCESS", data = {}, en = "Operation completed successfully.", ar = "تمت العملية بنجاح." }) {
+  constructor({ success = true, status = "SUCCESS", data = {}, en = "Operation completed successfully.", ar = "تمت العملية بنجاح.", messages = null }) {
     this.success = success;
     this.status = status;
-    this.messages = { en, ar };
+    if (messages && messages.en && messages.ar) {
+      this.messages = messages;
+    } else {
+      this.messages = { en, ar };
+    }
     this.data = data;
   }
 

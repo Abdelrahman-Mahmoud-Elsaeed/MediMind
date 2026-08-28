@@ -1,7 +1,8 @@
 // src/sheared/utils/templates/reset-password.template.js
-const { CLIENT_URL } = require("../../../config/env");
+const { FRONTEND_URL } = require("../../../config/env");
 
 function resetPasswordTemplate(firstName, token) {
+  const baseUrl = FRONTEND_URL || 'http://localhost:3000';
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
       <h2 style="color: #111827;">Reset Your Account Password</h2>
@@ -11,7 +12,7 @@ function resetPasswordTemplate(firstName, token) {
       <p>We received a request to change the security credentials assigned to your MediMind account profile.</p>
 
       <div style="margin: 24px 0;">
-        <a href="${CLIENT_URL}/reset-password/${token}" style="
+        <a href="${baseUrl}/reset-password/${token}" style="
           display: inline-block;
           padding: 12px 20px;
           background: #111827;

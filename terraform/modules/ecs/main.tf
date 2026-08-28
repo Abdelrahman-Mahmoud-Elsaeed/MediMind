@@ -223,7 +223,12 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "S3_BUCKET_NAME", valueFrom = "${var.app_secrets_arn}:S3_BUCKET_NAME::" },
         { name = "AWS_REGION", valueFrom = "${var.app_secrets_arn}:AWS_REGION::" },
         { name = "SNS_TOPIC_ARN", valueFrom = "${var.app_secrets_arn}:SNS_TOPIC_ARN::" },
-        { name = "SQS_QUEUE_ID", valueFrom = "${var.app_secrets_arn}:SQS_QUEUE_ID::" }
+        { name = "SQS_QUEUE_ID", valueFrom = "${var.app_secrets_arn}:SQS_QUEUE_ID::" },
+        { name = "GEMINI_API_KEY", valueFrom = "${var.app_secrets_arn}:GEMINI_API_KEY::" },
+        { name = "QWEN_API_KEY", valueFrom = "${var.app_secrets_arn}:QWEN_API_KEY::" },
+        { name = "RESEND_API_KEY", valueFrom = "${var.app_secrets_arn}:RESEND_API_KEY::" },
+        { name = "VAPID_PUBLIC_KEY", valueFrom = "${var.app_secrets_arn}:VAPID_PUBLIC_KEY::" },
+        { name = "VAPID_PRIVATE_KEY", valueFrom = "${var.app_secrets_arn}:VAPID_PRIVATE_KEY::" }
       ]
     }
   ])
@@ -266,7 +271,10 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "MONGO_URI", valueFrom = "${var.app_secrets_arn}:MONGO_URI::" },
         { name = "REDIS_URL", valueFrom = "${var.app_secrets_arn}:REDIS_URL::" },
         { name = "WORKER_SECRET", valueFrom = "${var.app_secrets_arn}:WORKER_SECRET::" },
-        { name = "BACKEND_API_URL", valueFrom = "${var.app_secrets_arn}:NEXT_PUBLIC_API_URL::" }
+        { name = "BACKEND_API_URL", valueFrom = "${var.app_secrets_arn}:NEXT_PUBLIC_API_URL::" },
+        { name = "GEMINI_API_KEY", valueFrom = "${var.app_secrets_arn}:GEMINI_API_KEY::" },
+        { name = "QWEN_API_KEY", valueFrom = "${var.app_secrets_arn}:QWEN_API_KEY::" },
+        { name = "RESEND_API_KEY", valueFrom = "${var.app_secrets_arn}:RESEND_API_KEY::" }
       ]
     }
   ])

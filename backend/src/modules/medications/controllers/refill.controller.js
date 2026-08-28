@@ -1,4 +1,5 @@
 const refillService = require('../services/refill.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class RefillController {
@@ -9,10 +10,12 @@ class RefillController {
         req.role,
         req.body
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Refill order submitted successfully.',
+        ar: 'تم تقديم طلب إعادة التعبئة بنجاح.',
         data: order
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error creating refill order:', error);
       next(error);
@@ -27,10 +30,11 @@ class RefillController {
         req.params.id,
         req.body
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Refill order status updated successfully.',
+        ar: 'تم تحديث حالة طلب إعادة التعبئة بنجاح.',
         data: order
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error updating refill order status:', error);
       next(error);
@@ -44,10 +48,11 @@ class RefillController {
         req.role,
         req.query
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Refill orders retrieved successfully.',
+        ar: 'تم استرجاع طلبات إعادة التعبئة بنجاح.',
         data: list
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error listing refill orders:', error);
       next(error);

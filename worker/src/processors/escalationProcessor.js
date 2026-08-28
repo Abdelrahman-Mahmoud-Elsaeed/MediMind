@@ -46,7 +46,7 @@ async function processEscalationJob(job) {
   }
 }
 
-async function callBackendInternal(endpoint, payload, retries = 4, delayMs = 1500) {
+async function callBackendInternal(endpoint, payload, retries = 10, delayMs = 2500) {
   const url = `${BACKEND_API_URL}${endpoint}`;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {

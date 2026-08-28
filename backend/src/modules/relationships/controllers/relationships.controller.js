@@ -1,4 +1,5 @@
 const relationshipsService = require('../services/relationships.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class RelationshipsController {
@@ -13,13 +14,15 @@ class RelationshipsController {
         relation,
         permissions
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Caregiver connection request sent successfully.',
+        ar: 'تم إرسال طلب الربط مع مقدم الرعاية بنجاح.',
         data: {
           relationshipId: relationship._id,
           status: relationship.status
         }
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error initiating caregiver relationship:', error);
       next(error);
@@ -34,10 +37,11 @@ class RelationshipsController {
         req.role,
         statusFilter
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Relationships list retrieved successfully.',
+        ar: 'تم استرجاع قائمة العلاقات بنجاح.',
         data: list
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error listing relationships:', error);
       next(error);
@@ -54,10 +58,11 @@ class RelationshipsController {
         relationshipId,
         status
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Relationship status updated successfully.',
+        ar: 'تم تحديث حالة العلاقة بنجاح.',
         data: relationship
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error updating relationship status:', error);
       next(error);
@@ -68,7 +73,11 @@ class RelationshipsController {
     try {
       const { relationshipId } = req.params;
       await relationshipsService.revokeRelationship(req.accountId, relationshipId);
-      res.status(204).end();
+      return new ServiceResponse({
+        en: 'Relationship revoked successfully.',
+        ar: 'تم إلغاء العلاقة بنجاح.',
+        data: {}
+      }).send(res);
     } catch (error) {
       logger.error('Error revoking relationship:', error);
       next(error);

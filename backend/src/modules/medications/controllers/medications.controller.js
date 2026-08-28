@@ -1,4 +1,5 @@
 const medicationsService = require('../services/medications.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class MedicationsController {
@@ -9,14 +10,16 @@ class MedicationsController {
         req.role,
         req.body
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Medication added successfully.',
+        ar: 'تمت إضافة الدواء بنجاح.',
         data: {
           medicationId: medication._id,
           name: medication.name,
           status: 'CREATED'
         }
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error creating medication:', error);
       next(error);
@@ -54,10 +57,11 @@ class MedicationsController {
         }
       }));
 
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medications retrieved successfully.',
+        ar: 'تم استرجاع الأدوية بنجاح.',
         data: formattedList
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error listing medications:', error);
       next(error);
@@ -73,8 +77,9 @@ class MedicationsController {
         medicationId
       );
       
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medication details retrieved successfully.',
+        ar: 'تم استرجاع تفاصيل الدواء بنجاح.',
         data: {
           medicationId: med._id,
           conditionId: med.conditionId,
@@ -87,7 +92,7 @@ class MedicationsController {
           expirationDate: med.expirationDate,
           isActive: med.isActive
         }
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error getting medication:', error);
       next(error);
@@ -104,8 +109,9 @@ class MedicationsController {
         req.body
       );
       
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medication updated successfully.',
+        ar: 'تم تحديث الدواء بنجاح.',
         data: {
           medicationId: med._id,
           name: med.name,
@@ -120,7 +126,7 @@ class MedicationsController {
           expirationDate: med.expirationDate,
           isActive: med.isActive
         }
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error updating medication:', error);
       next(error);
@@ -135,7 +141,11 @@ class MedicationsController {
         req.role,
         medicationId
       );
-      res.status(204).end();
+      return new ServiceResponse({
+        en: 'Medication deleted successfully.',
+        ar: 'تم حذف الدواء بنجاح.',
+        data: {}
+      }).send(res);
     } catch (error) {
       logger.error('Error deleting medication:', error);
       next(error);
@@ -146,10 +156,11 @@ class MedicationsController {
     try {
       const { imageBase64 } = req.body;
       const result = await medicationsService.scanMedication(imageBase64);
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medication prescription scanned successfully via AI.',
+        ar: 'تم مسح الوصفة الطبية بنجاح بواسطة الذكاء الاصطناعي.',
         data: result
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error scanning medication:', error);
       next(error);

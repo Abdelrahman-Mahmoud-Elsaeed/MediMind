@@ -1,4 +1,5 @@
 const conditionsService = require('../services/conditions.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class ConditionsController {
@@ -9,8 +10,10 @@ class ConditionsController {
         req.role,
         req.body
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Medical condition added successfully.',
+        ar: 'تمت إضافة الحالة الطبية بنجاح.',
         data: {
           conditionId: condition._id,
           diseaseName: condition.diseaseName,
@@ -18,7 +21,7 @@ class ConditionsController {
           diagnosedDate: condition.diagnosedDate,
           notes: condition.notes
         }
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error creating medical condition:', error);
       next(error);
@@ -33,10 +36,11 @@ class ConditionsController {
         req.role,
         patientId
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medical conditions retrieved successfully.',
+        ar: 'تم استرجاع الحالات الطبية بنجاح.',
         data: list
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error listing medical conditions:', error);
       next(error);
@@ -51,10 +55,11 @@ class ConditionsController {
         req.role,
         conditionId
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medical condition details retrieved successfully.',
+        ar: 'تم استرجاع تفاصيل الحالة الطبية بنجاح.',
         data: condition
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error getting medical condition:', error);
       next(error);
@@ -70,10 +75,11 @@ class ConditionsController {
         conditionId,
         req.body
       );
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Medical condition updated successfully.',
+        ar: 'تم تحديث الحالة الطبية بنجاح.',
         data: condition
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error updating medical condition:', error);
       next(error);
@@ -88,7 +94,11 @@ class ConditionsController {
         req.role,
         conditionId
       );
-      res.status(204).end();
+      return new ServiceResponse({
+        en: 'Medical condition deleted successfully.',
+        ar: 'تم حذف الحالة الطبية بنجاح.',
+        data: {}
+      }).send(res);
     } catch (error) {
       logger.error('Error deleting medical condition:', error);
       next(error);

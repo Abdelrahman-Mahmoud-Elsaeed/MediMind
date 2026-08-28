@@ -11,8 +11,6 @@ const env = {
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
   FRONTEND_URL:process.env.FRONTEND_URL,
   // PERSISTENT DATABASE (MONGODB / DOCUMENTDB)
-  MONGO_ROOT_USER: process.env.MONGO_ROOT_USER,
-  MONGO_ROOT_PASSWORD: process.env.MONGO_ROOT_PASSWORD,
   MONGO_URI: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/medimind',
 
   // ASYNC QUEUES & CACHING LAYER (ELASTICACHE REDIS & BULLMQ)
@@ -39,10 +37,6 @@ const env = {
   SQS_QUEUE_ARN: process.env.SQS_QUEUE_ARN || process.env.AWS_SQS_QUEUE_ARN,
   AWS_SNS_REGION: process.env.AWS_REGION || process.env.AWS_SNS_REGION || 'us-east-1',
   AWS_SNS_SENDER_ID: process.env.AWS_SNS_SENDER_ID || 'MEDTRACK',
-
-  // TRANSACTIONAL EMAIL: AWS SES TRANSACTIONAL PIPELINE
-  AWS_SES_REGION: process.env.AWS_SES_REGION || 'us-east-1',
-  AWS_SES_FROM_EMAIL: process.env.AWS_SES_FROM_EMAIL || 'no-reply@medplatform.com',
 
   // RESEND TRANSACTIONAL EMAIL (OTP, password reset, caregiver invites)
   RESEND_API_KEY: process.env.RESEND_API_KEY,

@@ -13,6 +13,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+export const viewport = {
+  themeColor: '#0ea5e9',
+};
+
 export const metadata = {
   title: {
     template: '%s | MediMind',
@@ -25,7 +29,6 @@ export const metadata = {
     apple: '/images/logo.png',
   },
   manifest: '/manifest.json',
-  themeColor: '#0ea5e9',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
 };
 

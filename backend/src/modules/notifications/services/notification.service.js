@@ -1,11 +1,13 @@
 const Notification = require('../models/Notification.model');
+const PushSubscription = require('../models/PushSubscription.model');
 const { emitToUser, emitToPharmacy, emitToRole } = require('../../../config/socket');
+const { webpush, isConfigured } = require('../../../config/webpush');
 const { logger } = require('../../../shared/utils/logger');
 const AppError = require('../../../shared/utils/AppError');
 
 class NotificationService {
   /**
-   * Persist a notification in MongoDB and dispatch real-time Socket.IO alerts
+   * Persist a notification in MongoDB and dispatch real-time Socket.IO & Web Push alerts
    */
   async createAndSendNotification({
     recipientAccountId,
@@ -45,6 +47,14 @@ class NotificationService {
       // 1. Send generic 'notification' event to personal user room
       if (recipientAccountId) {
         emitToUser(recipientAccountId, 'notification', payload);
+        // 1b. Dispatch PWA Web Push notification asynchronously
+        this.sendWebPushNotification(recipientAccountId, {
+          title,
+          message,
+          type,
+          data,
+          url: data.url || '/dashboard',
+        }).catch((err) => logger.warn('[WebPush] Non-blocking push dispatch error: ' + err.message));
       }
 
       // 2. Specialized domain events for instant UI reactivity
@@ -67,6 +77,78 @@ class NotificationService {
       // Non-blocking error handling so primary workflow doesn't fail
       return null;
     }
+  }
+
+  /**
+   * Save or update a PWA Web Push subscription for an authenticated user
+   */
+  async savePushSubscription(accountId, { endpoint, keys, userAgent }) {
+    if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+      throw new AppError('Invalid push subscription payload', 400, 'INVALID_SUBSCRIPTION_PAYLOAD');
+    }
+
+    const subscription = await PushSubscription.findOneAndUpdate(
+      { endpoint },
+      {
+        accountId,
+        endpoint,
+        keys,
+        userAgent: userAgent || '',
+      },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+    );
+
+    return subscription;
+  }
+
+  /**
+   * Remove a PWA Web Push subscription
+   */
+  async deletePushSubscription(accountId, endpoint) {
+    await PushSubscription.deleteOne({ accountId, endpoint });
+    return { success: true };
+  }
+
+  /**
+   * Dispatch Web Push payload to all active browser devices registered to a user
+   */
+  async sendWebPushNotification(accountId, pushPayload) {
+    if (!isConfigured()) {
+      return { sent: 0, reason: 'VAPID keys not configured' };
+    }
+
+    const subscriptions = await PushSubscription.find({ accountId });
+    if (!subscriptions || subscriptions.length === 0) {
+      return { sent: 0, reason: 'No subscriptions found' };
+    }
+
+    const payloadString = JSON.stringify(pushPayload);
+    let sentCount = 0;
+
+    await Promise.all(
+      subscriptions.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: sub.keys,
+            },
+            payloadString
+          );
+          sentCount++;
+        } catch (err) {
+          // If subscription is expired or revoked (404/410), clean it up from DB
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            logger.info(`Cleaning up stale Web Push subscription: ${sub.endpoint}`);
+            await PushSubscription.deleteOne({ _id: sub._id });
+          } else {
+            logger.warn(`Failed to send Web Push to ${sub.endpoint}: ${err.message}`);
+          }
+        }
+      })
+    );
+
+    return { sent: sentCount, total: subscriptions.length };
   }
 
   /**

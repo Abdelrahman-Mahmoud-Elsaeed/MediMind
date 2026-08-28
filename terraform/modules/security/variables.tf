@@ -24,3 +24,31 @@ variable "secret_rotation_version" {
   default     = "v1"
   description = "Increment version string to trigger dynamic secret rotation (e.g. v2, v3)"
 }
+variable "gemini_api_key" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "qwen_api_key" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "resend_api_key" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "vapid_public_key" {
+  type    = string
+  default = ""
+}
+
+variable "vapid_private_key" {
+  type      = string
+  default   = ""
+  sensitive = true
+}

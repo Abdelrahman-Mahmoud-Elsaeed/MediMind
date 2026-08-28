@@ -5,13 +5,14 @@ import { motion } from 'framer-motion';
 import { useTranslation } from '@/shared/lib/i18nContext';
 import { AppButton } from '@/shared/components/ui/AppButton';
 
-export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, onMarkAsTaken, onSnooze, index = 0 }) => {
+export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, onMarkAsTaken, onSkip, onSnooze, index = 0 }) => {
   const { t, dir } = useTranslation();
   const isRtl = dir === 'rtl';
 
   const isCompleted = item.status === 'completed' || item.status === 'TAKEN';
   const isDue = item.status === 'due' || item.status === 'PENDING' || item.status === 'DUE';
   const isMissed = item.status === 'missed' || item.status === 'MISSED';
+  const isSkipped = item.status === 'skipped' || item.status === 'SKIPPED';
 
   const timeSlotTitle = item.timeSlotName || item.timeSlot || item.time || '08:00 AM';
   const medicationSubtitle = item.subtext || item.medication || 'Medication';
@@ -102,6 +103,8 @@ export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, 
               ? 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700/70'
               : isMissed
               ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40'
+              : isSkipped
+              ? 'bg-slate-100/80 dark:bg-slate-850/60 border-slate-300/60 dark:border-slate-750'
               : 'bg-white dark:bg-slate-900/80 border-slate-200/90 dark:border-slate-800'
           }`}
         >
@@ -141,6 +144,10 @@ export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, 
                   <Check className="w-3 h-3" />
                   {isRtl ? 'تم التناول' : 'Taken'}
                 </span>
+              ) : isSkipped ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/60 dark:border-slate-700">
+                  {isRtl ? 'تم التخطي' : 'Skipped'}
+                </span>
               ) : isMissed ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
                   {isRtl ? 'فائتة' : 'Missed'}
@@ -149,8 +156,8 @@ export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, 
             </div>
           </div>
 
-          {/* Action Buttons for Active 'Due Now' Item */}
-          {isDue && (
+          {/* Action Buttons for Active 'Due Now' or 'Missed' Items */}
+          {(isDue || isMissed) && (
             <div className="flex flex-wrap items-center gap-2.5 pt-3 mt-3 border-t border-teal-200/60 dark:border-teal-900/60">
               <AppButton
                 type="button"
@@ -172,6 +179,16 @@ export const TimelineItem = ({ item, nextItem, isFirst = false, isLast = false, 
                 className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs"
               >
                 {t('patient.home.snooze')}
+              </AppButton>
+
+              <AppButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onSkip?.(targetId)}
+                className="text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs"
+              >
+                {isRtl ? 'تخطي' : 'Skip'}
               </AppButton>
             </div>
           )}

@@ -13,11 +13,6 @@ output "worker_ecr_repo" {
   description = "AWS ECR Repository URL for Worker Docker image"
 }
 
-output "tf_state_bucket" {
-  value       = module.tf_backend.s3_bucket_name
-  description = "S3 Bucket storing remote Terraform state"
-}
-
 output "secrets_manager_arn" {
   value       = module.security.secrets_manager_arn
   description = "AWS Secrets Manager Secret ARN storing environment configuration"

@@ -1,4 +1,5 @@
 const dosesService = require('../services/doses.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class DosesController {
@@ -14,10 +15,11 @@ class DosesController {
         date
       );
 
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Dose schedule retrieved successfully.',
+        ar: 'تم استرجاع جدول الجرعات بنجاح.',
         data: schedule
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error fetching daily dose schedule:', error);
       next(error);
@@ -33,10 +35,11 @@ class DosesController {
         doseEventId
       );
 
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Dose confirmed as taken.',
+        ar: 'تم تأكيد تناول الجرعة بنجاح.',
         data: result
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error confirming dose taken:', error);
       next(error);
@@ -52,10 +55,11 @@ class DosesController {
         doseEventId
       );
 
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Dose skipped successfully.',
+        ar: 'تم تخطي الجرعة بنجاح.',
         data: result
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error skipping dose:', error);
       next(error);
@@ -73,10 +77,11 @@ class DosesController {
         minutes
       );
 
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Dose snoozed successfully.',
+        ar: 'تم تأجيل الجرعة بنجاح.',
         data: result
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error snoozing dose:', error);
       next(error);

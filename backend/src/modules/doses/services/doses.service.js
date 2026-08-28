@@ -107,12 +107,23 @@ class DosesService {
       scheduledFor: { $gte: startOfDay, $lte: endOfDay }
     }).populate('medicationId');
 
-    return list.map(item => ({
-      doseEventId: item._id,
-      medicationId: item.medicationId?._id || item.medicationId,
-      medicationName: item.medicationId?.name || 'Unknown Medicine',
-      scheduledFor: item.scheduledFor,
-      status: item.status
+    const gracePeriodMs = 60 * 60 * 1000;
+    const now = new Date();
+
+    return Promise.all(list.map(async (item) => {
+      let status = item.status;
+      if (status === 'PENDING' && (new Date(item.scheduledFor).getTime() + gracePeriodMs) < now.getTime()) {
+        status = 'MISSED';
+        await DoseEvent.updateOne({ _id: item._id }, { status: 'MISSED' });
+      }
+
+      return {
+        doseEventId: item._id,
+        medicationId: item.medicationId?._id || item.medicationId,
+        medicationName: item.medicationId?.name || 'Unknown Medicine',
+        scheduledFor: item.scheduledFor,
+        status: status
+      };
     }));
   }
 
@@ -124,8 +135,8 @@ class DosesService {
 
     await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
 
-    if (dose.status !== 'PENDING') {
-      throw new AppError('Dose is not in PENDING status', 400, 'INVALID_STATUS');
+    if (dose.status !== 'PENDING' && dose.status !== 'MISSED') {
+      throw new AppError('Only pending or missed doses can be confirmed', 400, 'INVALID_STATUS');
     }
 
     const med = await Medication.findById(dose.medicationId);
@@ -168,8 +179,8 @@ class DosesService {
 
     await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
 
-    if (dose.status !== 'PENDING') {
-      throw new AppError('Dose is not in PENDING status', 400, 'INVALID_STATUS');
+    if (dose.status !== 'PENDING' && dose.status !== 'MISSED') {
+      throw new AppError('Only pending or missed doses can be skipped', 400, 'INVALID_STATUS');
     }
 
     dose.status = 'SKIPPED';
@@ -190,8 +201,8 @@ class DosesService {
 
     await this.validateAccess(userAccountId, userRole, dose.patientId, 'canConfirmDose');
 
-    if (dose.status !== 'PENDING') {
-      throw new AppError('Only pending doses can be snoozed', 400, 'INVALID_STATUS');
+    if (dose.status !== 'PENDING' && dose.status !== 'MISSED') {
+      throw new AppError('Only pending or missed doses can be snoozed', 400, 'INVALID_STATUS');
     }
 
     const currentSchedule = new Date(dose.scheduledFor);

@@ -26,6 +26,10 @@ export const TimelineCard = () => {
     confirmDoseMutation.mutate({ doseEventId: id });
   };
 
+  const handleSkip = (id) => {
+    skipDoseMutation.mutate({ doseEventId: id });
+  };
+
   const handleSnooze = (id) => {
     snoozeDoseMutation.mutate({ doseEventId: id, minutes: 15 });
   };
@@ -50,7 +54,8 @@ export const TimelineCard = () => {
 
       let status = 'upcoming';
       if (dose.status === 'TAKEN') status = 'completed';
-      else if (dose.status === 'MISSED' || dose.status === 'SKIPPED') status = 'missed';
+      else if (dose.status === 'SKIPPED') status = 'skipped';
+      else if (dose.status === 'MISSED') status = 'missed';
       else if (dose.status === 'PENDING') status = 'due';
 
       return {
@@ -60,6 +65,8 @@ export const TimelineCard = () => {
         medication: `${dose.medicationName || dose.medicationId?.name || 'Medication'} • ${
           status === 'completed'
             ? isAr ? 'تم التناول' : 'Taken'
+            : status === 'skipped'
+            ? isAr ? 'تم التخطي' : 'Skipped'
             : status === 'missed'
             ? isAr ? 'جرعة فائتة' : 'Missed Dose'
             : isAr ? 'مجدولة' : 'Scheduled'
@@ -201,6 +208,7 @@ export const TimelineCard = () => {
               isFirst={index === 0}
               isLast={index === filteredItems.length - 1}
               onMarkAsTaken={handleMarkAsTaken}
+              onSkip={handleSkip}
               onSnooze={handleSnooze}
             />
           ))}

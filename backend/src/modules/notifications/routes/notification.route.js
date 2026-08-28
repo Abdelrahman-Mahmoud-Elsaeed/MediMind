@@ -7,6 +7,9 @@ const router = express.Router();
 // All notification routes require authentication
 router.use(authenticate);
 
+router.get('/vapid-public-key', notificationController.getVapidPublicKey);
+router.post('/push-subscription', notificationController.savePushSubscription);
+router.delete('/push-subscription', notificationController.deletePushSubscription);
 router.get('/', notificationController.list);
 router.get('/unread-count', notificationController.getUnreadCount);
 router.patch('/read-all', notificationController.markAllRead);

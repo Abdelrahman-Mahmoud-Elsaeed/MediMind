@@ -58,3 +58,37 @@ variable "secret_rotation_version" {
   default     = "v1"
   description = "Increment version string to trigger dynamic secret rotation (e.g. v2, v3)"
 }
+
+variable "gemini_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Google Gemini AI API Key"
+}
+
+variable "qwen_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Alibaba Qwen AI API Key"
+}
+
+variable "resend_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Resend Transactional Email API Key"
+}
+
+variable "vapid_public_key" {
+  type        = string
+  default     = ""
+  description = "VAPID Public Key for Web Push Notifications"
+}
+
+variable "vapid_private_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "VAPID Private Key for Web Push Notifications"
+}

@@ -1,4 +1,5 @@
 const paymentService = require('../services/payment.service');
+const ServiceResponse = require('../../../shared/utils/ServiceResponse');
 const { logger } = require('../../../shared/utils/logger');
 
 class PaymentController {
@@ -12,10 +13,12 @@ class PaymentController {
         req.role,
         req.body
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Stripe checkout session created successfully.',
+        ar: 'تم إنشاء جلسة الدفع بنجاح.',
         data: result,
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error creating Stripe Checkout Session:', error);
       next(error);
@@ -32,10 +35,12 @@ class PaymentController {
         req.role,
         req.body
       );
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Payment intent created successfully.',
+        ar: 'تم إنشاء إذن الدفع بنجاح.',
         data: result,
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error creating Stripe PaymentIntent:', error);
       next(error);
@@ -60,10 +65,12 @@ class PaymentController {
   async initiate(req, res, next) {
     try {
       const payment = await paymentService.initiatePayment(req.accountId, req.body);
-      res.status(201).json({
-        success: true,
+      return new ServiceResponse({
+        status: 'CREATED',
+        en: 'Payment initiated successfully.',
+        ar: 'تم البدء في عملية الدفع بنجاح.',
         data: payment
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error initiating payment:', error);
       next(error);
@@ -73,10 +80,11 @@ class PaymentController {
   async complete(req, res, next) {
     try {
       const payment = await paymentService.completePayment(req.params.id, req.body);
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Payment completed successfully.',
+        ar: 'تمت إكتمل عملية الدفع بنجاح.',
         data: payment
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error completing payment:', error);
       next(error);
@@ -86,10 +94,11 @@ class PaymentController {
   async list(req, res, next) {
     try {
       const list = await paymentService.listPayments(req.accountId, req.role);
-      res.status(200).json({
-        success: true,
+      return new ServiceResponse({
+        en: 'Payments history retrieved successfully.',
+        ar: 'تم استرجاع سجل الدفعات بنجاح.',
         data: list
-      });
+      }).send(res);
     } catch (error) {
       logger.error('Error listing payments:', error);
       next(error);

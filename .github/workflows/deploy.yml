@@ -34,77 +34,30 @@ jobs:
         with:
           terraform_version: 1.10.5
 
-      # 1. Initialize & Apply Terraform Infrastructure FIRST (provisions ECR repositories)
-      - name: Terraform Init & Apply
+      # Run automated verification, S3 backend setup, Terraform infra, Docker builds & ECS deployment
+      - name: Run Validation & Deployment Script
         working-directory: ./terraform
+        env:
+          TF_VAR_gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          TF_VAR_qwen_api_key: ${{ secrets.QWEN_API_KEY }}
+          TF_VAR_resend_api_key: ${{ secrets.RESEND_API_KEY }}
+          TF_VAR_vapid_public_key: ${{ secrets.VAPID_PUBLIC_KEY }}
+          TF_VAR_vapid_private_key: ${{ secrets.VAPID_PRIVATE_KEY }}
         run: |
-          echo "Initializing Terraform backend..."
-          terraform init -reconfigure
-          echo "Applying Terraform infrastructure changes..."
-          terraform apply -auto-approve
+          chmod +x ./validate_deployment.sh
+          ./validate_deployment.sh
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # 2. Build and Push Backend Image to ECR
-      - name: Build & Push [backend] Image to ECR
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: ${{ env.ECR_REGISTRY }}/medtrack-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # 3. Build and Push Frontend Image to ECR
-      - name: Build & Push [frontend] Image to ECR
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          build-args: |
-            NEXT_PUBLIC_API_URL=/api/v1
-          push: true
-          tags: ${{ env.ECR_REGISTRY }}/medtrack-frontend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # 4. Build and Push Worker Image to ECR
-      - name: Build & Push [worker] Image to ECR
-        uses: docker/build-push-action@v5
-        with:
-          context: ./worker
-          file: ./worker/Dockerfile
-          push: true
-          tags: ${{ env.ECR_REGISTRY }}/medtrack-worker:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # 5. Trigger ECS Forced Rolling Redeployment
-      - name: Force ECS Service Redeployment
-        run: |
-          echo "Triggering ECS Fargate rolling updates..."
-          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-frontend-service --force-new-deployment --no-cli-pager
-          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-backend-service --force-new-deployment --no-cli-pager
-          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service medtrack-development-worker-service --force-new-deployment --no-cli-pager
-          echo "All ECS deployment triggers submitted successfully!"
-
-      # 6. Standalone Automated Database Seeding via ECS Run-Task
+      # Standalone Automated Database Seeding via ECS Run-Task
       - name: Seed Database on AWS ECS
         run: |
           echo "Extracting network configuration & active task definition from backend service..."
-          TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].taskDefinition" --output text)
-          SUBNETS=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.subnets" --output json | jq -c '.')
-          SGS=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.securityGroups" --output json | jq -c '.')
+          TASK_DEF_ARN=$(aws ecs describe-services --cluster medtrack-development-cluster --services medtrack-development-backend-service --query "services[0].taskDefinition" --output text)
+          SUBNETS=$(aws ecs describe-services --cluster medtrack-development-cluster --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.subnets" --output json | jq -c '.')
+          SGS=$(aws ecs describe-services --cluster medtrack-development-cluster --services medtrack-development-backend-service --query "services[0].networkConfiguration.awsvpcConfiguration.securityGroups" --output json | jq -c '.')
 
           echo "Running standalone database seed task ($TASK_DEF_ARN) on ECS Fargate..."
           aws ecs run-task \
-            --cluster ${{ env.ECS_CLUSTER }} \
+            --cluster medtrack-development-cluster \
             --task-definition $TASK_DEF_ARN \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=$SUBNETS,securityGroups=$SGS,assignPublicIp=DISABLED}" \

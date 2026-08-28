@@ -70,6 +70,11 @@ resource "aws_secretsmanager_secret_version" "app_secrets_val" {
     SNS_TOPIC_ARN         = var.sns_topic_arn
     SQS_QUEUE_ID          = var.sqs_queue_id
     SQS_QUEUE_ARN         = var.sqs_queue_arn
+    GEMINI_API_KEY        = var.gemini_api_key
+    QWEN_API_KEY          = var.qwen_api_key
+    RESEND_API_KEY        = var.resend_api_key
+    VAPID_PUBLIC_KEY      = var.vapid_public_key
+    VAPID_PRIVATE_KEY     = var.vapid_private_key
   })
 }
 

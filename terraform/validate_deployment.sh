@@ -38,18 +38,24 @@ fi
 echo -e "${YELLOW}[Step 1/5] Initializing Remote S3 State Backend & Applying Terraform Infrastructure...${NC}"
 STATE_BUCKET="medtrack-development-tfstate-${ACCOUNT_ID}"
 
-if ! aws s3api head-bucket --bucket "$STATE_BUCKET" --no-cli-pager 2>/dev/null; then
-    echo -e "  Creating S3 State Bucket '${STATE_BUCKET}'..."
-    aws s3api create-bucket --bucket "$STATE_BUCKET" --region "$AWS_REGION" --no-cli-pager >/dev/null
-    aws s3api put-bucket-versioning --bucket "$STATE_BUCKET" --versioning-configuration Status=Enabled --no-cli-pager
-    aws s3api put-bucket-encryption --bucket "$STATE_BUCKET" --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}' --no-cli-pager
-    aws s3api put-public-access-block --bucket "$STATE_BUCKET" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" --no-cli-pager
-    echo -e "  ${GREEN}[OK] Created S3 State Bucket!${NC}"
+echo -e "  Verifying if Remote S3 State Backend '${STATE_BUCKET}' exists..."
+if aws s3api head-bucket --bucket "$STATE_BUCKET" --no-cli-pager 2>/dev/null; then
+    echo -e "  ${GREEN}[OK] S3 State Bucket '${STATE_BUCKET}' already exists and is accessible.${NC}"
 else
-    echo -e "  ${GREEN}[OK] S3 State Bucket '${STATE_BUCKET}' exists.${NC}"
+    echo -e "  S3 State Bucket '${STATE_BUCKET}' does not exist. Creating bucket in region '${AWS_REGION}'..."
+    if [ "$AWS_REGION" = "us-east-1" ]; then
+        aws s3api create-bucket --bucket "$STATE_BUCKET" --region "$AWS_REGION" --no-cli-pager >/dev/null
+    else
+        aws s3api create-bucket --bucket "$STATE_BUCKET" --region "$AWS_REGION" --create-bucket-configuration LocationConstraint="$AWS_REGION" --no-cli-pager >/dev/null
+    fi
+    aws s3api put-bucket-versioning --bucket "$STATE_BUCKET" --versioning-configuration Status=Enabled --no-cli-pager >/dev/null
+    aws s3api put-bucket-encryption --bucket "$STATE_BUCKET" --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}' --no-cli-pager >/dev/null
+    aws s3api put-public-access-block --bucket "$STATE_BUCKET" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" --no-cli-pager >/dev/null
+    echo -e "  ${GREEN}[OK] Created S3 State Bucket '${STATE_BUCKET}'!${NC}"
 fi
 
-terraform init -reconfigure
+echo -e "  Initializing Terraform backend state..."
+terraform init -reconfigure -backend-config="bucket=${STATE_BUCKET}" -backend-config="region=${AWS_REGION}"
 echo -e "  Running 'terraform apply -auto-approve' to provision ECR Repositories & Cloud Infra..."
 terraform apply -auto-approve
 echo -e "  ${GREEN}[OK] ECR Repositories & Cloud Infrastructure Provisioned!${NC}\n"

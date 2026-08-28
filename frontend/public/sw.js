@@ -49,8 +49,9 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'MediMind Reminder';
   const options = {
     body: data.message || 'It is time for your medication.',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico'
+    icon: '/images/logo.png',
+    badge: '/images/logo.png',
+    sound: '/sounds/mixkit-long-pop-2358.wav'
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
