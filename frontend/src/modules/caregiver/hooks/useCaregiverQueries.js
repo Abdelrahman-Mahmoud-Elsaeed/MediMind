@@ -45,7 +45,8 @@ export function useUpdateCaregiverProfileMutation() {
  * The `permissions` object on each relationship reflects the
  * 10-key canonical permission set from the backend.
  */
-export function useCaregiverRelationshipsQuery(status) {
+export function useCaregiverRelationshipsQuery(optionsOrStatus = {}) {
+  const { status, ...queryOptions } = typeof optionsOrStatus === 'string' ? { status: optionsOrStatus } : (optionsOrStatus || {});
   return useQuery({
     queryKey: [...CAREGIVER_KEYS.relationships, status || 'all'],
     queryFn: async () => {
@@ -53,6 +54,7 @@ export function useCaregiverRelationshipsQuery(status) {
       return res?.success ? res.data : (Array.isArray(res) ? res : []);
     },
     staleTime: 1000 * 60 * 2,
+    ...queryOptions,
   });
 }
 
