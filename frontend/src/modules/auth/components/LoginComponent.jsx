@@ -282,7 +282,7 @@ export default function LoginComponent() {
               Pass: Password123!
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
               onClick={() => {
@@ -320,6 +320,19 @@ export default function LoginComponent() {
             >
               <span className="material-symbols-outlined text-[18px] mb-0.5">local_pharmacy</span>
               <span>Pharmacist</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setLoginInput("admin@medimind.io");
+                setPassword("Password123!");
+                setTouchedFields({ loginInput: true, password: true });
+              }}
+              className="flex flex-col items-center py-2 px-1 text-xs bg-surface hover:bg-primary/10 text-on-surface hover:text-primary rounded-xl border border-outline-variant/40 transition-colors font-medium cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px] mb-0.5">admin_panel_settings</span>
+              <span>Admin</span>
             </button>
           </div>
         </div>
