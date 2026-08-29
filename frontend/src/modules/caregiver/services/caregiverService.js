@@ -20,7 +20,7 @@ export const caregiverService = {
    * @param {string} [status] - Optional filter: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'REVOKED'
    */
   getRelationships: async (status) => {
-    const query = status ? `?status=${status}` : '';
+    const query = status && typeof status === 'string' ? `?status=${encodeURIComponent(status)}` : '';
     const res = await apiClient.get(`/relationships${query}`);
     return res.data?.data ?? res.data;
   },
