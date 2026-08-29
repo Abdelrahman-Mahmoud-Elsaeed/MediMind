@@ -36,12 +36,33 @@ function AuthInitializer({ children }) {
   useEffect(() => {
     if (!mounted || isAuthLoading) return;
 
-    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications', '/pharmacies'];
+    const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/dashboard', '/medications', '/pharmacies', '/pending-approval'];
     const isPublicRoute = publicRoutes.some((route) => pathname === route || (route !== '/' && pathname?.startsWith(`${route}/`)));
 
     if (isAuthenticated && user) {
-      const isVerified = user.isEmailVerified || user.isPhoneVerified || user.isVerified;
       const userRole = String(user.role).toUpperCase();
+      const requiresApproval = ['DOCTOR', 'PHARMACIST', 'CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'FAMILY_CAREGIVER'].includes(userRole);
+
+      // Check if profile requires admin approval and hasn't been approved yet
+      const isApproved = user.isApproved !== false && (user.isVerified || user.isEmailVerified || user.isPhoneVerified);
+
+      if (requiresApproval && !isApproved) {
+        if (pathname !== '/pending-approval') {
+          router.replace('/pending-approval');
+          return;
+        }
+      } else if (pathname === '/pending-approval') {
+        router.replace(
+          userRole === 'PATIENT'
+            ? '/home'
+            : userRole === 'PHARMACIST'
+            ? '/pharmacy'
+            : userRole === 'ADMIN'
+            ? '/admin-dashboard'
+            : '/dashboard'
+        );
+        return;
+      }
 
       if (pathname === '/pharmacy' || pathname?.startsWith('/pharmacy/')) {
         if (userRole !== 'PHARMACIST' && userRole !== 'ADMIN') {
@@ -49,26 +70,7 @@ function AuthInitializer({ children }) {
           return;
         }
       }
-
-      if (!isVerified) {
-        if (pathname !== '/verify') {
-          router.replace('/verify');
-        }
-      } else {
-        if (pathname === '/verify') {
-          router.replace(
-            userRole === 'PATIENT'
-              ? '/home'
-              : userRole === 'PHARMACIST'
-              ? '/pharmacy'
-              : userRole === 'ADMIN'
-              ? '/admin-dashboard'
-              : '/dashboard'
-          );
-        }
-
-      }
-    } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify') {
+    } else if (!isAuthenticated && !isPublicRoute && pathname !== '/verify' && pathname !== '/pending-approval') {
       router.replace('/login');
     }
   }, [mounted, isAuthenticated, user, isAuthLoading, pathname, router]);

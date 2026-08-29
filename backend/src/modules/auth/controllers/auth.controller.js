@@ -179,6 +179,10 @@ class AuthController {
   verifyToken = async (req, res, next) => {
     try {
       const Account = require("../models/Account.model");
+      const Doctor = require("../models/Doctor.model");
+      const Pharmacist = require("../models/Pharmacist.model");
+      const ProfessionalCaregiver = require("../models/ProfessionalCaregiver.model");
+
       const account = await Account.findById(req.accountId);
       if (!account) {
         throw new AppError("Account not found", 404, "ACCOUNT_NOT_FOUND", {
@@ -186,6 +190,23 @@ class AuthController {
           ar: "الحساب غير موجود.",
         });
       }
+
+      let isProfileVerified = true;
+      const userRole = String(account.role).toUpperCase();
+
+      if (userRole === "DOCTOR") {
+        const doc = await Doctor.findOne({ accountId: account._id });
+        isProfileVerified = Boolean(doc?.isVerified);
+      } else if (userRole === "PHARMACIST") {
+        const pharm = await Pharmacist.findOne({ accountId: account._id });
+        isProfileVerified = Boolean(pharm?.isVerified || pharm?.subscription?.status === "active");
+      } else if (userRole === "PROFESSIONAL_CAREGIVER" || userRole === "CAREGIVER") {
+        const cg = await ProfessionalCaregiver.findOne({ accountId: account._id });
+        isProfileVerified = Boolean(cg?.isVerified);
+      }
+
+      const isVerified = account.isEmailVerified || account.isPhoneVerified || isProfileVerified;
+
       return res.status(200).json({
         success: true,
         status: "SUCCESS",
@@ -198,7 +219,8 @@ class AuthController {
             phone: account.phone,
             isEmailVerified: account.isEmailVerified,
             isPhoneVerified: account.isPhoneVerified,
-            isVerified: account.isEmailVerified || account.isPhoneVerified,
+            isVerified,
+            isApproved: isProfileVerified,
           },
         },
       });

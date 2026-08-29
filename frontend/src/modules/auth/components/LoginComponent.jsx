@@ -26,7 +26,12 @@ export default function LoginComponent() {
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
       const role = user?.role ? String(user.role).toUpperCase() : "PATIENT";
-      if (role === "ADMIN") {
+      const isApproved = user?.isApproved !== false && (user?.isVerified || user?.isEmailVerified || user?.isPhoneVerified);
+      const requiresApproval = ["DOCTOR", "PHARMACIST", "CAREGIVER", "PROFESSIONAL_CAREGIVER", "FAMILY_CAREGIVER"].includes(role);
+
+      if (requiresApproval && !isApproved) {
+        router.replace("/pending-approval");
+      } else if (role === "ADMIN") {
         router.replace("/admin-dashboard");
       } else if (role === "PHARMACIST") {
         router.replace("/pharmacy");

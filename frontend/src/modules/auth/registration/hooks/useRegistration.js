@@ -266,7 +266,13 @@ export function useRegistration(initialRole = 'patient') {
     try {
       const resultAction = await register(payload);
       if (resultAction.payload && !resultAction.error) {
-        router.push("/verify");
+        const role = formData.role ? String(formData.role).toUpperCase() : "";
+        const requiresApproval = ["DOCTOR", "PHARMACIST", "CAREGIVER", "PROFESSIONAL_CAREGIVER", "FAMILY_CAREGIVER"].includes(role);
+        if (requiresApproval) {
+          router.push("/pending-approval");
+        } else {
+          router.push("/verify");
+        }
       }
     } catch (err) {
       console.error("API registration error:", err);
