@@ -46,17 +46,66 @@ export function useAddMedication(onSuccess) {
     isChronic: true
   });
 
+  useEffect(() => {
+    // Check if coming from /ocr-scan with pre-scanned OCR data
+    if (typeof window !== "undefined") {
+      const storedOcrData = sessionStorage.getItem("medimind_ocr_autofill");
+      if (storedOcrData) {
+        try {
+          const parsed = JSON.parse(storedOcrData);
+          if (parsed && parsed.name) {
+            setForm((prev) => ({
+              ...prev,
+              name: parsed.name || prev.name,
+              type: parsed.formType || prev.type,
+              strength: parsed.strength || prev.strength,
+              stock: String(parsed.inventory?.initialQuantity || prev.stock),
+              currentStock: String(parsed.inventory?.currentQuantity || prev.currentStock),
+              doseAmount: String(parsed.inventory?.doseAmount || prev.doseAmount),
+              relationToMeals: parsed.instructions?.relationToMeals || prev.relationToMeals,
+              notes: parsed.instructions?.notes || prev.notes,
+            }));
+            toast.success(
+              locale === "ar"
+                ? `تم تعبئة بيانات "${parsed.name}" من الماسح الضوئي`
+                : `Autofilled "${parsed.name}" from AI OCR scan!`
+            );
+          }
+        } catch (e) {
+          // Ignore json parse error
+        } finally {
+          sessionStorage.removeItem("medimind_ocr_autofill");
+        }
+      }
+    }
+  }, [locale]);
+
   const triggerScan = () => {
     setIsScanning(true);
     setScanResult(null);
     setScannedMedInfo(null);
   };
 
-  const captureScan = async (forceFail = false) => {
+  const captureScan = async (inputData) => {
     try {
-      const data = await scanPrescriptionMutation.mutateAsync(
-        forceFail ? "low_confidence_mock_data" : "normal_high_confidence_mock_data"
-      );
+      let imageBase64 = "";
+
+      if (typeof inputData === "string" && inputData.startsWith("data:image")) {
+        imageBase64 = inputData;
+      } else if (inputData instanceof File) {
+        imageBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(inputData);
+        });
+      } else if (inputData === true) {
+        imageBase64 = "low_confidence";
+      } else {
+        imageBase64 = "mock_single";
+      }
+
+      const data = await scanPrescriptionMutation.mutateAsync(imageBase64);
       const resPayload = data?.data || data;
       const parsedItem = Array.isArray(resPayload) ? resPayload[0] : resPayload;
       if (parsedItem && parsedItem.name) {

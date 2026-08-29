@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Button } from '@/shared/components/ui/button';
 import { showNotification } from '@/shared/components/ui/toast';
 import { Volume2, VolumeX } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import {
   usePatientDosesQuery,
   useConfirmDoseMutation,
@@ -54,6 +55,7 @@ function stopAlarmSoundDirectly(onStopped) {
 
 export default function MedicationAlarmManager() {
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
   const { user } = useAuth();
   const { locale } = useTranslation();
   const isAr = locale === 'ar';
@@ -119,18 +121,27 @@ export default function MedicationAlarmManager() {
     }
   }, []);
 
-  // Demo Alarm Trigger: Fires 2 seconds after opening patient page for demo purposes
+  // Demo Alarm Trigger: Fires ONLY ONCE for PATIENTS when visiting the Home page (/home)
   useEffect(() => {
-    if (!isPatient || demoFiredRef.current) return;
+    if (!isPatient || pathname !== '/home') return;
+
+    // Check if demo alarm has already been triggered in this browser session
+    const hasFiredInSession = typeof window !== 'undefined' && sessionStorage.getItem('medimind_demo_alarm_fired');
+    if (hasFiredInSession || demoFiredRef.current) return;
 
     const timer = setTimeout(() => {
-      if (demoFiredRef.current) return;
+      const alreadyFired = typeof window !== 'undefined' && sessionStorage.getItem('medimind_demo_alarm_fired');
+      if (alreadyFired || demoFiredRef.current) return;
+
       demoFiredRef.current = true;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('medimind_demo_alarm_fired', 'true');
+      }
       triggerDemo();
-    }, 2000); // 2 seconds after page load
+    }, 2000); // 2 seconds after visiting /home page
 
     return () => clearTimeout(timer);
-  }, [isPatient, triggerDemo]);
+  }, [isPatient, pathname, triggerDemo]);
 
   // Pre-unlock audio domain permission on first user interaction anywhere on page
   useEffect(() => {

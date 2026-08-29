@@ -1,5 +1,5 @@
 "use client";
-import PatientNotificationsComponent from "@/modules/patient/components/PatientNotificationsComponent";
+import UnifiedNotificationsComponent from "@/modules/notifications/components/UnifiedNotificationsComponent";
 export default function PatientNotifications() {
-    return <PatientNotificationsComponent />;
+    return <UnifiedNotificationsComponent />;
 }

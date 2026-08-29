@@ -40,17 +40,45 @@ function getNotificationRoute(notification, userRole) {
 
   switch (type) {
     case 'REFILL_ORDER_CREATED':
-      return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
     case 'REFILL_ORDER_UPDATED':
       return userRole === 'PHARMACIST' ? '/pharmacy/orders' : '/refills';
     case 'DOSE_REMINDER':
+    case 'DOSE_MISSED':
       return '/home';
     case 'MEDICATION_LOW_STOCK':
+    case 'MEDICATION_REFILL':
       return '/refills';
     case 'CAREGIVER_INVITATION':
-      return userRole === 'PATIENT' ? '/caregivers' : '/patients';
+    case 'RELATIONSHIP_REQUEST':
+    case 'RELATIONSHIP_ACCEPTED':
+    case 'RELATIONSHIP_REJECTED':
+      return ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(userRole)
+        ? '/patients'
+        : '/caregivers';
     default:
       return '/notifications';
+  }
+}
+
+// Helper to get category icon and style for notifications
+function getNotificationIcon(type) {
+  switch (type) {
+    case 'REFILL_ORDER_CREATED':
+    case 'REFILL_ORDER_UPDATED':
+      return { icon: HeartPulse, color: 'text-sky-600 bg-sky-500/10' };
+    case 'DOSE_REMINDER':
+    case 'DOSE_MISSED':
+      return { icon: Bell, color: 'text-amber-600 bg-amber-500/10' };
+    case 'MEDICATION_LOW_STOCK':
+    case 'MEDICATION_REFILL':
+      return { icon: HeartPulse, color: 'text-rose-600 bg-rose-500/10' };
+    case 'CAREGIVER_INVITATION':
+    case 'RELATIONSHIP_REQUEST':
+    case 'RELATIONSHIP_ACCEPTED':
+    case 'RELATIONSHIP_REJECTED':
+      return { icon: ShieldCheck, color: 'text-teal-600 bg-teal-500/10' };
+    default:
+      return { icon: Bell, color: 'text-primary bg-primary/10' };
   }
 }
 
@@ -72,18 +100,21 @@ function NotificationPopover({ locale, t }) {
   } = useSocketNotifications() || {};
 
   const isCaregiverRole = ['FAMILY_CAREGIVER', 'PROFESSIONAL_CAREGIVER', 'CAREGIVER', 'DOCTOR'].includes(user?.role);
+  const isPatientRole = user?.role === 'PATIENT';
 
-  const { data: patientRels = [] } = usePatientRelationshipsQuery();
+  const { data: patientRels = [] } = usePatientRelationshipsQuery({ enabled: isPatientRole });
   const patientUpdateStatus = useUpdatePatientStatusMutation();
 
-  const { data: caregiverRels = [] } = useCaregiverRelationshipsQuery();
+  const { data: caregiverRels = [] } = useCaregiverRelationshipsQuery({ enabled: isCaregiverRole });
   const caregiverUpdateStatus = useUpdateCaregiverStatusMutation();
 
   const pendingIncoming = isCaregiverRole
     ? caregiverRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'PATIENT')
-    : patientRels.filter((r) => r.status === 'PENDING' && r.initiatedBy === 'CAREGIVER');
+    : isPatientRole
+      ? patientRels.filter((r) => r.status === 'PENDING' && (r.initiatedBy === 'CAREGIVER' || !r.initiatedBy))
+      : [];
 
-  const totalUnread = pendingIncoming.length + (unreadCount || 0);
+  const totalUnread = (pendingIncoming?.length || 0) + (unreadCount || 0);
 
   const handleResponse = (relationshipId, status) => {
     if (isCaregiverRole) {
@@ -130,18 +161,6 @@ function NotificationPopover({ locale, t }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const handleLogout = async () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('userRole');
-      localStorage.clear();
-    }
-    await logout();
-    if (typeof window !== 'undefined') {
-      window.location.href = '/';
-    }
-  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -202,7 +221,7 @@ function NotificationPopover({ locale, t }) {
 
                   return (
                     <div
-                      key={n.relationshipId}
+                      key={n.relationshipId || n._id || n.id}
                       className="p-4 hover:bg-surface-container/60 transition-colors flex flex-col gap-2.5 relative bg-primary-container/10"
                     >
                       <div className="flex items-start gap-3">
@@ -224,14 +243,14 @@ function NotificationPopover({ locale, t }) {
 
                       <div className="flex items-center gap-2 pt-1">
                         <button
-                          onClick={() => handleResponse(n.relationshipId, 'ACCEPTED')}
+                          onClick={() => handleResponse(n.relationshipId || n._id || n.id, 'ACCEPTED')}
                           disabled={isPendingMut}
                           className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                         >
                           {t('common.actions.accept')}
                         </button>
                         <button
-                          onClick={() => handleResponse(n.relationshipId, 'REJECTED')}
+                          onClick={() => handleResponse(n.relationshipId || n._id || n.id, 'REJECTED')}
                           disabled={isPendingMut}
                           className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-rose-100 hover:text-rose-600 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                         >
@@ -249,6 +268,7 @@ function NotificationPopover({ locale, t }) {
                   const title = isRtl && notif.titleAr ? notif.titleAr : notif.title;
                   const desc = isRtl && notif.messageAr ? notif.messageAr : notif.message;
                   const time = formatRelativeTime(notif.createdAt, isRtl);
+                  const { icon: NotifIcon, color: iconStyle } = getNotificationIcon(notif.type);
 
                   return (
                     <div
@@ -258,8 +278,8 @@ function NotificationPopover({ locale, t }) {
                         isUnread ? 'bg-teal-500/10 dark:bg-teal-950/40' : ''
                       }`}
                     >
-                      <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 font-bold">
-                        <Bell className="w-3.5 h-3.5" />
+                      <div className={`w-7 h-7 rounded-lg ${iconStyle} flex items-center justify-center shrink-0 font-bold`}>
+                        <NotifIcon className="w-3.5 h-3.5" />
                       </div>
 
                       <div className="flex-1 min-w-0">

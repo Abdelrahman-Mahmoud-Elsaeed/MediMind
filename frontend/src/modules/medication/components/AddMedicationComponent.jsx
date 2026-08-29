@@ -107,17 +107,44 @@ export default function AddMedicationComponent() {
             {t("patient.add.alignDesc")}
           </p>
 
-          {/* Shutter controls */}
-          <div className="mt-auto mb-4 w-full max-w-md flex items-center justify-evenly">
-            <Button variant="ghost" onClick={() => captureScan(true)} className="text-xs text-red-400 font-bold hover:bg-red-500/10">
-              {isAr ? "فشل" : "FAIL"}
+          <input
+            id="modal-ocr-file-input"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                captureScan(file);
+              }
+            }}
+          />
+
+          {/* Shutter & File Upload controls */}
+          <div className="mt-auto mb-4 w-full max-w-md flex items-center justify-evenly gap-3">
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById("modal-ocr-file-input")?.click()}
+              className="text-xs text-teal-400 font-bold border-teal-500/30 hover:bg-teal-500/10"
+            >
+              {isAr ? "رفع صورة" : "Upload File"}
             </Button>
-            <button onClick={() => captureScan(false)} className="group relative flex items-center justify-center w-20 h-20">
-              <div className="absolute inset-0 rounded-full border-4 border-white/20 scale-110"></div>
-              <div className="w-16 h-16 bg-white rounded-full shadow-lg active:scale-95 transition-transform"></div>
+            <button
+              onClick={() => document.getElementById("modal-ocr-file-input")?.click()}
+              className="group relative flex items-center justify-center w-20 h-20 cursor-pointer"
+              title={isAr ? "التقاط / رفع صورة" : "Capture / Select Image"}
+            >
+              <div className="absolute inset-0 rounded-full border-4 border-teal-400/40 scale-110 animate-pulse"></div>
+              <div className="w-16 h-16 bg-white rounded-full shadow-lg active:scale-95 transition-transform flex items-center justify-center text-teal-600">
+                <Camera className="w-8 h-8" />
+              </div>
             </button>
-            <Button variant="ghost" onClick={() => captureScan(false)} className="text-xs text-emerald-400 font-bold hover:bg-emerald-500/10">
-              {isAr ? "نجاح" : "PASS"}
+            <Button
+              variant="ghost"
+              onClick={() => captureScan("mock_single")}
+              className="text-xs text-slate-400 font-bold hover:bg-slate-800"
+            >
+              {isAr ? "ديمو سريعة" : "Quick Demo"}
             </Button>
           </div>
         </main>

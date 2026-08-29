@@ -60,6 +60,71 @@ class NotificationsController {
       next(error);
     }
   }
+
+  async delete(req, res, next) {
+    try {
+      const { id } = req.params;
+      const notificationService = require('../services/notification.service');
+      await notificationService.deleteNotification(id, req.accountId);
+      return new ServiceResponse({
+        en: 'Notification deleted successfully.',
+        ar: 'تم حذف الإشعار بنجاح.',
+        data: {},
+      }).send(res);
+    } catch (error) {
+      logger.error('Error deleting notification:', error);
+      next(error);
+    }
+  }
+
+  async getVapidPublicKey(req, res, next) {
+    try {
+      const { getPublicKey } = require('../../../config/webpush');
+      return new ServiceResponse({
+        en: 'VAPID public key retrieved.',
+        ar: 'تم الحصول على المفتاح العام للإشعارات.',
+        data: { vapidPublicKey: getPublicKey() },
+      }).send(res);
+    } catch (error) {
+      logger.error('Error getting VAPID public key:', error);
+      next(error);
+    }
+  }
+
+  async savePushSubscription(req, res, next) {
+    try {
+      const notificationService = require('../services/notification.service');
+      const userAgent = req.headers['user-agent'] || '';
+      const subscription = await notificationService.savePushSubscription(req.accountId, {
+        endpoint: req.body.endpoint,
+        keys: req.body.keys,
+        userAgent,
+      });
+      return new ServiceResponse({
+        en: 'Push subscription saved successfully.',
+        ar: 'تم حفظ اشتراك الإشعارات بنجاح.',
+        data: subscription,
+      }).send(res);
+    } catch (error) {
+      logger.error('Error saving push subscription:', error);
+      next(error);
+    }
+  }
+
+  async deletePushSubscription(req, res, next) {
+    try {
+      const notificationService = require('../services/notification.service');
+      await notificationService.deletePushSubscription(req.accountId, req.body.endpoint);
+      return new ServiceResponse({
+        en: 'Push subscription removed successfully.',
+        ar: 'تم إزالة اشتراك الإشعارات بنجاح.',
+        data: {},
+      }).send(res);
+    } catch (error) {
+      logger.error('Error removing push subscription:', error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new NotificationsController();

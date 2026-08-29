@@ -136,6 +136,22 @@ export function useSocketNotifications() {
     },
   });
 
+  // 5. Delete Notification Mutation
+  const deleteNotificationMutation = useMutation({
+    mutationFn: async (notificationId) => {
+      const data = await notificationService.deleteNotification(notificationId);
+      return data;
+    },
+    onSuccess: (_, notificationId) => {
+      queryClient.setQueryData(NOTIFICATION_KEYS.all, (oldData = []) => {
+        if (!Array.isArray(oldData)) return [];
+        return oldData.filter(
+          (n) => n.id !== notificationId && n.notificationId !== notificationId && n._id !== notificationId
+        );
+      });
+    },
+  });
+
   const notifications = notificationsQuery.data || [];
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -147,5 +163,6 @@ export function useSocketNotifications() {
     refetch: notificationsQuery.refetch,
     markAsRead: (id) => markAsReadMutation.mutate(id),
     markAllAsRead: () => markAllAsReadMutation.mutate(),
+    deleteNotification: (id) => deleteNotificationMutation.mutate(id),
   };
 }

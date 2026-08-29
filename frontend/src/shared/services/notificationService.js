@@ -20,6 +20,11 @@ export const notificationService = {
     const res = await apiClient.patch('/notifications/read-all');
     return res.data?.data ?? res.data;
   },
+
+  deleteNotification: async (notificationId) => {
+    const res = await apiClient.delete(`/notifications/${notificationId}`);
+    return res.data?.data ?? res.data;
+  },
 };
 
 export default notificationService;
