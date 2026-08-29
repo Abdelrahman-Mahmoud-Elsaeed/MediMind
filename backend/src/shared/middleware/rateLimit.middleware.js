@@ -2,10 +2,17 @@ const rateLimit = require('express-rate-limit');
 
 const globalRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // Limit each IP to 100 requests per minute
+  max: 300, // Increased allowance for real-time dashboard queries
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path.includes('/health') || req.path === '/',
+  skip: (req) => {
+    const url = req.originalUrl || req.url || req.path || '';
+    return (
+      url.includes('/socket.io') ||
+      url.includes('/health') ||
+      url === '/'
+    );
+  },
   message: {
     success: false,
     code: 'TOO_MANY_REQUESTS',
@@ -21,6 +28,10 @@ const authRateLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    const url = req.originalUrl || req.url || req.path || '';
+    return url.includes('/socket.io');
+  },
   message: {
     success: false,
     code: 'TOO_MANY_REQUESTS',

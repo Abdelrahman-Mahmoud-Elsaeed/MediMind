@@ -58,15 +58,38 @@ function extractLocalizedText(val, isRtl) {
   return String(val);
 }
 
+const NOTIFICATION_SOUND_URL = '/sounds/mixkit-long-pop-2358.wav';
+let notificationAudioInstance = null;
+
+export function playNotificationSound() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (!notificationAudioInstance) {
+      notificationAudioInstance = new Audio(NOTIFICATION_SOUND_URL);
+    }
+    notificationAudioInstance.currentTime = 0;
+    notificationAudioInstance.volume = 0.85;
+    const playPromise = notificationAudioInstance.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {});
+    }
+  } catch (err) {}
+}
+
 export function showNotification({
   title,
   message,
   type = 'info',
   duration = 3800,
   isRtl,
+  playSound = true,
 }) {
   if (dismissTimer) clearTimeout(dismissTimer);
   if (closeTimer) clearTimeout(closeTimer);
+
+  if (playSound) {
+    playNotificationSound();
+  }
 
   const resolvedIsRtl =
     typeof isRtl === 'boolean'

@@ -29,6 +29,24 @@ export function useSocketNotifications() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Pre-unlock audio domain permission on first user interaction anywhere on page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const unlockAudio = () => {
+      try {
+        const silentAudio = new Audio('/sounds/mixkit-long-pop-2358.wav');
+        silentAudio.volume = 0;
+        silentAudio.play().catch(() => {});
+      } catch (e) {}
+    };
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
+
   // 2. Real-Time Socket.IO Listener Setup & Cleanup
   useEffect(() => {
     if (!hasToken) return;
