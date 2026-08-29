@@ -64,33 +64,42 @@ echo -e "  ${GREEN}[OK] ECR Repositories & Cloud Infrastructure Provisioned!${NC
 echo -e "${YELLOW}[Step 2/5] Authenticating Docker & Pushing Container Images...${NC}"
 aws ecr get-login-password --region "$AWS_REGION" --no-cli-pager | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
+IMAGE_TAG=$(git rev-parse --short HEAD 2>/dev/null || date +%s)
+echo -e "  Generated build image tag: ${CYAN}${IMAGE_TAG}${NC}"
+
 echo -e "  ---> Building [backend] container..."
-docker build -t medtrack-backend:latest ../backend
+docker build -t medtrack-backend:latest -t medtrack-backend:${IMAGE_TAG} ../backend
 docker tag medtrack-backend:latest "${ECR_REGISTRY}/medtrack-backend:latest"
-echo -e "  ---> Pushing [backend] to AWS ECR..."
+docker tag medtrack-backend:${IMAGE_TAG} "${ECR_REGISTRY}/medtrack-backend:${IMAGE_TAG}"
+echo -e "  ---> Pushing [backend] (latest & ${IMAGE_TAG}) to AWS ECR..."
 docker push "${ECR_REGISTRY}/medtrack-backend:latest"
-echo -e "  ${GREEN}[OK] Backend image pushed successfully!${NC}\n"
+docker push "${ECR_REGISTRY}/medtrack-backend:${IMAGE_TAG}"
+echo -e "  ${GREEN}[OK] Backend image updated and pushed successfully!${NC}\n"
 
 echo -e "  ---> Building [frontend] container..."
-docker build --build-arg NEXT_PUBLIC_API_URL="/api/v1" -t medtrack-frontend:latest ../frontend
+docker build --build-arg NEXT_PUBLIC_API_URL="/api/v1" -t medtrack-frontend:latest -t medtrack-frontend:${IMAGE_TAG} ../frontend
 docker tag medtrack-frontend:latest "${ECR_REGISTRY}/medtrack-frontend:latest"
-echo -e "  ---> Pushing [frontend] to AWS ECR..."
+docker tag medtrack-frontend:${IMAGE_TAG} "${ECR_REGISTRY}/medtrack-frontend:${IMAGE_TAG}"
+echo -e "  ---> Pushing [frontend] (latest & ${IMAGE_TAG}) to AWS ECR..."
 docker push "${ECR_REGISTRY}/medtrack-frontend:latest"
-echo -e "  ${GREEN}[OK] Frontend image pushed successfully!${NC}\n"
+docker push "${ECR_REGISTRY}/medtrack-frontend:${IMAGE_TAG}"
+echo -e "  ${GREEN}[OK] Frontend image updated and pushed successfully!${NC}\n"
 
 echo -e "  ---> Building [worker] container..."
-docker build -t medtrack-worker:latest ../worker
+docker build -t medtrack-worker:latest -t medtrack-worker:${IMAGE_TAG} ../worker
 docker tag medtrack-worker:latest "${ECR_REGISTRY}/medtrack-worker:latest"
-echo -e "  ---> Pushing [worker] to AWS ECR..."
+docker tag medtrack-worker:${IMAGE_TAG} "${ECR_REGISTRY}/medtrack-worker:${IMAGE_TAG}"
+echo -e "  ---> Pushing [worker] (latest & ${IMAGE_TAG}) to AWS ECR..."
 docker push "${ECR_REGISTRY}/medtrack-worker:latest"
-echo -e "  ${GREEN}[OK] Worker image pushed successfully!${NC}\n"
+docker push "${ECR_REGISTRY}/medtrack-worker:${IMAGE_TAG}"
+echo -e "  ${GREEN}[OK] Worker image updated and pushed successfully!${NC}\n"
 
 # Step 3: Trigger ECS Forced Rolling Redeployment
-echo -e "${YELLOW}[Step 3/5] Triggering ECS Service Redeployments...${NC}"
+echo -e "${YELLOW}[Step 3/5] Triggering ECS Forced Rolling Redeployment...${NC}"
 aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-frontend-service --force-new-deployment --no-cli-pager >/dev/null
 aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-backend-service --force-new-deployment --no-cli-pager >/dev/null
 aws ecs update-service --cluster medtrack-development-cluster --service medtrack-development-worker-service --force-new-deployment --no-cli-pager >/dev/null
-echo -e "  ${GREEN}[OK] Rolling updates triggered across all services!${NC}\n"
+echo -e "  ${GREEN}[OK] Forced new deployment triggered across all services! ECS will pull the newly updated container images.${NC}\n"
 
 # Step 4: Outputs & Target Health Audit
 echo -e "${YELLOW}[Step 4/5] Auditing Target Groups & Secrets Manager...${NC}"
