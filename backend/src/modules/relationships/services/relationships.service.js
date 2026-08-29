@@ -194,6 +194,8 @@ class RelationshipsService {
         throw new AppError('Caregiver profile not found', 404, 'CAREGIVER_NOT_FOUND');
       }
       query.caregiverId = caregiver._id;
+    } else if (role === 'ADMIN') {
+      // ADMIN can list all relationships across the platform
     } else {
       throw new AppError('Invalid role for relationships', 403, 'FORBIDDEN');
     }
