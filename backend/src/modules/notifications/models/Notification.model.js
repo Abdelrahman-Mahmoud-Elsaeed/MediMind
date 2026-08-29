@@ -87,13 +87,12 @@ const NotificationSchema = new Schema(
   { timestamps: true }
 );
 
-NotificationSchema.pre('save', function (next) {
+NotificationSchema.pre('save', function () {
   if (this.recipientId && !this.recipientAccountId) {
     this.recipientAccountId = this.recipientId;
   } else if (this.recipientAccountId && !this.recipientId) {
     this.recipientId = this.recipientAccountId;
   }
-  next();
 });
 
 NotificationSchema.index({ recipientId: 1, isRead: 1 });

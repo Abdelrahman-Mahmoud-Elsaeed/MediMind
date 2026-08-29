@@ -109,7 +109,7 @@ html {
   --label-sm-letter-spacing: 0.05em;
   --label-sm-weight: 500;
   --label-sm-font: var(--font-jetbrains-mono);
-  
+
   --title-lg-size: 22px;
   --title-lg-line-height: 28px;
   --title-lg-weight: 500;
@@ -289,7 +289,7 @@ html {
   --color-on-error: var(--on-error);
   --color-error-container: var(--error-container);
   --color-on-error-container: var(--on-error-container);
-  
+
   --font-display-lg: var(--display-lg-font);
   --font-headline-lg: var(--headline-lg-font);
   --font-headline-lg-mobile: var(--headline-lg-mobile-font);
@@ -298,7 +298,7 @@ html {
   --font-body-md: var(--body-md-font);
   --font-label-md: var(--label-md-font);
   --font-label-sm: var(--label-sm-font);
-  
+
   --font-title-lg: var(--title-lg-font);
   --font-title-md: var(--title-md-font);
   --font-label-lg: var(--label-lg-font);
@@ -378,9 +378,17 @@ body {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {
@@ -393,13 +401,27 @@ body {
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes toastProgress {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .animate-pulse-slow {
@@ -420,6 +442,7 @@ body {
   border-radius: 16px;
   border: 1px solid var(--outline-variant);
 }
+
 .butterfly-input:focus {
   border-color: var(--primary-container);
   box-shadow: 0 0 0 2px rgba(9, 188, 138, 0.2);
@@ -427,13 +450,16 @@ body {
 }
 
 /* Accessible Muted Placeholders */
-input::placeholder, select::placeholder, textarea::placeholder {
+input::placeholder,
+select::placeholder,
+textarea::placeholder {
   color: var(--on-surface-variant) !important;
   opacity: 0.45 !important;
 }
 
-.dark input::placeholder, .dark select::placeholder, .dark textarea::placeholder {
+.dark input::placeholder,
+.dark select::placeholder,
+.dark textarea::placeholder {
   color: var(--on-surface-variant) !important;
   opacity: 0.55 !important;
 }
-

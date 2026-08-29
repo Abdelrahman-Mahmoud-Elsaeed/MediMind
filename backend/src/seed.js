@@ -5,183 +5,334 @@ const bcrypt = require("bcrypt");
 const Account = require("./modules/auth/models/Account.model");
 const Admin = require("./modules/auth/models/Admin.model");
 const Patient = require("./modules/auth/models/Patient.model");
-const FamilyCaregiver = require("./modules/auth/models/FamilyCaregiver.model");
+const Doctor = require("./modules/auth/models/Doctor.model");
 const Pharmacist = require("./modules/auth/models/Pharmacist.model");
+const FamilyCaregiver = require("./modules/auth/models/FamilyCaregiver.model");
+const ProfessionalCaregiver = require("./modules/auth/models/ProfessionalCaregiver.model");
 const MedicalCondition = require("./modules/conditions/models/MedicalCondition.model");
 const Medication = require("./modules/medications/models/Medication.model");
 const RefillOrder = require("./modules/medications/models/RefillOrder.model");
 const DoseEvent = require("./modules/doses/models/DoseEvent.model");
 const Relationship = require("./modules/relationships/models/Relationship.model");
+const Notification = require("./modules/notifications/models/Notification.model");
 const { MONGO_URI } = require("./config/env");
 
 async function seed() {
-  console.log("Starting idempotent MediMind Patient Module Seed...");
+  console.log("🚀 Starting Comprehensive MediMind Production-Grade Seed...");
   await mongoose.connect(MONGO_URI);
   const defaultPassword = "Password123!";
 
-  // Reset existing accounts to ensure pre("save") hook hashes Password123! once
-  const existingAccounts = await Account.find({});
-  for (const acc of existingAccounts) {
-    acc.passwordHash = defaultPassword;
-    await acc.save();
-  }
+  // Clear existing collections for a clean, deterministic seed state
+  console.log("🧹 Cleaning old seed collections...");
+  await Promise.all([
+    Account.deleteMany({}),
+    Admin.deleteMany({}),
+    Patient.deleteMany({}),
+    Doctor.deleteMany({}),
+    Pharmacist.deleteMany({}),
+    FamilyCaregiver.deleteMany({}),
+    ProfessionalCaregiver.deleteMany({}),
+    MedicalCondition.deleteMany({}),
+    Medication.deleteMany({}),
+    RefillOrder.deleteMany({}),
+    DoseEvent.deleteMany({}),
+    Relationship.deleteMany({}),
+    Notification.deleteMany({}),
+  ]);
 
-  // 0. Create Super Admin Account
-  let adminAccount = await Account.findOne({ email: "admin@medimind.io" });
-  if (!adminAccount) {
-    adminAccount = await Account.create({
-      email: "admin@medimind.io",
-      passwordHash: defaultPassword,
-      role: "ADMIN",
+  const passwordHash = defaultPassword;
+
+  // ---------------------------------------------------------------------------
+  // 1. ADMIN ACCOUNTS
+  // ---------------------------------------------------------------------------
+  console.log("👤 Seeding Admins...");
+  const adminAccount = await Account.create({
+    email: "admin@medimind.io",
+    passwordHash,
+    role: "ADMIN",
+    isEmailVerified: true,
+    isPhoneVerified: true,
+    isActive: true,
+  });
+
+  await Admin.create({
+    accountId: adminAccount._id,
+    firstName: "Super",
+    lastName: "Admin",
+    adminType: "super_admin",
+    department: "Operations & Governance",
+    permissions: ["*"],
+  });
+
+  // ---------------------------------------------------------------------------
+  // 2. DOCTOR ACCOUNTS
+  // ---------------------------------------------------------------------------
+  console.log("🩺 Seeding Doctors...");
+  const doctorSeedList = [
+    {
+      email: "doctor.smith@medimind.io",
+      phone: "+20 100 888 1111",
+      firstName: "Alexander",
+      lastName: "Smith",
+      specialty: "Cardiology",
+      syndicateId: "DOC-SYND-9901",
+      clinicName: "Cairo Heart & Vascular Center",
+      governorate: "Cairo",
+      city: "New Cairo",
+      street: "Road 90 North",
+      isVerified: true,
+      title: "Consultant",
+      bio: "Senior Consultant Cardiologist with 15+ years of clinical experience in hypertension and vascular care.",
+    },
+    {
+      email: "doctor.layla@medimind.io",
+      phone: "+20 101 777 2222",
+      firstName: "Layla",
+      lastName: "Nabil",
+      specialty: "Endocrinology",
+      syndicateId: "DOC-SYND-8802",
+      clinicName: "Nile Endocrine & Diabetes Clinic",
+      governorate: "Giza",
+      city: "Mohandessin",
+      street: "Batel El-Dossory St",
+      isVerified: true,
+      title: "Professor",
+      bio: "Professor of Endocrinology specializing in Type 1 and Type 2 Diabetes management and insulin therapy.",
+    },
+    {
+      email: "doctor.tariq@medimind.io",
+      phone: "+20 102 666 3333",
+      firstName: "Tariq",
+      lastName: "Farouk",
+      specialty: "Internal Medicine",
+      syndicateId: "DOC-SYND-7703",
+      clinicName: "Farouk Care Practice",
+      governorate: "Alexandria",
+      city: "Smouha",
+      street: "Fawzy Moath St",
+      isVerified: false, // Pending Admin Review
+      title: "Specialist",
+      bio: "Specialist in internal medicine and chronic care coordination.",
+    },
+  ];
+
+  const doctorsMap = {};
+  for (const docData of doctorSeedList) {
+    const acc = await Account.create({
+      email: docData.email,
+      phone: docData.phone,
+      passwordHash,
+      role: "DOCTOR",
       isEmailVerified: true,
-      isActive: true,
+      isPhoneVerified: true,
+      isActive: docData.isVerified,
     });
-  }
 
-  let adminProfile = await Admin.findOne({ accountId: adminAccount._id });
-  if (!adminProfile) {
-    await Admin.create({
-      accountId: adminAccount._id,
-      firstName: "Super",
-      lastName: "Admin",
-      adminType: "super_admin",
-      department: "Operations",
-      permissions: ["*"],
-    });
-  }
-
-  // 1. Create Default Pharmacist (for Refill Orders)
-  let pharmAccount = await Account.findOne({ email: "pharmacy@medimind.io" });
-  if (!pharmAccount) {
-    pharmAccount = await Account.create({
-      email: "pharmacy@medimind.io",
-      passwordHash: defaultPassword,
-      role: "PHARMACIST",
-      isEmailVerified: true,
-      isActive: true,
-    });
-  }
-
-  let pharmacist = await Pharmacist.findOne({ accountId: pharmAccount._id });
-  if (!pharmacist) {
-    pharmacist = await Pharmacist.create({
-      accountId: pharmAccount._id,
-      pharmacyName: "MediMind Central Pharmacy",
-      ownerName: "Dr. Karim Al-Saeed",
-      licenseNumber: "PH-99201",
-      address: {
-        governorate: "Cairo",
-        city: "New Cairo",
-        street: "90th Street",
+    const docProfile = await Doctor.create({
+      accountId: acc._id,
+      firstName: docData.firstName,
+      lastName: docData.lastName,
+      specialty: docData.specialty,
+      syndicateId: docData.syndicateId,
+      clinicName: docData.clinicName,
+      clinicAddress: {
+        governorate: docData.governorate,
+        city: docData.city,
+        street: docData.street,
       },
       location: {
         type: "Point",
         coordinates: [31.2357, 30.0444],
       },
-      pharmacyPhone: "+20 100 123 4567",
-      offersDelivery: true,
+      isVerified: docData.isVerified,
+      title: docData.title,
+      bio: docData.bio,
+      experienceYears: 12,
+      consultationFee: 400,
+      subscription: { status: "active", startDate: new Date() },
     });
+
+    doctorsMap[docData.email] = docProfile;
   }
 
-  // 1.1 Create Additional Partner Pharmacies
-  const partnerPharmaciesSeed = [
+  // ---------------------------------------------------------------------------
+  // 3. PHARMACIST ACCOUNTS
+  // ---------------------------------------------------------------------------
+  console.log("💊 Seeding Pharmacies...");
+  const pharmacySeedList = [
+    {
+      email: "pharmacy@medimind.io",
+      phone: "+20 100 123 4567",
+      pharmacyName: "MediMind Central Pharmacy",
+      ownerName: "Dr. Karim Al-Saeed",
+      licenseNumber: "PH-99201",
+      governorate: "Cairo",
+      city: "New Cairo",
+      street: "90th Street",
+      offersDelivery: true,
+      isVerified: true,
+    },
     {
       email: "elezaby@medimind.io",
+      phone: "+20 19777",
       pharmacyName: "El-Ezaby Pharmacy (Mohandessin)",
       ownerName: "Dr. Ahmed El-Ezaby",
       licenseNumber: "PH-88412",
-      address: { governorate: "Giza", city: "Mohandessin", street: "Shehab Street" },
-      location: { type: "Point", coordinates: [31.2007, 30.0524] },
-      pharmacyPhone: "+20 19777",
+      governorate: "Giza",
+      city: "Mohandessin",
+      street: "Shehab Street",
       offersDelivery: true,
+      isVerified: true,
     },
     {
       email: "seif@medimind.io",
+      phone: "+20 19199",
       pharmacyName: "Seif Pharmacy (Smouha)",
       ownerName: "Dr. Mohamed Seif",
       licenseNumber: "PH-77309",
-      address: { governorate: "Alexandria", city: "Smouha", street: "Victor Emanuel St" },
-      location: { type: "Point", coordinates: [29.9553, 31.2156] },
-      pharmacyPhone: "+20 19199",
+      governorate: "Alexandria",
+      city: "Smouha",
+      street: "Victor Emanuel St",
       offersDelivery: true,
+      isVerified: true,
     },
     {
-      email: "carecure@medimind.io",
-      pharmacyName: "Care & Cure Pharmacy (Maadi)",
-      ownerName: "Dr. Mona El-Shazly",
-      licenseNumber: "PH-66104",
-      address: { governorate: "Cairo", city: "Maadi", street: "Road 9" },
-      location: { type: "Point", coordinates: [31.2585, 29.9602] },
-      pharmacyPhone: "+20 102 999 8877",
-      offersDelivery: false,
+      email: "pending.pharmacy@medimind.io",
+      phone: "+20 105 444 3322",
+      pharmacyName: "Nour Community Pharmacy",
+      ownerName: "Dr. Youssef Nour",
+      licenseNumber: "PH-11005",
+      governorate: "Cairo",
+      city: "Nasr City",
+      street: "Abbas El-Akkad St",
+      offersDelivery: true,
+      isVerified: false, // Pending Admin Approval
     },
   ];
 
-  for (const pSeed of partnerPharmaciesSeed) {
-    let pAcc = await Account.findOne({ email: pSeed.email });
-    if (!pAcc) {
-      pAcc = await Account.create({
-        email: pSeed.email,
-        passwordHash: defaultPassword,
-        role: "PHARMACIST",
-        isEmailVerified: true,
-        isActive: true,
-      });
-    }
-    let pProfile = await Pharmacist.findOne({ accountId: pAcc._id });
-    if (!pProfile) {
-      await Pharmacist.create({
-        accountId: pAcc._id,
-        pharmacyName: pSeed.pharmacyName,
-        ownerName: pSeed.ownerName,
-        licenseNumber: pSeed.licenseNumber,
-        address: pSeed.address,
-        location: pSeed.location,
-        pharmacyPhone: pSeed.pharmacyPhone,
-        offersDelivery: pSeed.offersDelivery,
-      });
-    }
-  }
+  const pharmaciesList = [];
+  for (const pSeed of pharmacySeedList) {
+    const acc = await Account.create({
+      email: pSeed.email,
+      phone: pSeed.phone,
+      passwordHash,
+      role: "PHARMACIST",
+      isEmailVerified: true,
+      isPhoneVerified: true,
+      isActive: pSeed.isVerified,
+    });
 
-  // 2. Create 6 caregivers, with a mix of linked and standalone profiles
-  const caregiverData = [
-    { email: "caregiver1@medimind.io", firstName: "Nour", lastName: "Al-Sayed" },
-    { email: "caregiver2@medimind.io", firstName: "Hassan", lastName: "Ibrahim" },
-    { email: "caregiver3@medimind.io", firstName: "Mona", lastName: "Farouk" },
-    { email: "caregiver4@medimind.io", firstName: "Ola", lastName: "Kamal" },
-    { email: "caregiver5@medimind.io", firstName: "Khaled", lastName: "Rahman" },
-    { email: "caregiver6@medimind.io", firstName: "Salma", lastName: "Yousef" },
+    const pharmProfile = await Pharmacist.create({
+      accountId: acc._id,
+      pharmacyName: pSeed.pharmacyName,
+      ownerName: pSeed.ownerName,
+      licenseNumber: pSeed.licenseNumber,
+      address: {
+        governorate: pSeed.governorate,
+        city: pSeed.city,
+        street: pSeed.street,
+      },
+      location: { type: "Point", coordinates: [31.2357, 30.0444] },
+      pharmacyPhone: pSeed.phone,
+      offersDelivery: pSeed.offersDelivery,
+      subscription: { status: pSeed.isVerified ? "active" : "pilot", startDate: new Date() },
+    });
+
+    pharmaciesList.push(pharmProfile);
+  }
+  const defaultPharmacy = pharmaciesList[0];
+
+  // ---------------------------------------------------------------------------
+  // 4. CAREGIVER ACCOUNTS (Family & Professional)
+  // ---------------------------------------------------------------------------
+  console.log("🤝 Seeding Caregivers...");
+  const familyCaregiverSeedList = [
+    { email: "caregiver1@medimind.io", phone: "+20 109 111 2233", firstName: "Nour", lastName: "Al-Sayed" },
+    { email: "caregiver2@medimind.io", phone: "+20 109 222 3344", firstName: "Hassan", lastName: "Ibrahim" },
   ];
 
-  const caregiverDocs = [];
-  for (const cg of caregiverData) {
-    let cgAcc = await Account.findOne({ email: cg.email });
-    if (!cgAcc) {
-      cgAcc = await Account.create({
-        email: cg.email,
-        passwordHash: defaultPassword,
-        role: "FAMILY_CAREGIVER",
-        isEmailVerified: true,
-        isActive: true,
-      });
-    }
+  const familyCaregivers = [];
+  for (const fcData of familyCaregiverSeedList) {
+    const acc = await Account.create({
+      email: fcData.email,
+      phone: fcData.phone,
+      passwordHash,
+      role: "FAMILY_CAREGIVER",
+      isEmailVerified: true,
+      isPhoneVerified: true,
+      isActive: true,
+    });
 
-    let cgProfile = await FamilyCaregiver.findOne({ accountId: cgAcc._id });
-    if (!cgProfile) {
-      cgProfile = await FamilyCaregiver.create({
-        accountId: cgAcc._id,
-        firstName: cg.firstName,
-        lastName: cg.lastName,
-        address: { street: "El-Tahrir St", city: "Cairo", country: "Egypt" },
-      });
-    }
-    caregiverDocs.push(cgProfile);
+    const fcProfile = await FamilyCaregiver.create({
+      accountId: acc._id,
+      firstName: fcData.firstName,
+      lastName: fcData.lastName,
+      address: { street: "El-Tahrir St", city: "Cairo", country: "Egypt" },
+    });
+
+    familyCaregivers.push(fcProfile);
   }
 
-  // 3. Create 10 Patient Accounts & Complete Datasets
+  // Professional Caregivers
+  const proCaregiverSeedList = [
+    {
+      email: "caregiver3@medimind.io",
+      phone: "+20 109 333 4455",
+      firstName: "Mona",
+      lastName: "Farouk",
+      licenseNumber: "NURSE-LIC-5501",
+      specialties: ["Geriatric", "General Nursing"],
+      hourlyRate: 150,
+      isVerified: true,
+    },
+    {
+      email: "pro.caregiver@medimind.io",
+      phone: "+20 109 444 5566",
+      firstName: "Ayman",
+      lastName: "Mansour",
+      licenseNumber: "NURSE-LIC-6602",
+      specialties: ["Post-Surgery Recovery", "Palliative Care"],
+      hourlyRate: 200,
+      isVerified: false, // Pending Admin Approval
+    },
+  ];
+
+  const proCaregivers = [];
+  for (const pcData of proCaregiverSeedList) {
+    const acc = await Account.create({
+      email: pcData.email,
+      phone: pcData.phone,
+      passwordHash,
+      role: "PROFESSIONAL_CAREGIVER",
+      isEmailVerified: true,
+      isPhoneVerified: true,
+      isActive: pcData.isVerified,
+    });
+
+    const pcProfile = await ProfessionalCaregiver.create({
+      accountId: acc._id,
+      firstName: pcData.firstName,
+      lastName: pcData.lastName,
+      licenseNumber: pcData.licenseNumber,
+      specialties: pcData.specialties,
+      hourlyRate: pcData.hourlyRate,
+      location: { type: "Point", coordinates: [31.2357, 30.0444] },
+      isAvailable: true,
+      experienceYears: 7,
+      rating: 4.9,
+    });
+
+    proCaregivers.push(pcProfile);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. PATIENT ACCOUNTS, CONDITIONS, MEDICATIONS & DOSE LOGS
+  // ---------------------------------------------------------------------------
+  console.log("🏥 Seeding Patients, Medications, and Multi-Day Adherence History...");
   const patientsSeedInfo = [
     {
       email: "patient1@medimind.io",
+      phone: "+1 (555) 012-3456",
       firstName: "Sarah",
       lastName: "Jenkins",
       dob: "1988-04-12",
@@ -189,28 +340,19 @@ async function seed() {
       height: 165,
       weight: 62,
       allergies: ["Penicillin", "Peanuts"],
-      phone: "+1 (555) 012-3456",
       conditions: [
         { diseaseName: "Type 2 Diabetes", isChronic: true, notes: "Diagnosed 2021. Managed with Metformin." },
         { diseaseName: "Hypertension", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteسبسشيبnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteسيبسبيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hypertبيسension", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hypeسسtension", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteبسيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteسيبسيnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteبسشيبسnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteسشيبسnsion", isChronic: true, notes: "Monitor blood pressure daily." },
-        { diseaseName: "Hyperteسشيبسيشnsion", isChronic: true, notes: "Monitor blood pressure daily." },
       ],
       meds: [
-        { name: "Metformin ER", strength: "500mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 2, stock: 45, initial: 60, refillThresh: 10, meal: "AFTER_MEALS", relation: "Diabetes" },
-        { name: "Lisinopril", strength: "10mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 8, initial: 30, refillThresh: 10, meal: "BEFORE_MEALS", relation: "Hypertension" },
-        { name: "Atorvastatin", strength: "20mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 25, initial: 30, refillThresh: 5, meal: "WITH_FOOD", relation: "Hypertension" },
+        { name: "Metformin ER", strength: "500mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 2, stock: 42, initial: 60, refillThresh: 10, meal: "AFTER_MEALS", relation: "Type 2 Diabetes", times: ["08:00", "20:00"] },
+        { name: "Lisinopril", strength: "10mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 8, initial: 30, refillThresh: 10, meal: "BEFORE_MEALS", relation: "Hypertension", times: ["08:00"] },
+        { name: "Atorvastatin", strength: "20mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 25, initial: 30, refillThresh: 5, meal: "WITH_FOOD", relation: "Hypertension", times: ["21:00"] },
       ],
     },
     {
       email: "patient2@medimind.io",
+      phone: "+20 101 555 1234",
       firstName: "Ahmed",
       lastName: "Hassan",
       dob: "1975-09-20",
@@ -218,18 +360,18 @@ async function seed() {
       height: 178,
       weight: 84,
       allergies: ["Sulfa Drugs"],
-      phone: "+20 101 555 1234",
       conditions: [
         { diseaseName: "Bronchial Asthma", isChronic: true, notes: "Requires rescue inhaler during severe cold." },
         { diseaseName: "High Cholesterol", isChronic: true, notes: "Low sodium and lipid diet." },
       ],
       meds: [
-        { name: "Albuterol Inhaler", strength: "90mcg", formType: "OTHER", frequency: "AS_NEEDED", dosesPerDay: 1, stock: 120, initial: 200, refillThresh: 20, meal: "NONE", relation: "Bronchial Asthma" },
-        { name: "Rosuvastatin", strength: "10mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 4, initial: 30, refillThresh: 7, meal: "AFTER_MEALS", relation: "High Cholesterol" },
+        { name: "Albuterol Inhaler", strength: "90mcg", formType: "OTHER", frequency: "AS_NEEDED", dosesPerDay: 1, stock: 120, initial: 200, refillThresh: 20, meal: "NONE", relation: "Bronchial Asthma", times: ["09:00"] },
+        { name: "Rosuvastatin", strength: "10mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 4, initial: 30, refillThresh: 7, meal: "AFTER_MEALS", relation: "High Cholesterol", times: ["20:00"] },
       ],
     },
     {
       email: "patient3@medimind.io",
+      phone: "+971 50 987 6543",
       firstName: "Fatima",
       lastName: "Al-Mansoor",
       dob: "1992-11-05",
@@ -237,17 +379,17 @@ async function seed() {
       height: 160,
       weight: 58,
       allergies: ["Aspirin"],
-      phone: "+971 50 987 6543",
       conditions: [
         { diseaseName: "Migraine with Aura", isChronic: true, notes: "Triggers include stress and bright light." },
       ],
       meds: [
-        { name: "Sumatriptan", strength: "50mg", formType: "TABLET", frequency: "AS_NEEDED", dosesPerDay: 1, stock: 6, initial: 10, refillThresh: 2, meal: "ON_EMPTY_STOMACH", relation: "Migraine with Aura" },
-        { name: "Magnesium Glycinate", strength: "400mg", formType: "CAPSULE", frequency: "DAILY", dosesPerDay: 1, stock: 60, initial: 90, refillThresh: 15, meal: "WITH_FOOD", relation: "Migraine with Aura" },
+        { name: "Sumatriptan", strength: "50mg", formType: "TABLET", frequency: "AS_NEEDED", dosesPerDay: 1, stock: 6, initial: 10, refillThresh: 2, meal: "ON_EMPTY_STOMACH", relation: "Migraine with Aura", times: ["10:00"] },
+        { name: "Magnesium Glycinate", strength: "400mg", formType: "CAPSULE", frequency: "DAILY", dosesPerDay: 1, stock: 55, initial: 90, refillThresh: 15, meal: "WITH_FOOD", relation: "Migraine with Aura", times: ["21:00"] },
       ],
     },
     {
       email: "patient4@medimind.io",
+      phone: "+20 112 444 8899",
       firstName: "Omar",
       lastName: "Khaled",
       dob: "1968-01-30",
@@ -255,18 +397,18 @@ async function seed() {
       height: 172,
       weight: 79,
       allergies: [],
-      phone: "+20 112 444 8899",
       conditions: [
         { diseaseName: "Rheumatoid Arthritis", isChronic: true, notes: "Morning stiffness." },
         { diseaseName: "Gastroesophageal Reflux (GERD)", isChronic: true, notes: "Avoid acidic food." },
       ],
       meds: [
-        { name: "Methotrexate", strength: "2.5mg", formType: "TABLET", frequency: "WEEKLY", dosesPerDay: 1, stock: 16, initial: 24, refillThresh: 4, meal: "AFTER_MEALS", relation: "Rheumatoid Arthritis" },
-        { name: "Omeprazole", strength: "20mg", formType: "CAPSULE", frequency: "DAILY", dosesPerDay: 1, stock: 2, initial: 30, refillThresh: 5, meal: "BEFORE_MEALS", relation: "Gastroesophageal Reflux (GERD)" },
+        { name: "Methotrexate", strength: "2.5mg", formType: "TABLET", frequency: "WEEKLY", dosesPerDay: 1, stock: 16, initial: 24, refillThresh: 4, meal: "AFTER_MEALS", relation: "Rheumatoid Arthritis", times: ["08:00"] },
+        { name: "Omeprazole", strength: "20mg", formType: "CAPSULE", frequency: "DAILY", dosesPerDay: 1, stock: 2, initial: 30, refillThresh: 5, meal: "BEFORE_MEALS", relation: "Gastroesophageal Reflux (GERD)", times: ["07:30"] },
       ],
     },
     {
       email: "patient5@medimind.io",
+      phone: "+1 (555) 321-9876",
       firstName: "Maria",
       lastName: "Garcia",
       dob: "1995-07-14",
@@ -274,228 +416,142 @@ async function seed() {
       height: 168,
       weight: 64,
       allergies: ["Ibuprofen"],
-      phone: "+1 (555) 321-9876",
       conditions: [
         { diseaseName: "Hypothyroidism", isChronic: true, notes: "Take Levothyroxine first thing in the morning." },
       ],
       meds: [
-        { name: "Levothyroxine", strength: "75mcg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 22, initial: 30, refillThresh: 7, meal: "ON_EMPTY_STOMACH", relation: "Hypothyroidism" },
-      ],
-    },
-    {
-      email: "patient6@medimind.io",
-      firstName: "James",
-      lastName: "Wilson",
-      dob: "1983-03-22",
-      bloodType: "A-",
-      height: 182,
-      weight: 90,
-      allergies: ["Codeine"],
-      phone: "+1 (555) 888-2211",
-      conditions: [
-        { diseaseName: "Generalized Anxiety Disorder", isChronic: true, notes: "Therapy + daily SSRI." },
-      ],
-      meds: [
-        { name: "Sertraline", strength: "50mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 18, initial: 30, refillThresh: 5, meal: "WITH_FOOD", relation: "Generalized Anxiety Disorder" },
-      ],
-    },
-    {
-      email: "patient7@medimind.io",
-      firstName: "Layla",
-      lastName: "Mahmoud",
-      dob: "2000-06-18",
-      bloodType: "B-",
-      height: 163,
-      weight: 55,
-      allergies: [],
-      phone: "+20 102 777 3344",
-      conditions: [
-        { diseaseName: "Iron Deficiency Anemia", isChronic: false, notes: "3-month course of oral iron." },
-      ],
-      meds: [
-        { name: "Ferrous Sulfate", strength: "325mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 40, initial: 60, refillThresh: 10, meal: "AFTER_MEALS", relation: "Iron Deficiency Anemia" },
-        { name: "Vitamin C", strength: "500mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 40, initial: 60, refillThresh: 10, meal: "WITH_FOOD", relation: "Iron Deficiency Anemia" },
-      ],
-    },
-    {
-      email: "patient8@medimind.io",
-      firstName: "Tariq",
-      lastName: "Ziad",
-      dob: "1979-12-01",
-      bloodType: "AB-",
-      height: 175,
-      weight: 81,
-      allergies: ["Latex"],
-      phone: "+966 50 111 2233",
-      conditions: [
-        { diseaseName: "Coronary Artery Disease", isChronic: true, notes: "Post-stent management." },
-      ],
-      meds: [
-        { name: "Clopidogrel", strength: "75mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 14, initial: 30, refillThresh: 5, meal: "AFTER_MEALS", relation: "Coronary Artery Disease" },
-        { name: "Aspirin Protect", strength: "100mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 14, initial: 30, refillThresh: 5, meal: "AFTER_MEALS", relation: "Coronary Artery Disease" },
-      ],
-    },
-    {
-      email: "patient9@medimind.io",
-      firstName: "Emily",
-      lastName: "Chen",
-      dob: "1991-08-15",
-      bloodType: "O+",
-      height: 162,
-      weight: 59,
-      allergies: ["Dairy"],
-      phone: "+1 (555) 666-4433",
-      conditions: [
-        { diseaseName: "Seasonal Allergies", isChronic: false, notes: "Spring/Autumn flareups." },
-      ],
-      meds: [
-        { name: "Cetirizine", strength: "10mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 15, initial: 30, refillThresh: 5, meal: "NONE", relation: "Seasonal Allergies" },
-      ],
-    },
-    {
-      email: "patient10@medimind.io",
-      firstName: "Youssef",
-      lastName: "Ibrahim",
-      dob: "1972-05-25",
-      bloodType: "A+",
-      height: 180,
-      weight: 86,
-      allergies: [],
-      phone: "+20 111 999 5566",
-      conditions: [
-        { diseaseName: "Osteoarthritis", isChronic: true, notes: "Knee pain." },
-      ],
-      meds: [
-        { name: "Meloxicam", strength: "15mg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 10, initial: 30, refillThresh: 5, meal: "AFTER_MEALS", relation: "Osteoarthritis" },
-        { name: "Glucosamine Chondroitin", strength: "1500mg", formType: "CAPSULE", frequency: "DAILY", dosesPerDay: 2, stock: 30, initial: 60, refillThresh: 10, meal: "WITH_FOOD", relation: "Osteoarthritis" },
+        { name: "Levothyroxine", strength: "75mcg", formType: "TABLET", frequency: "DAILY", dosesPerDay: 1, stock: 22, initial: 30, refillThresh: 7, meal: "ON_EMPTY_STOMACH", relation: "Hypothyroidism", times: ["07:00"] },
       ],
     },
   ];
 
   for (const info of patientsSeedInfo) {
-    let account = await Account.findOne({ email: info.email });
-    if (!account) {
-      account = await Account.create({
-        email: info.email,
-        phone: info.phone,
-        passwordHash: defaultPassword,
-        role: "PATIENT",
-        isEmailVerified: true,
-        isPhoneVerified: true,
-        isActive: true,
-      });
-    }
+    const acc = await Account.create({
+      email: info.email,
+      phone: info.phone,
+      passwordHash,
+      role: "PATIENT",
+      isEmailVerified: true,
+      isPhoneVerified: true,
+      isActive: true,
+    });
 
-    let patient = await Patient.findOne({ accountId: account._id });
-    if (!patient) {
-      patient = await Patient.create({
-        accountId: account._id,
-        firstName: info.firstName,
-        lastName: info.lastName,
-        dateOfBirth: new Date(info.dob),
-        bloodType: info.bloodType,
-        height: info.height,
-        weight: info.weight,
-        allergies: info.allergies,
-        emergencyContact: [
-          { name: "Emergency Contact 1", phone: info.phone },
-          { name: "Emergency Contact 2", phone: "+1 (555) 999-0000" },
-        ],
-        address: [
-          {
-            street: "123 Health Ave",
-            city: "Cairo",
-            state: "Cairo",
-            postalCode: "11511",
-            country: "Egypt",
-          },
-        ],
-        preferredLanguage: "en",
-        consents: { familyCaregiver: true, professionalCaregiver: false, doctor: true, pharmacy: true },
-      });
-    }
+    const patient = await Patient.create({
+      accountId: acc._id,
+      firstName: info.firstName,
+      lastName: info.lastName,
+      dateOfBirth: new Date(info.dob),
+      bloodType: info.bloodType,
+      height: info.height,
+      weight: info.weight,
+      allergies: info.allergies,
+      emergencyContact: [
+        { name: "Family Support", phone: info.phone },
+      ],
+      address: [
+        {
+          street: "123 Healthcare Blvd",
+          city: "Cairo",
+          state: "Cairo",
+          postalCode: "11511",
+          country: "Egypt",
+        },
+      ],
+      preferredLanguage: "en",
+      consents: { familyCaregiver: true, professionalCaregiver: true, doctor: true, pharmacy: true },
+    });
 
-    // Seed Conditions
-    const createdConditions = [];
+    // Create Conditions
+    const createdConditionsMap = {};
     for (const cond of info.conditions) {
-      let condition = await MedicalCondition.findOne({
+      const condition = await MedicalCondition.create({
         patientId: patient._id,
         diseaseName: cond.diseaseName,
+        isChronic: cond.isChronic,
+        diagnosedDate: new Date("2023-01-15"),
+        notes: cond.notes,
       });
-      if (!condition) {
-        condition = await MedicalCondition.create({
-          patientId: patient._id,
-          diseaseName: cond.diseaseName,
-          isChronic: cond.isChronic,
-          diagnosedDate: new Date("2023-01-15"),
-          notes: cond.notes,
-        });
-      }
-      createdConditions.push(condition);
+      createdConditionsMap[cond.diseaseName] = condition;
     }
 
-    // Seed Medications
+    // Create Medications
     const createdMeds = [];
     for (const med of info.meds) {
-      let medication = await Medication.findOne({
+      const matchedCondition = createdConditionsMap[med.relation] || Object.values(createdConditionsMap)[0];
+
+      const medication = await Medication.create({
         patientId: patient._id,
+        conditionId: matchedCondition ? matchedCondition._id : null,
+        addedBy: acc._id,
         name: med.name,
+        formType: med.formType,
+        isChronic: true,
+        inventory: {
+          initialQuantity: med.initial,
+          currentQuantity: med.stock,
+          doseAmount: 1,
+          refillThreshold: med.refillThresh,
+        },
+        instructions: {
+          relationToMeals: med.meal,
+          notes: `Take with water. Dosage: ${med.strength}`,
+        },
+        schedule: {
+          frequency: med.frequency,
+          dosesPerDay: med.dosesPerDay,
+          firstDoseTime: med.times[0] || "08:00",
+          timesOfDay: med.times,
+          startDate: new Date("2025-01-01"),
+        },
+        expirationDate: new Date("2027-12-31"),
+        isActive: true,
       });
 
-      const matchedCondition = createdConditions.find((c) => c.diseaseName === med.relation) || createdConditions[0];
-
-      if (!medication) {
-        medication = await Medication.create({
-          patientId: patient._id,
-          conditionId: matchedCondition ? matchedCondition._id : null,
-          addedBy: account._id,
-          name: med.name,
-          formType: med.formType,
-          isChronic: true,
-          inventory: {
-            initialQuantity: med.initial,
-            currentQuantity: med.stock,
-            doseAmount: 1,
-            refillThreshold: med.refillThresh,
-          },
-          instructions: {
-            relationToMeals: med.meal,
-            notes: `Take with water. ${med.strength}`,
-          },
-          schedule: {
-            frequency: med.frequency,
-            dosesPerDay: med.dosesPerDay,
-            firstDoseTime: "08:00",
-            timesOfDay: med.dosesPerDay === 2 ? ["08:00", "20:00"] : ["08:00"],
-            startDate: new Date("2024-01-01"),
-          },
-          expirationDate: new Date("2027-12-31"),
-          isActive: true,
-        });
-      }
       createdMeds.push(medication);
     }
 
-    // Seed Dose Events (Past 7 days, Today, Next 7 days)
+    // -------------------------------------------------------------------------
+    // Generate Realistic Dose Events over 5 Days History (Past 4 Days + Today)
+    // -------------------------------------------------------------------------
+    const now = new Date();
+
     for (const med of createdMeds) {
-      const existingDose = await DoseEvent.findOne({ medicationId: med._id, patientId: patient._id });
-      if (!existingDose) {
-        const today = new Date();
-        for (let dayOffset = -7; dayOffset <= 7; dayOffset++) {
-          const doseDate = new Date(today);
-          doseDate.setDate(today.getDate() + dayOffset);
-          doseDate.setHours(8, 0, 0, 0);
+      const timesOfDay = med.schedule.timesOfDay || [med.schedule.firstDoseTime || "08:00"];
+
+      for (let dayOffset = -4; dayOffset <= 1; dayOffset++) {
+        for (const timeStr of timesOfDay) {
+          const [hour, min] = timeStr.split(":").map(Number);
+          const doseDate = new Date(now);
+          doseDate.setDate(now.getDate() + dayOffset);
+          doseDate.setHours(hour, min, 0, 0);
 
           let status = "PENDING";
           let takenAt = null;
 
           if (dayOffset < 0) {
-            // Past doses
-            status = dayOffset % 4 === 0 ? "MISSED" : "TAKEN";
-            takenAt = status === "TAKEN" ? doseDate : null;
+            // Past days history: 85% TAKEN, 10% MISSED, 5% SKIPPED
+            const rand = (Math.abs(dayOffset) + hour) % 10;
+            if (rand === 0) {
+              status = "MISSED";
+            } else if (rand === 1) {
+              status = "SKIPPED";
+            } else {
+              status = "TAKEN";
+              // Took medication 5-15 mins after scheduled time
+              takenAt = new Date(doseDate.getTime() + (rand * 2 + 3) * 60 * 1000);
+            }
           } else if (dayOffset === 0) {
-            status = "TAKEN";
-            takenAt = new Date();
+            // Today's doses
+            const isPastHour = doseDate.getTime() <= now.getTime();
+            if (isPastHour) {
+              status = "TAKEN";
+              takenAt = new Date(doseDate.getTime() + 5 * 60 * 1000);
+            } else {
+              status = "PENDING";
+            }
+          } else {
+            // Tomorrow's doses
+            status = "PENDING";
           }
 
           await DoseEvent.create({
@@ -510,104 +566,124 @@ async function seed() {
       }
     }
 
-    // Seed Relationships for patient1, patient2, and patient3
-    const linkedPatientEmails = [
-      "patient1@medimind.io",
-      "patient2@medimind.io",
-      "patient3@medimind.io",
-    ];
+    // -------------------------------------------------------------------------
+    // Seed Caregiver Relationships
+    // -------------------------------------------------------------------------
+    if (familyCaregivers.length > 0) {
+      // Connect patient to Nour Al-Sayed (ACCEPTED) and Hassan Ibrahim (PENDING)
+      await Relationship.create({
+        patientId: patient._id,
+        caregiverId: familyCaregivers[0]._id,
+        caregiverType: "FamilyCaregiver",
+        relation: "Family Member & Primary Caregiver",
+        status: "ACCEPTED",
+        initiatedBy: "CAREGIVER",
+        permissions: {
+          canViewMedications: true,
+          canAddMedication: true,
+          canEditMedication: true,
+          canDeleteMedication: true,
+          canViewMedicalRecords: true,
+          canEditMedicalRecords: true,
+          canViewDoseSchedule: true,
+          canConfirmDose: true,
+          canOrderRefills: true,
+          canReceiveNotifications: true,
+        },
+      });
 
-    if (linkedPatientEmails.includes(info.email) && caregiverDocs.length > 0) {
-      // Connect to first 2 caregivers (1 ACCEPTED, 1 PENDING)
-      const patientCaregivers = caregiverDocs.slice(0, 2);
-      for (let i = 0; i < patientCaregivers.length; i++) {
-        const caregiverProfile = patientCaregivers[i];
-        const existingRelation = await Relationship.findOne({
+      if (info.email === "patient1@medimind.io" || info.email === "patient2@medimind.io") {
+        await Relationship.create({
           patientId: patient._id,
-          caregiverId: caregiverProfile._id,
-          deletedAt: null,
+          caregiverId: familyCaregivers[1]._id,
+          caregiverType: "FamilyCaregiver",
+          relation: "Secondary Caregiver",
+          status: "PENDING",
+          initiatedBy: "PATIENT",
+          permissions: {
+            canViewMedications: true,
+            canAddMedication: false,
+            canEditMedication: false,
+            canDeleteMedication: false,
+            canViewMedicalRecords: true,
+            canEditMedicalRecords: false,
+            canViewDoseSchedule: true,
+            canConfirmDose: false,
+            canOrderRefills: false,
+            canReceiveNotifications: true,
+          },
         });
-
-        if (!existingRelation) {
-          const isAccepted = i === 0;
-          await Relationship.create({
-            patientId: patient._id,
-            caregiverId: caregiverProfile._id,
-            caregiverType: "FamilyCaregiver",
-            relation: isAccepted ? "Family Member" : "Primary Caregiver",
-            status: isAccepted ? "ACCEPTED" : "PENDING",
-            initiatedBy: isAccepted ? "CAREGIVER" : "PATIENT",
-            permissions: isAccepted
-              ? {
-                canViewMedications: true,
-                canAddMedication: true,
-                canEditMedication: true,
-                canDeleteMedication: true,
-                canViewMedicalRecords: true,
-                canEditMedicalRecords: false,
-                canViewDoseSchedule: true,
-                canConfirmDose: true,
-                canOrderRefills: true,
-                canReceiveNotifications: true,
-              }
-              : {
-                canViewMedications: true,
-                canAddMedication: false,
-                canEditMedication: false,
-                canDeleteMedication: false,
-                canViewMedicalRecords: true,
-                canEditMedicalRecords: false,
-                canViewDoseSchedule: true,
-                canConfirmDose: false,
-                canOrderRefills: false,
-                canReceiveNotifications: true,
-              },
-          });
-        }
       }
     }
 
-    // Seed Refill Orders with realistic status distribution
-    const statuses = ["SUBMITTED", "APPROVED", "DISPENSED", "READY_FOR_PICKUP", "COMPLETED"];
-    let statusIdx = 0;
+    // -------------------------------------------------------------------------
+    // Seed Refill Orders
+    // -------------------------------------------------------------------------
+    const refillStatuses = ["SUBMITTED", "APPROVED", "DISPENSED", "COMPLETED"];
+    let statusIndex = 0;
 
     for (const med of createdMeds) {
-      const existingRefill = await RefillOrder.findOne({ patientId: patient._id, medicationId: med._id });
-      if (!existingRefill) {
-        const currentStatus = statuses[statusIdx % statuses.length];
-        statusIdx++;
+      if (med.inventory.currentQuantity <= med.inventory.refillThreshold + 5) {
+        const orderStatus = refillStatuses[statusIndex % refillStatuses.length];
+        statusIndex++;
 
-        const isDelivery = statusIdx % 2 === 0;
         await RefillOrder.create({
           patientId: patient._id,
           medicationId: med._id,
-          requestedBy: account._id,
-          targetPharmacyId: pharmacist._id,
-          orderStatus: currentStatus,
-          fulfillmentType: isDelivery ? "DELIVERY" : "PICKUP",
-          deliveryAddress: { street: "123 Health Ave, Building 4", city: "Cairo", zipCode: "11511" },
+          requestedBy: acc._id,
+          targetPharmacyId: defaultPharmacy._id,
+          orderStatus,
+          fulfillmentType: statusIndex % 2 === 0 ? "DELIVERY" : "PICKUP",
+          deliveryAddress: { street: "123 Healthcare Blvd", city: "Cairo", zipCode: "11511" },
           quantityRequested: med.inventory.initialQuantity || 30,
           pharmacistNotes:
-            currentStatus === "APPROVED"
-              ? "تم التأكد من الوصفة وتخصيص العبوة للصرف."
-              : currentStatus === "DISPENSED"
-              ? "تم صرف الدواء وتغليفه بنجاح."
-              : currentStatus === "READY_FOR_PICKUP"
-              ? "الطلب جاهز للاستلام من الفرع الرئيسي."
-              : currentStatus === "COMPLETED"
-              ? "تم توصيل وتأكيد استلام المريض وتحديث الرصيد."
-              : "طلب تعبئة جديد بانتظام الدواء.",
+            orderStatus === "APPROVED"
+              ? "تمت مراجعة الوصفة وتخصيص الدواء للصرف."
+              : orderStatus === "DISPENSED"
+                ? "تم تجهيز وتغليف العبوة بنجاح."
+                : orderStatus === "COMPLETED"
+                  ? "تم استلام الدواء وتحديث الخزانة."
+                  : "طلب إعادة تعبئة بانتظار المراجعة.",
         });
       }
     }
+
+    // -------------------------------------------------------------------------
+    // Seed Notifications
+    // -------------------------------------------------------------------------
+    await Notification.create({
+      recipientId: acc._id,
+      recipientAccountId: acc._id,
+      type: "DOSE_REMINDER",
+      recipientRole: "PATIENT",
+      title: "Medication Due Reminder",
+      titleAr: "تذكير بموعد الدواء",
+      message: `Reminder to take ${createdMeds[0]?.name || "your medication"}.`,
+      messageAr: `تذكير بموعد تناول ${createdMeds[0]?.name || "الدواء"}.`,
+      isRead: false,
+      data: { medicationId: createdMeds[0]?._id },
+    });
+
+    await Notification.create({
+      recipientId: acc._id,
+      recipientAccountId: acc._id,
+      type: "REFILL_ORDER_UPDATED",
+      recipientRole: "PATIENT",
+      title: "Pharmacy Refill Order Status",
+      titleAr: "تحديث طلب صيدلية",
+      message: `Your refill order for ${createdMeds[0]?.name || "medication"} is currently being processed by MediMind Central Pharmacy.`,
+      messageAr: `طلب إعادة تعبئة ${createdMeds[0]?.name || "الدواء"} قيد المراجعة في صيدلية MediMind Central.`,
+      isRead: true,
+      data: { medicationId: createdMeds[0]?._id },
+    });
   }
 
-  console.log("SUCCESS! Seeded 10 complete patient accounts and 6 caregiver profiles, with multiple linked relationships and several standalone caregivers.");
+  console.log("✅ SUCCESS! Comprehensive MediMind database seeded with multi-day realistic adherence, caregiver networks, pharmacies, doctor profiles, and refill orders!");
   await mongoose.disconnect();
   process.exit(0);
 }
 
 seed().catch((err) => {
-  console.error("Error seeding data:", err);
+  console.error("❌ Error seeding data:", err);
   process.exit(1);
 });

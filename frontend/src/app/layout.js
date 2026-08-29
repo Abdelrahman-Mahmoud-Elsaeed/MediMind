@@ -1,6 +1,7 @@
 import { Manrope, Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { cookies } from "next/headers";
+import "material-symbols/outlined.css";
 import "./globals.css";
 
 const manrope = Manrope({
