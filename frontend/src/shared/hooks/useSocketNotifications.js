@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/shared/lib/apiClient';
 import { getSocket } from '@/shared/lib/socketClient';
@@ -16,7 +16,13 @@ export const NOTIFICATION_KEYS = {
  */
 export function useSocketNotifications() {
   const queryClient = useQueryClient();
-  const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('accessToken'));
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const hasToken = mounted && typeof window !== 'undefined' && Boolean(localStorage.getItem('accessToken'));
 
   // 1. Load persisted notifications from DB on initial load / reconnect
   const notificationsQuery = useQuery({

@@ -67,6 +67,8 @@ export function getSocket(token) {
 
   const cleanToken = rawToken.startsWith('Bearer ') ? rawToken.slice(7).trim() : rawToken.trim();
 
+  const targetUrl = getCleanSocketUrl();
+
   // If token changed or socket instance doesn't exist, create a fresh connection
   if (!socket || currentToken !== cleanToken) {
     if (socket) {
@@ -75,7 +77,7 @@ export function getSocket(token) {
 
     currentToken = cleanToken;
 
-    socket = io(SOCKET_URL, {
+    socket = io(targetUrl, {
       auth: {
         token: cleanToken,
       },
@@ -85,7 +87,7 @@ export function getSocket(token) {
       query: {
         token: cleanToken,
       },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 20,

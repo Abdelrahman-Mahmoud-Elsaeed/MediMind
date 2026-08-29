@@ -41,11 +41,6 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang={locale} dir={dir} data-scroll-behavior="smooth" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/images/logo.png" type="image/png" sizes="any" />
-        <link rel="shortcut icon" href="/images/logo.png" />
-        <link rel="apple-touch-icon" href="/images/logo.png" />
-      </head>
       <body className={`${manrope.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
         <Providers locale={locale} >
           {children}

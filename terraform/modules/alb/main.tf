@@ -131,7 +131,24 @@ resource "aws_lb_listener_rule" "backend_rule" {
   }
 }
 
-# ALB Listener Rule 2: Route /worker/* to Worker Service
+# ALB Listener Rule 2: Route /socket.io/* to Backend Express Service
+resource "aws_lb_listener_rule" "socket_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 15
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/socket.io/*"]
+    }
+  }
+}
+
+# ALB Listener Rule 3: Route /worker/* to Worker Service
 resource "aws_lb_listener_rule" "worker_rule" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 20
