@@ -11,8 +11,6 @@ out/
 .vite/
 
 # Environment variables
-.env
-.env.local
 .env.*.local
 
 
@@ -56,3 +54,4 @@ stitch.json
 branch_structure.json
 temp_auto_push.bat
 temp_interactive_push.bat
+config.bat

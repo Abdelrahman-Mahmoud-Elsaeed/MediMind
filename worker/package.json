@@ -4,8 +4,8 @@
   "description": "Decoupled background computational worker engine",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node init && node index.js",
+    "dev": "node init && nodemon index.js"
   },
   "dependencies": {
     "bullmq": "^5.0.0",
