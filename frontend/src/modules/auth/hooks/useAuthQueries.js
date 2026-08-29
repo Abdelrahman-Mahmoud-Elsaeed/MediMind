@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/authService';
 import apiClient from '@/shared/lib/apiClient';
+
+const emptySubscribe = () => () => {};
 
 export const AUTH_KEYS = {
   user: ['auth', 'user'],
@@ -10,12 +12,8 @@ export const AUTH_KEYS = {
 
 // 1. Query: Get Current Authenticated User
 export function useAuthUser() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const hasToken = mounted && typeof window !== 'undefined' && Boolean(localStorage.getItem('accessToken'));
+  const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const hasToken = isMounted && typeof window !== 'undefined' && Boolean(localStorage.getItem('accessToken'));
 
   return useQuery({
     queryKey: AUTH_KEYS.user,
